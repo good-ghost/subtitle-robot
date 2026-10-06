@@ -1,7 +1,7 @@
 """부분 재번역 `series retranslate` (PROJECT-PLAN §12.4, WI-4.006).
 
 용어집 표기를 고친 뒤, 이미 번역된 에피소드에서 바뀐 엔티티가 쓰인 unit 만 다시 번역한다.
-나머지 unit 은 체크포인트를 그대로 쓴다. 규칙은 docs/work-items/WI-4.006-partial-retranslate.md.
+나머지 unit 은 체크포인트를 그대로 쓴다. 규칙은 WI-4.006.
 """
 
 from __future__ import annotations

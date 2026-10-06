@@ -3,7 +3,7 @@
 모든 에피소드를 분석한 뒤 LLM 이 자동 수락·제안 항목을 함께 보고 같은 엔티티로 보이는 묶음과
 의심스러운 표기를 찾는다. 결과는 검토 대기열에 제안으로만 넣는다 —
 자동 수락 항목은 first-wins(§12.1, §20)이고, 항목을 지우면 ID 가 재사용될 수 있다.
-규칙은 docs/work-items/WI-4.003-series-modes.md.
+규칙은 WI-4.003.
 """
 
 from __future__ import annotations

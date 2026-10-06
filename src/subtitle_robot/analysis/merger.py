@@ -1,6 +1,6 @@
 """Glossary Merger: Pass 1 출력을 용어집에 반영한다 (PROJECT-PLAN §9.1, WI-3.003).
 
-ID 는 여기서 발급한다 (LLM 은 tmp 만). 표기 출처 규칙은 docs/work-items/WI-3.003-glossary-merger.md:
+ID 는 여기서 발급한다 (LLM 은 tmp 만). 표기 출처 규칙은 WI-3.003:
 일본계 이름은 관용 지명 사전 → 코드 음역(`generated`),
 서양계 가타카나 이름과 영어 이름은 LLM 제안(`llm`, Q-03).
 코드 음역은 한글 표기라 대상이 한국어일 때만 쓴다. 다른 대상은 LLM 제안을 쓴다 (§26.3).

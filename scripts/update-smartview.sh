@@ -1,7 +1,7 @@
 #!/bin/bash
 # vue-smartview 배포본을 web/vendor/vue-smartview/dist 에 다시 만든다.
 # 원본(VUE-SMARTVIEW)은 비공개라 이 저장소에는 화면이 쓰는 요소만 담은 부분 빌드를 둔다
-# (원본 docs/CONSUMING.md 2.3절, npm run build:subset). 요소 목록은 web/src/elements.ts 의 import 다.
+# (원본의 npm run build:subset). 요소 목록은 web/src/elements.ts 의 import 다.
 # 출처 커밋은 SOURCE_COMMIT 에 남긴다.
 # 사용 (개발 컨테이너 안, 원본에서 npm ci 를 한 뒤):
 #   scripts/update-smartview.sh <VUE-SMARTVIEW 체크아웃 경로>

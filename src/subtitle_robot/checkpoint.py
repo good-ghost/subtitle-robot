@@ -2,7 +2,7 @@
 
 결과는 unit 단위로 저장한다 (배치 경계는 모델·예산에 따라 바뀌므로).
 fingerprint 는 §13.1 과 같되 엔티티 rev 는 그 unit 원문에 나온 항목만 담는다.
-규칙은 docs/work-items/WI-3.010-checkpoint-resume.md.
+규칙은 WI-3.010.
 """
 
 from __future__ import annotations

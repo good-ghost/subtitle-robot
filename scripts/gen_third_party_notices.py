@@ -196,34 +196,33 @@ def render(
         "",
         *_table(web),
         "",
-        "## 3. Container images",
+        "## 3. Container image",
         "",
-        "### All tags",
+        "The project distributes only the `latest` image.",
+        "",
+        "### `latest`",
         "",
         f"- {PYTHON_RUNTIME[0]} {PYTHON_RUNTIME[1]}: {PYTHON_RUNTIME[2]} ({PYTHON_RUNTIME[3]})",
         "- Alpine Linux packages, listed below. Some are licensed under the GNU GPL or LGPL "
         "(for example mkvtoolnix, ffmpeg, x264, x265). Their complete corresponding source code "
         "for the listed versions is published by the Alpine Linux project "
         "(https://gitlab.alpinelinux.org/alpine/aports and https://dl-cdn.alpinelinux.org/"
-        "alpine/). For at least three years after we distribute an image, the source for any "
-        "GPL or LGPL package in it is also available on request from the maintainer of this "
-        "project.",
+        "alpine/).",
         "",
         "| Package | Version | License | Origin |",
         "|---|---|---|---|",
         *[f"| {n} | {v} | {lic} | {o} |" for n, v, lic, o in apk],
         "",
-        "### `codex` tag",
+        "### Images you build yourself (`codex`, `claude`)",
         "",
-        "- Codex CLI (`@openai/codex`): Apache-2.0 (https://github.com/openai/codex)",
-        "- Node.js: MIT and other permissive licenses (https://github.com/nodejs/node)",
+        "These tags are not distributed. `Dockerfile.codex` and `Dockerfile.claude` install the "
+        "subscription CLIs from npm when you build them:",
         "",
-        "### `claude` tag",
-        "",
+        "- Codex CLI (`@openai/codex`): Apache-2.0 (https://github.com/openai/codex), with Node.js "
+        "(MIT and other permissive licenses, https://github.com/nodejs/node)",
         "- Claude Code (`@anthropic-ai/claude-code`): proprietary, (c) Anthropic PBC, all rights "
-        "reserved. It is installed from npm when the image is built and is not covered by this "
-        "project's license. Its use is subject to Anthropic's terms "
-        "(https://code.claude.com/docs/en/legal-and-compliance).",
+        "reserved, not covered by this project's license. Its use is subject to Anthropic's "
+        "terms (https://code.claude.com/docs/en/legal-and-compliance).",
         "",
         "## 4. License texts",
         "",

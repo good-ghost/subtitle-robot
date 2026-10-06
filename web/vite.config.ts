@@ -3,7 +3,7 @@ import { fileURLToPath, URL } from 'node:url'
 import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vitest/config'
 
-// vue-smartview 는 vendor 에 둔 배포본 dist/ 를 번들에 넣는다 (VUE-X docs/CONSUMING.md 2.2·3절).
+// vue-smartview 는 vendor 에 둔 배포본 dist/ 를 번들에 넣는다.
 const SMARTVIEW_DIST = fileURLToPath(new URL('./vendor/vue-smartview/dist/', import.meta.url))
 // 개발 서버가 /api 를 넘길 감시 데몬 주소 ([web] port 기본값)
 const DAEMON_URL = process.env.SUBTITLE_ROBOT_WEB_URL ?? 'http://127.0.0.1:8949'

@@ -2,7 +2,7 @@
 
 에피소드 분석(Pass 1) 직후 원문으로 그 화의 한국어 요약을 만든다 (Q-04 A안, 용어집 표기 사용).
 번역 때 직전 N화 요약을 토큰 상한 안에서 `<story_so_far>` 섹션으로 넣는다. 요약을 만들지 못해도
-파이프라인은 멈추지 않는다 (warning 만). 규칙은 docs/work-items/WI-6.004-story-so-far.md.
+파이프라인은 멈추지 않는다 (warning 만). 규칙은 WI-6.004.
 """
 
 from __future__ import annotations

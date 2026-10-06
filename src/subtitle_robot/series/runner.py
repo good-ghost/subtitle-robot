@@ -1,7 +1,7 @@
 """시리즈 실행: Mode A(prescan) / Mode B(incremental) (PROJECT-PLAN §4.2, §12.3, WI-4.003).
 
 에피소드 번역은 단일 작품 runner 를 마스터 용어집으로 부른다 (Pass 1 은 델타 분석이 미리 한다).
-이어 실행·stale 판정·체크포인트가 그대로 적용된다. 규칙은 docs/work-items/WI-4.003-series-modes.md.
+이어 실행·stale 판정·체크포인트가 그대로 적용된다. 규칙은 WI-4.003.
 """
 
 from __future__ import annotations

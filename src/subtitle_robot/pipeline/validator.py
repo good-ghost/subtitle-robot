@@ -2,7 +2,7 @@
 
 error 는 재요청 → 폴백(분리·치환·needs_review)으로 처리하고 warning 은 리포트에만 남긴다.
 어떤 경우에도 파이프라인은 멈추지 않는다. 공급자 장애만 위로 올린다 (가드가 일시 정지).
-규칙표는 docs/work-items/WI-3.008-validator.md.
+규칙표는 WI-3.008.
 """
 
 from __future__ import annotations

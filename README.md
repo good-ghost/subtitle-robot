@@ -4,9 +4,14 @@
 
 **Subtitle Robot**(`subtitle-robot`)은 자막을 번역하는 Python CLI 도구이자 감시 데몬이다. 원본은 어떤 언어든 되고(영어·일본어는 전용 규칙), 대상 언어는 기본 한국어이며 설정으로 바꾼다. 번역 전에 작품 전체를 분석해 인명·고유명사 용어집을 만들고, **TV 시리즈 전체에서 같은 인물·용어를 같은 표기로** 쓰게 한다. LLM은 NVIDIA NIM(기본), 로컬 llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI(ChatGPT), Anthropic Claude, Google Gemini 중 하나를 쓴다.
 
-현재 버전은 0.8.2이다. 1차 릴리스(0.1.0)는 단일 작품·시리즈 번역, 2차 릴리스(0.2.0)는 동영상 자막 트랙 추출·자동 번역과 감시 데몬·컨테이너 운영, 3차 릴리스(0.3.0)는 ASS·VTT 입력과 스타일을 보존하는 ASS 출력, 시리즈의 직전 화 요약(`story_so_far`)과 반복 대사 메모리(`phrases`)를 더했다. 0.4.0은 실사용 테스트에서 찾은 결함(ASS 효과 레이어, 중단된 작업 복구, 종료 지연, 긴 Pass 1 요청, 공급자 가드)을 고치고 이름을 **Subtitle Robot**으로 정했다. 0.4.1은 NIM 요청 제한 시간 기본값을 300초로 올리고 compose 에 시간대(`TZ`)를 넣었다. 4차 릴리스(0.5.0)는 감시 데몬의 웹 운영 화면(대시보드·대기열·완료 목록·로그·설정, 토큰 로그인)을 더했다. 5차 릴리스(0.6.0)는 다국어를 더했다: 원본 언어 일반화, 대상 언어 설정, 동영상 원어(TMDB) 기반 소스 트랙 선택. 6차 릴리스(0.7.0)는 LLM 공급자 Ollama·OpenRouter·OpenAI·Claude·Gemini 를 더했다. 7차 릴리스(0.8.0)는 Claude·ChatGPT·Google 구독 계정(공식 CLI 실행)을 쓰게 하고, 모든 키·시간대·관리 계정을 웹 Settings 에서 관리하며(환경 변수 키는 읽지 않는다), 웹 기본 포트를 8949 로 바꾸고, 이미지를 태그 4종(`latest`·`claude`·`codex`·`gemini`)으로 나눴다. 0.8.1은 운영 서버에서 찾은 결함과 개선이다: 원어 트랙이 없으면 첫 트랙 대신 영어 트랙을 소스로, TMDB 제목 해석(영화 `제목 (연도)` 폴더, 하이픈 연도, 괄호 표시가 붙은 시즌 폴더), 태그별 Dockerfile, CLI 가 없는 이미지에서 구독 인증 방식 숨김, 웹 화면 이중 스크롤바, 처리가 끝난 영상의 작업 파일 정리. 0.8.2는 Gemini 를 AI Studio API 키로만 쓰게 하고(개인 계정의 Gemini CLI 로그인 종료로 `gemini` 이미지 태그와 구독 코드를 뺐다), 재시도를 기다리는 작업도 대기열에서 바로 다시 시도하게 하고, 완료 목록·리포트에 응답의 실제 모델을 남긴다.
+현재 버전은 0.8.2이다. 주요 기능:
 
-> 0.4.0 이전 이름은 `srt-translator`(명령 `srt-translate`)였다. `srt-translate` 명령, `SRT_TRANSLATE_CONFIG`·`SRT_TRANSLATE_DATA` 환경 변수, `.srt-translate/` 작업 폴더는 그대로 쓸 수 있다.
+- 단일 작품과 TV 시리즈 번역: 시리즈 전체 용어집, 직전 화 요약(`story_so_far`), 반복 대사 메모리(`phrases`)
+- SRT·ASS·VTT 입력, 스타일을 보존하는 ASS 출력
+- 동영상(MKV·MP4) 자막 트랙 추출과 자동 번역, 미디어 폴더 감시 데몬과 컨테이너 운영
+- 웹 운영 화면: 대시보드, 대기열, 완료 목록, 로그, 설정(공급자·키·관리 계정)
+- 원본 언어 자동 판별, 대상 언어 설정, 작품 원어(TMDB) 기준 소스 트랙 선택
+- LLM 공급자 7종과 Claude·ChatGPT 구독 계정(공식 CLI 실행)
 
 ## 동작 방식
 
@@ -209,7 +214,7 @@ podman exec subtitle-robot subtitle-robot queue list
 
 ### 이미지 태그
 
-모든 태그에 Python 패키지·mkvtoolnix·ffmpeg·웹 화면이 들어 있고, 구독 CLI 는 태그마다 하나만 넣는다 (CLI 실행 파일이 커서, 2026-10-04 측정).
+모든 태그에 Python 패키지·mkvtoolnix·ffmpeg·웹 화면이 들어 있고, 구독 CLI 는 태그마다 하나만 넣는다 (CLI 실행 파일이 커서, 2026-10-04 측정). 배포하는 이미지는 `latest` 하나다. `claude`·`codex`는 이 저장소에서 직접 빌드한다 (`CONTAINER_ENGINE=docker scripts/build-images.sh claude`처럼 Docker 로도 된다).
 
 | 태그 | Dockerfile | 쓰는 공급자 | 더 들어 있는 것 | 크기 |
 |---|---|---|---|---|

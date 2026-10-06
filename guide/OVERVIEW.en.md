@@ -19,19 +19,21 @@ Current version: **0.8.2**
 
 ## Image tags
 
-Every tag contains the app, the web console, mkvtoolnix and ffmpeg. Each subscription CLI goes in its own tag because the CLI binaries are large.
+Only the `latest` image is distributed (258 MB). It contains the app, the web console, mkvtoolnix and ffmpeg, and translates with API keys (NIM, OpenAI, Claude, Gemini, OpenRouter), llama-server or Ollama.
 
-| Tag | Use it for | Size |
-|---|---|---|
-| `latest` | API keys (NIM, OpenAI, Claude, Gemini, OpenRouter), llama-server, Ollama | 258 MB |
-| `claude` | A **Claude subscription** (Pro/Max) through Claude Code | 507 MB |
-| `codex` | A **ChatGPT subscription** (Plus/Pro) through Codex | 767 MB |
+To use a **Claude or ChatGPT subscription**, build an image with the subscription CLI from the source (https://github.com/good-ghost/subtitle-robot). Each CLI goes in its own tag because the CLI binaries are large.
 
-If you only use API keys, use `latest`. The `claude` and `codex` tags also work with API keys.
+```bash
+git clone https://github.com/good-ghost/subtitle-robot.git && cd subtitle-robot
+scripts/build-images.sh claude     # Claude subscription (Claude Code, 507 MB). ChatGPT subscription: codex (767 MB)
+# Docker: CONTAINER_ENGINE=docker scripts/build-images.sh claude
+```
+
+The built image is `localhost/subtitle-robot:claude` (Podman) or `subtitle-robot:claude` (Docker). These tags also work with API keys.
 
 ## 1. Load the image
 
-The images come as compressed archives. Load the archive for the tag you need:
+The image comes as a compressed archive. Load the `latest` archive:
 
 ```bash
 sha256sum -c SHA256SUMS                                   # optional: check the downloads
@@ -41,7 +43,7 @@ docker load -i subtitle-robot-0.8.2-latest.tar.gz         # Docker
 # Loaded image: localhost/subtitle-robot:latest
 ```
 
-The image name is `localhost/subtitle-robot:<tag>`. The examples below use that name.
+The image name is `localhost/subtitle-robot:latest`. The examples below use that name.
 
 ## 2. Prepare folders and a config file
 
@@ -169,9 +171,9 @@ Only one provider is used at a time, and there is no fallback. Keys are stored i
 | **Ollama** | `latest` | No key. Set the address (for example `http://host.docker.internal:11434`) and the model |
 | **OpenRouter** | `latest` | API key and model |
 | **OpenAI** | `latest` | API key and model |
-| **OpenAI – ChatGPT subscription** | `codex` | Authentication: subscription. **Sign in** on the provider card shows a device code. Open the address in a browser, sign in to ChatGPT and enter the code (it expires after 15 min). Or paste `~/.codex/auth.json` from a PC where Codex is signed in. Type the model name Codex accepts |
+| **OpenAI – ChatGPT subscription** | self-built `codex` | Authentication: subscription. **Sign in** on the provider card shows a device code. Open the address in a browser, sign in to ChatGPT and enter the code (it expires after 15 min). Or paste `~/.codex/auth.json` from a PC where Codex is signed in. Type the model name Codex accepts |
 | **Anthropic Claude** | `latest` | API key and model |
-| **Claude subscription** | `claude` | Authentication: subscription. On any PC with Claude Code and your Claude account, run `claude setup-token` and paste the token (valid for one year). Model `sonnet`, `opus`, `haiku` or a full model name |
+| **Claude subscription** | self-built `claude` | Authentication: subscription. On any PC with Claude Code and your Claude account, run `claude setup-token` and paste the token (valid for one year). Model `sonnet`, `opus`, `haiku` or a full model name |
 | **Google Gemini** | `latest` | API key from Google AI Studio (`AIza…`) |
 
 Provider notes:
@@ -208,7 +210,7 @@ Image-based subtitles (PGS, VobSub) are not extracted. Daemon messages, verdict 
 
 ## License
 
-Subtitle Robot is MIT licensed. Third-party software in the images (Python packages, the web console bundle, Alpine packages and GPL/LGPL programs such as mkvtoolnix and ffmpeg, the subscription CLIs) keeps its own licenses. Claude Code in the `claude` tag is proprietary software of Anthropic and is subject to Anthropic's terms.
+Subtitle Robot is MIT licensed. Third-party software in the images (Python packages, the web console bundle, Alpine packages and GPL/LGPL programs such as mkvtoolnix and ffmpeg, the subscription CLIs) keeps its own licenses. Claude Code in the self-built `claude` tag is proprietary software of Anthropic and is subject to Anthropic's terms.
 
 <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" alt="TMDB" height="14">
 

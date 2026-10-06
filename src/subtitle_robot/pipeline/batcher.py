@@ -23,7 +23,7 @@ from subtitle_robot.pipeline.unitizer import UnitPlan
 
 logger = logging.getLogger(__name__)
 
-# 원문 1자당 출력 토큰 (M0 실측, JSON 구조 포함 — docs/M0-RESULTS.md).
+# 원문 1자당 출력 토큰 (M0 실측, JSON 구조 포함).
 # 모델 이름에 들어 있는 키로 찾는다
 _OUTPUT_RATIOS: dict[str, dict[LanguageCode, float]] = {
     "deepseek": {"en": 1.25, "ja": 3.92},

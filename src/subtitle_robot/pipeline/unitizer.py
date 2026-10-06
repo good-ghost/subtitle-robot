@@ -1,7 +1,7 @@
 """Unitizer: 문장 중간에서 잘린 블록을 문장 단위(unit)로 묶는다 (PROJECT-PLAN §10.1, WI-3.004).
 
 번역 제외 블록(빈 블록, 원본 언어가 아닌 블록 — Q-02)은 unit 에 넣지 않고 원문 그대로 출력한다.
-규칙표는 docs/work-items/WI-3.004-unitizer.md.
+규칙표는 WI-3.004.
 """
 
 from __future__ import annotations

@@ -2,7 +2,7 @@
 
 이 도구가 쓸 사이드카와 이름이 같은(대소문자 무시) 외부 자막은 지우거나 덮어쓰지 않고 이름을 바꿔
 보존한다. 쓴 파일과 이름 변경은 `SidecarRecord` 에 남겨 ledger(§21.12)가 저장하고, `media revert` 가
-이 기록으로 원상 복구한다. 규칙은 docs/work-items/WI-5.003-sidecar-rename-revert.md.
+이 기록으로 원상 복구한다. 규칙은 WI-5.003.
 """
 
 from __future__ import annotations

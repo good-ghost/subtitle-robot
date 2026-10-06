@@ -3,7 +3,7 @@
 LLM 은 읽기(가나)만 판단하고 한글 표기는 이 모듈이 만든다. 같은 읽기는 언제나 같은 한글이 된다.
 스타일: `standard`(외래어 표기법 — か·た행 어두 평음, つ→쓰)
        `common`(국내 관용 — 어두 격음, つ→츠).
-두 스타일 모두 장음은 표기하지 않는다. 규칙표는 docs/work-items/WI-2.006-ja-transliteration.md.
+두 스타일 모두 장음은 표기하지 않는다. 규칙표는 WI-2.006.
 """
 
 from __future__ import annotations

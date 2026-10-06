@@ -4,7 +4,7 @@
 (번역 여부와 무관). 도구 한 번 실행으로 작업 폴더에 뽑은 뒤
 사이드카 폴더에 임시 파일로 복사하고 rename 한다 (작업 폴더와 미디어 폴더가 다른 파일 시스템이어도
 원자적). 번역 입력용 SRT 변환본은 작업 폴더에만 둔다.
-규칙은 docs/work-items/WI-5.002-extract-sidecar.md.
+규칙은 WI-5.002.
 """
 
 from __future__ import annotations

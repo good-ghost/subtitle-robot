@@ -1,6 +1,6 @@
 """NVIDIA NIM 어댑터 (PROJECT-PLAN §6.1~§6.3, WI-1.010).
 
-기본값은 M0 확정값이다 (`docs/M0-RESULTS.md`): deepseek-v4.1-flash, json_schema 출력, thinking 끔.
+기본값은 M0 실측으로 정했다: deepseek-v4.1-flash, json_schema 출력, thinking 끔.
 NIM 은 토큰 수를 셀 엔드포인트가 없어 문자/토큰 비율로 근사하고, 응답 usage 로 비율을 보정한다.
 """
 

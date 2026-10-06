@@ -3,7 +3,7 @@
 에피소드 하나를 Pass 1 로 분석해 마스터 용어집에 새로 나온 것만 더한다.
 기존 locked·auto 항목의 표기는 바꾸지 않는다 (first-wins).
 충돌·낮은 신뢰도·proposed·승격 제안은 검토 대기열에 남긴다.
-규칙은 docs/work-items/WI-4.002-delta-analysis.md.
+규칙은 WI-4.002.
 """
 
 from __future__ import annotations

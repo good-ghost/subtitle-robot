@@ -2,7 +2,7 @@
 
 이미 처리한 영상은 다시 검사·추출·번역하지 않는다. 경로가 바뀌어도 내용 식별값으로 같은 영상임을
 알아보고, 새 위치에 사이드카가 없으면 `/data/outputs/<내용 식별값>/` 보관본에서 복원한다.
-규칙은 docs/work-items/WI-5.006-ledger.md.
+규칙은 WI-5.006.
 """
 
 from __future__ import annotations

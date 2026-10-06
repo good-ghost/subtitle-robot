@@ -19,19 +19,21 @@
 
 ## 이미지 태그
 
-모든 태그에 앱, 웹 화면, mkvtoolnix, ffmpeg가 들어 있다. 구독용 CLI는 실행 파일이 커서 태그마다 하나씩만 넣었다.
+배포하는 이미지는 `latest` 하나다 (258MB). 앱, 웹 화면, mkvtoolnix, ffmpeg가 들어 있고 API 키(NIM·OpenAI·Claude·Gemini·OpenRouter), llama-server, Ollama 로 번역한다.
 
-| 태그 | 용도 | 크기 |
-|---|---|---|
-| `latest` | API 키(NIM·OpenAI·Claude·Gemini·OpenRouter), llama-server, Ollama | 258MB |
-| `claude` | Claude Code로 **Claude 구독**(Pro/Max) 사용 | 507MB |
-| `codex` | Codex로 **ChatGPT 구독**(Plus/Pro) 사용 | 767MB |
+**Claude·ChatGPT 구독**으로 쓰려면 구독용 CLI가 든 이미지를 소스(https://github.com/good-ghost/subtitle-robot)에서 직접 빌드한다. CLI 실행 파일이 커서 태그마다 하나씩만 넣는다.
 
-API 키만 쓰면 `latest`면 된다. `claude`·`codex` 태그도 API 키로 쓸 수 있다.
+```bash
+git clone https://github.com/good-ghost/subtitle-robot.git && cd subtitle-robot
+scripts/build-images.sh claude     # Claude 구독 (Claude Code, 507MB). ChatGPT 구독은 codex (767MB)
+# Docker: CONTAINER_ENGINE=docker scripts/build-images.sh claude
+```
+
+빌드한 이미지 이름은 `localhost/subtitle-robot:claude`(Podman) 또는 `subtitle-robot:claude`(Docker)다. 이 태그도 API 키로 쓸 수 있다.
 
 ## 1. 이미지 등록
 
-이미지는 압축 파일로 배포한다. 필요한 태그의 파일을 불러온다.
+이미지는 압축 파일로 배포한다. `latest` 파일을 불러온다.
 
 ```bash
 sha256sum -c SHA256SUMS                                   # 선택: 받은 파일 확인
@@ -41,7 +43,7 @@ docker load -i subtitle-robot-0.8.2-latest.tar.gz         # Docker
 # Loaded image: localhost/subtitle-robot:latest
 ```
 
-이미지 이름은 `localhost/subtitle-robot:<태그>`다. 아래 예시는 이 이름을 쓴다.
+이미지 이름은 `localhost/subtitle-robot:latest`다. 아래 예시는 이 이름을 쓴다.
 
 ## 2. 폴더와 설정 파일 준비
 
@@ -169,9 +171,9 @@ podman exec subtitle-robot subtitle-robot probe "/media/movies/Movie (2020)/Movi
 | **Ollama** | `latest` | 키 없음. 주소(예: `http://host.docker.internal:11434`)와 모델을 넣는다 |
 | **OpenRouter** | `latest` | API 키와 모델 |
 | **OpenAI** | `latest` | API 키와 모델 |
-| **OpenAI – ChatGPT 구독** | `codex` | 인증 방식: 구독. 공급자 카드의 **로그인**을 누르면 기기 코드가 나온다. 주소를 브라우저에서 열어 ChatGPT에 로그인하고 코드를 넣는다 (15분 안에). 또는 Codex에 로그인한 PC의 `~/.codex/auth.json` 내용을 붙여넣는다. 모델 이름은 Codex가 받는 이름을 직접 적는다 |
+| **OpenAI – ChatGPT 구독** | 직접 빌드한 `codex` | 인증 방식: 구독. 공급자 카드의 **로그인**을 누르면 기기 코드가 나온다. 주소를 브라우저에서 열어 ChatGPT에 로그인하고 코드를 넣는다 (15분 안에). 또는 Codex에 로그인한 PC의 `~/.codex/auth.json` 내용을 붙여넣는다. 모델 이름은 Codex가 받는 이름을 직접 적는다 |
 | **Anthropic Claude** | `latest` | API 키와 모델 |
-| **Claude 구독** | `claude` | 인증 방식: 구독. Claude Code가 설치되고 Claude 계정으로 로그인한 PC에서 `claude setup-token`을 실행해 받은 토큰(1년 유효)을 붙여넣는다. 모델은 `sonnet`·`opus`·`haiku` 또는 전체 모델 이름 |
+| **Claude 구독** | 직접 빌드한 `claude` | 인증 방식: 구독. Claude Code가 설치되고 Claude 계정으로 로그인한 PC에서 `claude setup-token`을 실행해 받은 토큰(1년 유효)을 붙여넣는다. 모델은 `sonnet`·`opus`·`haiku` 또는 전체 모델 이름 |
 | **Google Gemini** | `latest` | Google AI Studio 에서 만든 API 키(`AIza…`) |
 
 공급자 참고:
@@ -208,7 +210,7 @@ podman run …                     # 처음과 같은 명령
 
 ## 라이선스
 
-Subtitle Robot 은 MIT 라이선스다. 이미지에 들어 있는 제3자 소프트웨어(Python 패키지, 웹 화면 번들, Alpine 패키지·mkvtoolnix·ffmpeg 등 GPL·LGPL 프로그램, 구독용 CLI)는 각자의 라이선스를 따른다. `claude` 태그의 Claude Code 는 Anthropic 의 독점 소프트웨어이고 Anthropic 약관을 따른다.
+Subtitle Robot 은 MIT 라이선스다. 이미지에 들어 있는 제3자 소프트웨어(Python 패키지, 웹 화면 번들, Alpine 패키지·mkvtoolnix·ffmpeg 등 GPL·LGPL 프로그램, 구독용 CLI)는 각자의 라이선스를 따른다. 직접 빌드하는 `claude` 태그의 Claude Code 는 Anthropic 의 독점 소프트웨어이고 Anthropic 약관을 따른다.
 
 <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" alt="TMDB" height="14">
 

@@ -101,12 +101,14 @@ Bundled into `web/vendor/vue-smartview/dist` and the built web console (`web/dis
 | vuetify | 4.2.2 | MIT |
 | w3c-keyname | 2.2.8 | MIT |
 
-## 3. Container images
+## 3. Container image
 
-### All tags
+The project distributes only the `latest` image.
+
+### `latest`
 
 - Python 3.13 (python:3.13-alpine): PSF-2.0 (https://www.python.org/)
-- Alpine Linux packages, listed below. Some are licensed under the GNU GPL or LGPL (for example mkvtoolnix, ffmpeg, x264, x265). Their complete corresponding source code for the listed versions is published by the Alpine Linux project (https://gitlab.alpinelinux.org/alpine/aports and https://dl-cdn.alpinelinux.org/alpine/). For at least three years after we distribute an image, the source for any GPL or LGPL package in it is also available on request from the maintainer of this project.
+- Alpine Linux packages, listed below. Some are licensed under the GNU GPL or LGPL (for example mkvtoolnix, ffmpeg, x264, x265). Their complete corresponding source code for the listed versions is published by the Alpine Linux project (https://gitlab.alpinelinux.org/alpine/aports and https://dl-cdn.alpinelinux.org/alpine/).
 
 | Package | Version | License | Origin |
 |---|---|---|---|
@@ -274,14 +276,12 @@ Bundled into `web/vendor/vue-smartview/dist` and the built web console (`web/dis
 | zlib | 1.3.2-r0 | Zlib | zlib |
 | zstd-libs | 1.5.7-r2 | BSD-3-Clause OR GPL-2.0-or-later | zstd |
 
-### `codex` tag
+### Images you build yourself (`codex`, `claude`)
 
-- Codex CLI (`@openai/codex`): Apache-2.0 (https://github.com/openai/codex)
-- Node.js: MIT and other permissive licenses (https://github.com/nodejs/node)
+These tags are not distributed. `Dockerfile.codex` and `Dockerfile.claude` install the subscription CLIs from npm when you build them:
 
-### `claude` tag
-
-- Claude Code (`@anthropic-ai/claude-code`): proprietary, (c) Anthropic PBC, all rights reserved. It is installed from npm when the image is built and is not covered by this project's license. Its use is subject to Anthropic's terms (https://code.claude.com/docs/en/legal-and-compliance).
+- Codex CLI (`@openai/codex`): Apache-2.0 (https://github.com/openai/codex), with Node.js (MIT and other permissive licenses, https://github.com/nodejs/node)
+- Claude Code (`@anthropic-ai/claude-code`): proprietary, (c) Anthropic PBC, all rights reserved, not covered by this project's license. Its use is subject to Anthropic's terms (https://code.claude.com/docs/en/legal-and-compliance).
 
 ## 4. License texts
 

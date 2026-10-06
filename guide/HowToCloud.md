@@ -51,7 +51,7 @@ Subtitle Robot 은 API 키 대신 **개인 구독 계정**(Claude Pro/Max, ChatG
 
 ## 3. 공급자에 맞는 이미지로 띄우기
 
-구독 CLI 는 공급자별 이미지 태그에 하나씩 들어 있다. `latest`에는 없다.
+구독 CLI 는 공급자별 이미지 태그에 하나씩 들어 있다. `latest`에는 없다. 배포하는 이미지는 `latest` 하나이므로 `claude`·`codex` 태그는 소스에서 직접 빌드한다.
 
 | 태그 | 들어 있는 CLI | 크기 (2026-10-05) |
 |---|---|---|
@@ -61,18 +61,10 @@ Subtitle Robot 은 API 키 대신 **개인 구독 계정**(Claude Pro/Max, ChatG
 
 ### 3.1 이미지 준비
 
-저장소에서 빌드하는 경우:
-
 ```bash
+git clone https://github.com/good-ghost/subtitle-robot.git && cd subtitle-robot
 scripts/build-images.sh claude     # 또는 codex (latest 를 먼저 빌드한다)
-```
-
-빌드한 이미지 파일(`subtitle-robot-0.8.1-<태그>.tar.gz`)을 받은 경우:
-
-```bash
-sha256sum -c SHA256SUMS
-podman load -i subtitle-robot-0.8.1-claude.tar.gz     # Docker: docker load -i …
-# → Loaded image: localhost/subtitle-robot:claude
+# Docker: CONTAINER_ENGINE=docker scripts/build-images.sh claude
 ```
 
 ### 3.2 컨테이너를 그 태그로 바꾸기

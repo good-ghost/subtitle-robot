@@ -15,5 +15,5 @@ spikes/m0/results/
 docs/sample.*.srt
 docs/series/
 
-# 웹 화면 E2E 녹화·캡처 (web/e2e, 수십 MB). 결과 요약은 docs/phases/PHASE-PLAN-07.md
+# 웹 화면 E2E 녹화·캡처 (web/e2e, 수십 MB)
 docs/e2e/

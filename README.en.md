@@ -4,23 +4,14 @@ English | [한국어](README.md)
 
 **Subtitle Robot** (`subtitle-robot`) is a Python CLI and watch daemon that translates subtitles. The source can be any language (English and Japanese have dedicated rules); the target language is Korean by default and can be changed in the settings. Before translating, it analyses the whole title to build a glossary of names and proper nouns, so that **the same character or term is written the same way across a whole TV series**. The LLM is one of NVIDIA NIM (default), a local llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI (ChatGPT), Anthropic Claude or Google Gemini.
 
-The current version is 0.8.2.
+The current version is 0.8.2. Main features:
 
-| Release | What it added |
-|---|---|
-| 0.1.0 | Single-title and series translation |
-| 0.2.0 | Subtitle-track extraction from videos, automatic translation, watch daemon and container |
-| 0.3.0 | ASS and VTT input, style-preserving ASS output, previous-episode summaries (`story_so_far`), repeated-line memory (`phrases`) |
-| 0.4.0 | Fixes from real-world use (ASS effect layers, recovery of interrupted jobs, slow shutdown, long Pass 1 requests, provider guard); renamed to **Subtitle Robot**. 0.4.1 raised the NIM request timeout to 300 s and added `TZ` to compose |
-| 0.5.0 | Web console for the daemon (dashboard, queue, completed list, logs, settings) |
-| 0.6.0 | Multilingual: any source language, configurable target language, source-track choice by the title's original language (TMDB) |
-| 0.7.0 | More LLM providers: Ollama, OpenRouter, OpenAI, Claude, Gemini |
-| 0.8.0 | Claude, ChatGPT and Google subscription accounts (through the official CLIs); all keys, the time zone and the admin account are managed in the web Settings (keys in environment variables are no longer read); default web port 8949; four image tags (`latest`, `claude`, `codex`, `gemini`) |
-| 0.8.1 | Fixes and improvements from the production server: English source track when there is no original-language track (instead of the first track); TMDB titles from movie `Title (Year)` folders, hyphen-joined years and season folders with release tags; one Dockerfile per image tag; subscription authentication hidden in images without the CLI; the second page scrollbar in the web console; work files cleaned after a video is processed |
-| 0.8.2 | Gemini uses an AI Studio API key only (Gemini CLI sign-in for personal accounts ended, so the `gemini` image tag and the subscription code are removed); jobs waiting for a retry can be retried at once from the Queue List; the Completed List and reports show the model the provider actually used |
-
-
-> Before 0.4.0 the project was called `srt-translator` (command `srt-translate`). The `srt-translate` command, the `SRT_TRANSLATE_CONFIG` and `SRT_TRANSLATE_DATA` environment variables and `.srt-translate/` work folders still work.
+- Single titles and TV series: a series-wide glossary, previous-episode summaries (`story_so_far`) and repeated-line memory (`phrases`)
+- SRT, ASS and VTT input, style-preserving ASS output
+- Subtitle-track extraction from videos (MKV, MP4) and automatic translation, a watch daemon for media folders and container operation
+- Web console: dashboard, queue, completed list, logs, settings (provider, keys, admin account)
+- Automatic source-language detection, configurable target language, source-track choice by the title's original language (TMDB)
+- Seven LLM providers, plus Claude and ChatGPT subscription accounts (through the official CLIs)
 
 ## How it works
 
@@ -223,7 +214,7 @@ podman exec subtitle-robot subtitle-robot queue list
 
 ### Image tags
 
-Every tag contains the Python package, mkvtoolnix, ffmpeg and the web console; each subscription CLI goes into its own tag because the CLI binaries are large (measured 2026-10-04).
+Every tag contains the Python package, mkvtoolnix, ffmpeg and the web console; each subscription CLI goes into its own tag because the CLI binaries are large (measured 2026-10-04). Only the `latest` image is distributed; build `claude` and `codex` from this repository (Docker works too: `CONTAINER_ENGINE=docker scripts/build-images.sh claude`).
 
 | Tag | Dockerfile | Providers | Extra contents | Size |
 |---|---|---|---|---|

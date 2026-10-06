@@ -2,7 +2,7 @@
 
 감시 경로의 `*.mkv`·`*.mp4` 를 찾아 작업 큐에 등록한다. 처리는 데몬 워커(WI-5.008)가 한다.
 이벤트를 놓쳐도 주기 reconcile 스캔이 처리 기록이 없는 파일을 등록한다.
-규칙은 docs/work-items/WI-5.007-watcher.md.
+규칙은 WI-5.007.
 """
 
 from __future__ import annotations

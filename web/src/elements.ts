@@ -1,4 +1,4 @@
-// 화면이 쓰는 vue-smartview 요소만 등록한다 (요소별 진입점, VUE-X docs/USAGE.md 1절).
+// 화면이 쓰는 vue-smartview 요소만 등록한다 (요소별 진입점).
 // 모든 요소를 등록하는 register() 대신 쓴다: 쓰지 않는 요소의 코드가 번들에 들어가지 않게.
 // 화면에 새 요소를 쓰면 여기에 더한다 (elements.test.ts 가 빠진 요소를 찾는다).
 import 'vue-smartview/elements/smartview-app-shell'

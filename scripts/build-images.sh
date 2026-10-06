@@ -42,8 +42,10 @@ for tag in "${tags[@]}"; do
         base=(--build-arg "BASE_IMAGE=$name:latest")
     fi
     echo "== $name:$tag ($file)"
-    # Podman 은 OCI 형식에서 HEALTHCHECK 를 무시하므로 docker 형식으로 빌드한다
+    # Podman 은 OCI 형식에서 HEALTHCHECK 를 무시하므로 docker 형식으로 빌드한다 (Docker 는 늘 docker 형식이고 이 옵션이 없다)
+    format=()
+    [ "$(basename "$engine")" = podman ] && format=(--format docker)
     # shellcheck disable=SC2086 # BUILD_ARGS 는 여러 인자로 나눈다
-    "$engine" build --format docker -f "$file" "${base[@]}" ${BUILD_ARGS:-} -t "$name:$tag" .
+    "$engine" build "${format[@]}" -f "$file" "${base[@]}" ${BUILD_ARGS:-} -t "$name:$tag" .
 done
 "$engine" images --filter "reference=$name" --format '{{.Repository}}:{{.Tag}} {{.Size}}'

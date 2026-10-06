@@ -3,7 +3,7 @@
 번역이 끝난 에피소드들에서 같은 대사(정규화한 원문)가 여러 에피소드에 걸쳐 반복되면 가장 이른
 번역을 `auto` 로 기록한다 (Q-05 A안). 사람이 `series review` 로 확정(`locked`)·수정한다.
 Pass 2 에는 그 대사가 있는 배치에만 참고로 넣고, locked 표현을 쓰지 않으면 lint warning 이다.
-규칙은 docs/work-items/WI-6.005-phrases.md.
+규칙은 WI-6.005.
 """
 
 from __future__ import annotations
