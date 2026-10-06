@@ -8,16 +8,50 @@
 
 from __future__ import annotations
 
+import logging
+import re
+import threading
+from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
 import httpx
 
 from subtitle_robot.llm.base import ChatRequest, ChatResult, ProviderInfo, ProviderSettings
-from subtitle_robot.llm.limiter import RetryPolicy, Runtime
+from subtitle_robot.llm.errors import ProviderUnavailableError
+from subtitle_robot.llm.limiter import Outcome, RetryPolicy, Runtime, default_classifier
 from subtitle_robot.llm.nim import TokenEstimator
 from subtitle_robot.llm.openai_compat import OpenAICompatClient
 
+logger = logging.getLogger(__name__)
+
 _HTTP_OK = 200
+_HTTP_TOO_MANY_REQUESTS = 429
+# Gemini 하루 요청 한도(RPD)는 태평양 시간 자정에 초기화된다
+# (https://ai.google.dev/gemini-api/docs/rate-limits). 분당 한도의 429 는 지금처럼 재시도하고,
+# 하루 한도의 429 만 초기화 시각까지 대기열을 멈춘다 (WI-10.009m)
+GEMINI_QUOTA_TZ = ZoneInfo("America/Los_Angeles")
+# 429 본문(google.rpc.QuotaFailure)의 quotaId, 예: GenerateRequestsPerDayPerProjectPerModel-FreeTier
+_PER_DAY_QUOTA_RE = re.compile(r'"quotaId"\s*:\s*"[^"]*PerDay', re.IGNORECASE)
+# 초기화 직후의 시계 차이를 피하는 여유
+_QUOTA_RESET_MARGIN = timedelta(minutes=1)
+
+
+def gemini_daily_quota_exceeded(response: httpx.Response) -> bool:
+    """Gemini 의 하루 요청 한도 초과 응답인지 (429 + 하루 단위 quotaId)."""
+    return response.status_code == _HTTP_TOO_MANY_REQUESTS and bool(
+        _PER_DAY_QUOTA_RE.search(response.text)
+    )
+
+
+def next_gemini_quota_reset(now: datetime) -> datetime:
+    """다음 태평양 시간 자정 (UTC). 서머타임을 따른다."""
+    local = now.astimezone(GEMINI_QUOTA_TZ)
+    midnight = datetime.combine(local.date() + timedelta(days=1), time(), tzinfo=GEMINI_QUOTA_TZ)
+    return midnight.astimezone(now.tzinfo) + _QUOTA_RESET_MARGIN
+
+
 # OpenRouter 가 요청을 보낸 앱을 표시하는 헤더 (선택, https://openrouter.ai/docs)
 APP_TITLE = "Subtitle Robot"
 
@@ -35,13 +69,18 @@ class CompatProfile:
     name: str
     max_tokens_field: str = "max_tokens"
     headers: dict[str, str] = field(default_factory=dict)
+    # 하루 한도 초과 응답을 알아보는 함수와 그 한도가 풀리는 시각 (없으면 429 는 늘 재시도)
+    daily_quota: Callable[[httpx.Response], bool] | None = None
+    daily_reset: Callable[[datetime], datetime] | None = None
 
 
 PROFILES: dict[str, CompatProfile] = {
     # OpenAI 최신 모델(o 시리즈·GPT-5 계열)은 max_tokens 를 거부한다
     "openai": CompatProfile("openai", max_tokens_field="max_completion_tokens"),
     "openrouter": CompatProfile("openrouter", headers={"X-Title": APP_TITLE}),
-    "gemini": CompatProfile("gemini"),
+    "gemini": CompatProfile(
+        "gemini", daily_quota=gemini_daily_quota_exceeded, daily_reset=next_gemini_quota_reset
+    ),
 }
 
 
@@ -59,21 +98,68 @@ class CloudCompatAdapter:
     ) -> None:
         """어댑터를 만든다. 네트워크 호출은 하지 않는다."""
         self.provider = profile.name
+        self._profile = profile
         self._settings = settings
+        self._runtime = runtime or Runtime()
         self._client = OpenAICompatClient(
             settings,
             http=http,
-            runtime=runtime,
+            runtime=self._runtime,
             policy=policy,
+            classify=self._classify,
             name=profile.name,
             max_tokens_field=profile.max_tokens_field,
             extra_headers=profile.headers,
         )
         self.estimator = TokenEstimator()
+        # 하루 한도에 닿으면 풀리는 시각까지 요청을 보내지 않고 상태 확인을 실패로 돌린다
+        self._blocked_until: datetime | None = None
+        self._lock = threading.Lock()
+
+    def _classify(self, response: httpx.Response) -> Outcome:
+        daily, reset = self._profile.daily_quota, self._profile.daily_reset
+        if daily is None or reset is None or not daily(response):
+            return default_classifier(response)
+        until = reset(self._runtime.now())
+        with self._lock:
+            already = self._blocked_until is not None and self._blocked_until >= until
+            self._blocked_until = until
+        if not already:
+            logger.warning(
+                "%s daily request quota reached; pausing the queue until %s",
+                self.provider,
+                until.astimezone().strftime("%Y-%m-%d %H:%M"),
+            )
+        return Outcome.UNAVAILABLE
+
+    def _blocked(self) -> datetime | None:
+        with self._lock:
+            until = self._blocked_until
+            if until is not None and self._runtime.now() >= until:
+                self._blocked_until = until = None
+        return until
+
+    def _blocked_error(self, until: datetime) -> ProviderUnavailableError:
+        when = until.astimezone().strftime("%Y-%m-%d %H:%M")
+        return ProviderUnavailableError(f"{self.provider}: 하루 요청 한도에 닿았다 ({when} 초기화)")
 
     def chat(self, request: ChatRequest) -> ChatResult:
-        """요청을 보내고, 성공하면 usage 로 토큰 근사 비율을 보정한다."""
-        result = self._client.chat(request)
+        """요청을 보내고, 성공하면 usage 로 토큰 근사 비율을 보정한다.
+
+        Raises:
+            ProviderUnavailableError: 재시도 상한을 넘었거나, 하루 요청 한도에 닿아
+                초기화를 기다린다.
+        """
+        until = self._blocked()
+        if until is not None:
+            raise self._blocked_error(until)
+        try:
+            result = self._client.chat(request)
+        except ProviderUnavailableError as exc:
+            until = self._blocked()
+            if until is not None:
+                raise self._blocked_error(until) from exc
+            raise
         if result.prompt_tokens:
             prompt_chars = sum(len(message.content) for message in request.messages)
             self.estimator.observe(prompt_chars, result.prompt_tokens)
@@ -95,7 +181,9 @@ class CloudCompatAdapter:
         return self.estimator.estimate(text)
 
     def health_check(self) -> bool:
-        """`/models` 가 200 이면 요청을 받을 수 있다고 본다."""
+        """`/models` 가 200 이면 요청을 받을 수 있다고 본다. 하루 한도 초기화 전에는 거짓."""
+        if self._blocked() is not None:
+            return False
         try:
             return self._client.get("models").status_code == _HTTP_OK
         except httpx.TransportError:

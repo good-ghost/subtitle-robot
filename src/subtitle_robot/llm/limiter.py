@@ -86,6 +86,9 @@ class Outcome(Enum):
     RETRY = auto()  # 429·5xx: 백오프 후 재시도, 시도 횟수에 넣는다
     WAIT = auto()  # 로딩 중 503 등: 시도 횟수에 넣지 않고 기다린다
     FAIL = auto()  # 재시도해도 소용없는 오류: 호출자에게 그대로 돌려준다
+    # 재시도해도 한동안 풀리지 않는 공급자 불가 (Gemini 하루 한도 등): 바로 공급자 불가로 올린다.
+    # 언제 풀리는지는 분류기를 둔 어댑터가 알고 health_check 로 가드에 알린다 (WI-10.009m)
+    UNAVAILABLE = auto()
 
 
 Classifier = Callable[[httpx.Response], Outcome]
@@ -219,6 +222,10 @@ def call_with_retry(
             waited += policy.wait_poll_s
             continue
         attempts += 1
+        if outcome is Outcome.UNAVAILABLE:
+            raise ProviderUnavailableError(
+                f"{describe}: HTTP {response.status_code}, 다시 시도해도 당분간 풀리지 않는다"
+            )
         if outcome is Outcome.RETRY:
             if attempts >= policy.max_attempts:
                 raise ProviderUnavailableError(

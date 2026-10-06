@@ -184,7 +184,7 @@ Provider notes:
   - The **Authentication** field appears only in the image that contains that CLI.
 - **Gemini free tier.**
   - Flash models allow roughly 10–15 requests per minute, 250k–1M tokens per minute and about 1,500 requests per day (they differ per model and Google changes them). The default **Requests per minute** of `5` stays below that.
-  - After the daily limit, requests are rejected with 429 until it resets the next day, and jobs in progress may end up failed after their retries. Retry them from the **Queue List** the next day. Linking billing raises the limits considerably.
+  - When the daily limit is reached, the daemon recognises it and pauses the queue until the limit resets at midnight Pacific time, then continues. Linking billing raises the limits considerably.
   - Some models in the list are not available to new accounts (HTTP 404). Others can be temporarily overloaded (HTTP 503). If that happens, pick another model; `gemini-3.5-flash` worked in testing.
 - **llama-server on the same host.** If it listens only on `127.0.0.1`, the container cannot reach it through `host.docker.internal`. In that case, either run the container with `--network host` and use `http://127.0.0.1:8080/v1`, or start llama-server with `--host 0.0.0.0 --api-key <key>`.
 - **Original language (optional).** A TMDB key in **Settings → Keys** lets the daemon look up each title's original language and translate from that track. Without it, the English track is used, otherwise the first text track.
