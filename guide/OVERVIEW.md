@@ -13,7 +13,7 @@
   - 완료 목록
   - 로그
   - 설정 (공급자, 모델, API 키, 계정)
-- **LLM 공급자**: NVIDIA NIM(기본), 로컬 llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI, Anthropic Claude, Google Gemini. Claude·ChatGPT는 공식 CLI를 통해 **구독 계정**으로도 쓸 수 있다.
+- **LLM 공급자**: Google Gemini(기본), NVIDIA NIM, 로컬 llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI, Anthropic Claude. Claude·ChatGPT는 공식 CLI를 통해 **구독 계정**으로도 쓸 수 있다.
 
 현재 버전: **0.8.2**
 
@@ -147,7 +147,7 @@ services:
 ## 4. 처음 시작
 
 1. `http://<호스트>:8949`를 연다. 처음 접속하면 **관리 계정**(사용자 이름, 8자 이상 비밀번호)을 만든다. 계정을 만들기 전에는 누구나 이 화면을 열 수 있으니 바로 만든다.
-2. **설정 → 공급자**에서 공급자와 모델을 고른다. **모델 목록** 버튼을 누르면 그 키로 쓸 수 있는 모델이 나온다.
+2. **설정 → 공급자**에서 공급자와 모델을 고른다. 기본은 Google Gemini(`gemini-3.5-flash`, 분당 5회)라 Gemini 를 쓰면 그대로 둔다. **모델 목록** 버튼을 누르면 그 키로 쓸 수 있는 모델이 나온다.
 3. **설정 → 키**에서 API 키를 넣는다 (다시 볼 때는 끝 4자리만 보인다).
 4. **저장**을 누른 뒤 **적용 (재기동)**을 누른다.
 
@@ -166,7 +166,8 @@ podman exec subtitle-robot subtitle-robot probe "/media/movies/Movie (2020)/Movi
 
 | 공급자 | 이미지 | 인증 방법 |
 |---|---|---|
-| **NVIDIA NIM** (기본) | `latest` | build.nvidia.com 에서 받은 API 키(`nvapi-…`). 기본 모델 `deepseek-ai/deepseek-v4.1-flash`, 분당 30회 제한 |
+| **Google Gemini** (기본) | `latest` | Google AI Studio 에서 만든 API 키(`AIza…`). 기본 모델 `gemini-3.5-flash`, 분당 5회 |
+| **NVIDIA NIM** | `latest` | build.nvidia.com 에서 받은 API 키(`nvapi-…`). 기본 모델 `deepseek-ai/deepseek-v4.1-flash`, 분당 30회 제한 |
 | **llama-server** (로컬 llama.cpp) | `latest` | 키는 필요 없다. 설정에서 주소를 넣는다. 예: `http://host.docker.internal:8080/v1`(Docker), `http://host.containers.internal:8080/v1`(Podman). 서버를 `--api-key`로 띄웠으면 그 키를 넣는다 |
 | **Ollama** | `latest` | 키 없음. 주소(예: `http://host.docker.internal:11434`)와 모델을 넣는다 |
 | **OpenRouter** | `latest` | API 키와 모델 |
@@ -174,7 +175,6 @@ podman exec subtitle-robot subtitle-robot probe "/media/movies/Movie (2020)/Movi
 | **OpenAI – ChatGPT 구독** | 직접 빌드한 `codex` | 인증 방식: 구독. 공급자 카드의 **로그인**을 누르면 기기 코드가 나온다. 주소를 브라우저에서 열어 ChatGPT에 로그인하고 코드를 넣는다 (15분 안에). 또는 Codex에 로그인한 PC의 `~/.codex/auth.json` 내용을 붙여넣는다. 모델 이름은 Codex가 받는 이름을 직접 적는다 |
 | **Anthropic Claude** | `latest` | API 키와 모델 |
 | **Claude 구독** | 직접 빌드한 `claude` | 인증 방식: 구독. Claude Code가 설치되고 Claude 계정으로 로그인한 PC에서 `claude setup-token`을 실행해 받은 토큰(1년 유효)을 붙여넣는다. 모델은 `sonnet`·`opus`·`haiku` 또는 전체 모델 이름 |
-| **Google Gemini** | `latest` | Google AI Studio 에서 만든 API 키(`AIza…`) |
 
 공급자 참고:
 
@@ -183,7 +183,8 @@ podman exec subtitle-robot subtitle-robot probe "/media/movies/Movie (2020)/Movi
   - 로그인이 만료되면 다시 로그인하고 **적용 (재기동)**을 누른다.
   - **인증 방식** 칸은 그 CLI가 든 이미지에서만 보인다.
 - **Gemini 무료 등급**:
-  - 공급자 카드의 **분당 요청 수**를 모델 한도에 맞춘다 (예: `5`).
+  - Flash 모델의 한도는 대략 분당 10~15회, 분당 25만~100만 토큰, 하루 1,500회 안팎이다 (모델마다 다르고 Google 이 바꾼다). 기본 **분당 요청 수** `5`는 이보다 낮게 잡은 값이다.
+  - 하루 한도를 넘기면 다음 날 초기화될 때까지 429 로 거절되고, 처리하던 작업은 재시도 끝에 실패로 넘어갈 수 있다. 다음 날 **대기열**에서 다시 시도한다. 결제를 연결하면 한도가 크게 오른다.
   - 목록에 보여도 새 계정은 쓸 수 없는 모델이 있다 (HTTP 404). 일시적인 과부하로 거절하는 모델도 있다 (HTTP 503). 이때는 다른 모델을 고른다. 시험에서는 `gemini-3.5-flash`가 동작했다.
 - **같은 호스트의 llama-server**: `127.0.0.1`에만 열려 있으면 컨테이너가 `host.docker.internal`로 닿지 못한다. 컨테이너를 `--network host`로 띄우고 `http://127.0.0.1:8080/v1`을 쓰거나, llama-server를 `--host 0.0.0.0 --api-key <키>`로 띄운다.
 - **원어 조회 (선택)**: **설정 → 키**에 TMDB 키를 넣으면 작품의 원어를 찾아 그 언어 트랙을 원본으로 쓴다. 키가 없으면 영어 트랙, 영어도 없으면 첫 텍스트 트랙을 쓴다.

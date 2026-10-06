@@ -3,7 +3,13 @@
 # API 키는 이 파일에 쓰지 않는다. 웹 Settings 의 키 탭에서 넣는다 (데이터 폴더 secrets.toml).
 
 [llm]
-provider = "nim"                   # nim(기본) | local | ollama | openrouter | openai | claude | gemini
+provider = "gemini"                # gemini(기본) | nim | local | ollama | openrouter | openai | claude
+
+[providers.gemini]                 # Google AI Studio API 키 (Settings 의 키 탭). OpenAI 호환 엔드포인트
+base_url = "https://generativelanguage.googleapis.com/v1beta/openai"
+model = "gemini-3.5-flash"
+rpm = 5                            # 무료 등급 Flash 한도(분당 10~15회·하루 1,500회 안팎)보다 낮게. 결제를 연결하면 올린다
+timeout = 300
 
 [providers.nim]
 base_url = "https://integrate.api.nvidia.com/v1"
@@ -45,10 +51,6 @@ extra_body = { chat_template_kwargs = { enable_thinking = false } }
 # [providers.claude]                 # 키는 Settings. Messages API, 도구 호출로 구조화 출력
 # model = "<모델>"
 # auth = "subscription"              # 구독 계정: Claude Code CLI 실행 (model = "sonnet" 등 별칭)
-#
-# [providers.gemini]                 # 키는 Settings. OpenAI 호환 엔드포인트
-# model = "<모델>"
-# auth = "subscription"              # Google 계정 구독: Gemini CLI 실행
 
 [translation]
 target_language = "ko"             # 번역 대상 언어 (ISO 639-1: ko, en, fr …). CLI 는 --target

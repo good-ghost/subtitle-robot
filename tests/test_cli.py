@@ -84,7 +84,7 @@ def test_stale_exit_code_and_redo(
         == EXIT_OK
     )
     config = tmp_path / "config.toml"
-    config.write_text("[providers.nim]\ntemperature = 0.5\n", encoding="utf-8")
+    config.write_text("[providers.gemini]\ntemperature = 0.5\n", encoding="utf-8")
 
     stale = main(
         ["--config", str(config), "translate", str(source), "--work-dir", str(work)],

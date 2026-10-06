@@ -13,7 +13,7 @@ It translates with an LLM. Before it translates, it reads the whole title and bu
   - completed list
   - logs
   - settings (provider, model, API keys, account)
-- **LLM providers:** NVIDIA NIM (default), a local llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI, Anthropic Claude and Google Gemini. Claude and ChatGPT **subscription accounts** can be used through their official CLIs.
+- **LLM providers:** Google Gemini (default), NVIDIA NIM, a local llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI and Anthropic Claude. Claude and ChatGPT **subscription accounts** can be used through their official CLIs.
 
 Current version: **0.8.2**
 
@@ -147,7 +147,7 @@ Notes:
 ## 4. First start
 
 1. Open `http://<host>:8949`. On the first visit you create the **admin account** (user name and a password of at least 8 characters). Until it exists anyone can open that page, so create it right away.
-2. Go to **Settings → Provider**, choose the provider and model. **Model list** shows the models your key can use.
+2. Go to **Settings → Provider**, choose the provider and model. The default is Google Gemini (`gemini-3.5-flash`, 5 requests per minute), so leave it as is to use Gemini. **Model list** shows the models your key can use.
 3. Go to **Settings → Keys** and enter the API key (only the last 4 characters are shown again).
 4. Press **Save**, then **Apply (restart)**.
 
@@ -166,7 +166,8 @@ Only one provider is used at a time, and there is no fallback. Keys are stored i
 
 | Provider | Image | How to authenticate |
 |---|---|---|
-| **NVIDIA NIM** (default) | `latest` | API key (`nvapi-…`) from build.nvidia.com. Default model `deepseek-ai/deepseek-v4.1-flash`, limited to 30 requests per minute |
+| **Google Gemini** (default) | `latest` | API key from Google AI Studio (`AIza…`). Default model `gemini-3.5-flash`, 5 requests per minute |
+| **NVIDIA NIM** | `latest` | API key (`nvapi-…`) from build.nvidia.com. Default model `deepseek-ai/deepseek-v4.1-flash`, limited to 30 requests per minute |
 | **llama-server** (local llama.cpp) | `latest` | No key needed. Set the address in Settings, for example `http://host.docker.internal:8080/v1` (Docker) or `http://host.containers.internal:8080/v1` (Podman). If the server was started with `--api-key`, enter that key |
 | **Ollama** | `latest` | No key. Set the address (for example `http://host.docker.internal:11434`) and the model |
 | **OpenRouter** | `latest` | API key and model |
@@ -174,7 +175,6 @@ Only one provider is used at a time, and there is no fallback. Keys are stored i
 | **OpenAI – ChatGPT subscription** | self-built `codex` | Authentication: subscription. **Sign in** on the provider card shows a device code. Open the address in a browser, sign in to ChatGPT and enter the code (it expires after 15 min). Or paste `~/.codex/auth.json` from a PC where Codex is signed in. Type the model name Codex accepts |
 | **Anthropic Claude** | `latest` | API key and model |
 | **Claude subscription** | self-built `claude` | Authentication: subscription. On any PC with Claude Code and your Claude account, run `claude setup-token` and paste the token (valid for one year). Model `sonnet`, `opus`, `haiku` or a full model name |
-| **Google Gemini** | `latest` | API key from Google AI Studio (`AIza…`) |
 
 Provider notes:
 
@@ -183,7 +183,8 @@ Provider notes:
   - When a sign-in expires, sign in again and press Apply.
   - The **Authentication** field appears only in the image that contains that CLI.
 - **Gemini free tier.**
-  - Set **Requests per minute** on the provider card to the model's limit (for example `5`).
+  - Flash models allow roughly 10–15 requests per minute, 250k–1M tokens per minute and about 1,500 requests per day (they differ per model and Google changes them). The default **Requests per minute** of `5` stays below that.
+  - After the daily limit, requests are rejected with 429 until it resets the next day, and jobs in progress may end up failed after their retries. Retry them from the **Queue List** the next day. Linking billing raises the limits considerably.
   - Some models in the list are not available to new accounts (HTTP 404). Others can be temporarily overloaded (HTTP 503). If that happens, pick another model; `gemini-3.5-flash` worked in testing.
 - **llama-server on the same host.** If it listens only on `127.0.0.1`, the container cannot reach it through `host.docker.internal`. In that case, either run the container with `--network host` and use `http://127.0.0.1:8080/v1`, or start llama-server with `--host 0.0.0.0 --api-key <key>`.
 - **Original language (optional).** A TMDB key in **Settings → Keys** lets the daemon look up each title's original language and translate from that track. Without it, the English track is used, otherwise the first text track.

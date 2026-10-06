@@ -1,3 +1,4 @@
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -20,9 +21,11 @@ def _write(tmp_path: Path, text: str) -> Path:
 
 def test_example_file_loads_with_plan_values() -> None:
     config = load_config(EXAMPLE)
-    name, nim = config.active_provider()
+    name, gemini = config.active_provider()
 
-    assert name == "nim"
+    assert name == "gemini"  # 기본 공급자 (WI-10.009l)
+    assert (gemini.model, gemini.rpm, gemini.timeout) == ("gemini-3.5-flash", 5, 300)
+    nim = config.providers["nim"]
     assert nim.model == "deepseek-ai/deepseek-v4.1-flash"
     assert (nim.rpm, nim.timeout, nim.response_format) == (30, 300, "json_schema")
     assert nim.extra_body == THINKING_OFF
@@ -39,14 +42,15 @@ def test_example_file_loads_with_plan_values() -> None:
     assert config.web.port == 8949
 
 
-def test_defaults_without_file_select_nim() -> None:
+def test_defaults_without_file_select_gemini() -> None:
+    """설정 파일이 없으면 Gemini·gemini-3.5-flash·분당 5회 (WI-10.009l, 0.8.2 까지 NIM)."""
     config = load_config(None)
-    name, nim = config.active_provider()
+    name, gemini = config.active_provider()
 
-    assert name == "nim"
-    assert nim.base_url == "https://integrate.api.nvidia.com/v1"
-    assert nim.api_key_env is None  # 예시 설정은 키 환경 변수를 쓰지 않는다 (§28.2)
-    assert nim.extra_body == THINKING_OFF
+    assert name == "gemini"
+    assert gemini.base_url == "https://generativelanguage.googleapis.com/v1beta/openai"
+    assert (gemini.model, gemini.rpm) == ("gemini-3.5-flash", 5)
+    assert gemini.api_key_env is None  # 키는 환경 변수가 아니라 Settings (§28.2)
     assert config.web.port == 8949  # 웹 화면 기본 포트 (WI-10.009b)
 
 
@@ -100,10 +104,23 @@ def test_local_without_section_is_error(tmp_path: Path) -> None:
 # ---------------------------------------------------------------- factory
 
 
-def test_factory_creates_nim_with_key_from_store(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("NVIDIA_API_KEY", "nvapi-from-env")
+def test_factory_creates_default_gemini_from_example() -> None:
     adapter = create_adapter(
         load_config(EXAMPLE),
+        secrets=SecretStore.in_memory({"providers": {"gemini": {"api_key": "AIza-from-store"}}}),
+    )
+
+    info = adapter.describe()
+    assert (info.provider, info.model) == ("gemini", "gemini-3.5-flash")
+    adapter.close()
+
+
+def test_factory_creates_nim_with_key_from_store(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("NVIDIA_API_KEY", "nvapi-from-env")
+    raw = tomllib.loads(EXAMPLE.read_text(encoding="utf-8"))
+    raw["llm"]["provider"] = "nim"
+    adapter = create_adapter(
+        parse_config(raw, source=str(EXAMPLE)),
         secrets=SecretStore.in_memory({"providers": {"nim": {"api_key": "nvapi-from-store"}}}),
     )
 
@@ -185,12 +202,16 @@ def test_new_providers_fill_defaults_and_need_a_model() -> None:
 
 
 def test_existing_providers_unchanged() -> None:
-    nim = parse_config({}, source="t").providers["nim"]
-    assert (nim.model, nim.temperature, nim.context_tokens) == (
+    """NIM 을 고르면 지금까지의 NIM 기본값을 그대로 쓴다."""
+    nim = parse_config({"llm": {"provider": "nim"}}, source="t").providers["nim"]
+    assert (nim.model, nim.rpm, nim.temperature, nim.context_tokens) == (
         "deepseek-ai/deepseek-v4.1-flash",
+        30,
         0.2,
         None,
     )
+    assert nim.base_url == "https://integrate.api.nvidia.com/v1"
+    assert nim.extra_body == THINKING_OFF
 
 
 def test_factory_requires_keys_for_cloud_providers() -> None:

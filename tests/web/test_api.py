@@ -78,7 +78,7 @@ def test_status(api: WebEnv, media: Path) -> None:
     assert body["started_at"] == api.context.started_at
     assert body["heartbeat_age_s"] is None
     assert body["provider"] == {
-        "name": "nim",
+        "name": "gemini",
         "model": api.context.config.active_provider()[1].model,
         "state": "available",
         "reason": "",

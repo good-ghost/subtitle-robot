@@ -25,7 +25,7 @@ services:
     # 웹 화면. 처음 접속에서 관리 계정을 만든다. Settings 의 적용(재기동)은 restart 정책으로 다시 뜬다
     ports:
       - "8949:8949"
-    # 종료 요청을 받으면 진행 중인 LLM 요청 하나를 끝내고 멈춘다 (NIM 요청 제한 시간 300초)
+    # 종료 요청을 받으면 진행 중인 LLM 요청 하나를 끝내고 멈춘다 (클라우드 공급자 요청 제한 시간 300초)
     stop_grace_period: 5m
     healthcheck:
       test: ["CMD", "/usr/local/bin/subtitle-robot", "health"]

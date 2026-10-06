@@ -2,7 +2,7 @@
 
 [English](README.en.md) | 한국어
 
-**Subtitle Robot**(`subtitle-robot`)은 자막을 번역하는 Python CLI 도구이자 감시 데몬이다. 원본은 어떤 언어든 되고(영어·일본어는 전용 규칙), 대상 언어는 기본 한국어이며 설정으로 바꾼다. 번역 전에 작품 전체를 분석해 인명·고유명사 용어집을 만들고, **TV 시리즈 전체에서 같은 인물·용어를 같은 표기로** 쓰게 한다. LLM은 NVIDIA NIM(기본), 로컬 llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI(ChatGPT), Anthropic Claude, Google Gemini 중 하나를 쓴다.
+**Subtitle Robot**(`subtitle-robot`)은 자막을 번역하는 Python CLI 도구이자 감시 데몬이다. 원본은 어떤 언어든 되고(영어·일본어는 전용 규칙), 대상 언어는 기본 한국어이며 설정으로 바꾼다. 번역 전에 작품 전체를 분석해 인명·고유명사 용어집을 만들고, **TV 시리즈 전체에서 같은 인물·용어를 같은 표기로** 쓰게 한다. LLM은 Google Gemini(기본), NVIDIA NIM, 로컬 llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI(ChatGPT), Anthropic Claude 중 하나를 쓴다.
 
 현재 버전은 0.8.2이다. 주요 기능:
 
@@ -38,30 +38,31 @@ uv tool install .            # 또는 명령으로 설치: subtitle-robot ...
 
 ## 설정
 
-설정 없이 실행하면 NIM 기본값을 쓴다. 바꾸려면 [examples/config.example.toml](examples/config.example.toml)을 복사해 고치고 `--config` 또는 `SUBTITLE_ROBOT_CONFIG` 환경 변수로 지정한다.
+설정 없이 실행하면 Gemini 기본값(`gemini-3.5-flash`, 분당 5회)을 쓴다. 바꾸려면 [examples/config.example.toml](examples/config.example.toml)을 복사해 고치고 `--config` 또는 `SUBTITLE_ROBOT_CONFIG` 환경 변수로 지정한다.
 
 | 공급자 (`llm.provider`) | 준비 | 비고 |
 |---|---|---|
-| NVIDIA NIM (`nim`, 기본) | API 키. 기본 모델 `deepseek-ai/deepseek-v4.1-flash`, 30 RPM | |
+| Google Gemini (`gemini`, 기본) | AI Studio API 키. 기본 모델 `gemini-3.5-flash`, 분당 5회 | OpenAI 호환 엔드포인트. 개인 Google 계정의 Gemini CLI 로그인은 2026-06-18 종료돼 구독으로는 쓰지 않는다 |
+| NVIDIA NIM (`nim`) | API 키. 기본 모델 `deepseek-ai/deepseek-v4.1-flash`, 30 RPM | |
 | llama-server (`local`) | 별도로 띄운 서버의 `base_url`. `--api-key`로 띄웠으면 그 키 | `/props`·`/tokenize`로 컨텍스트·토큰 수 |
 | Ollama (`ollama`) | 서버 주소(기본 `http://127.0.0.1:11434`), 모델 | 고유 API `/api/chat`. `context_tokens`(기본 8192)를 `num_ctx`로 보낸다. 생각 모델은 `extra_body = { think = false }` |
 | OpenRouter (`openrouter`) | API 키, 모델 | 모델이 json_schema 를 받지 않으면 `response_format = "json_object"` |
 | OpenAI (`openai`) | API 키 또는 ChatGPT 구독(Codex CLI), 모델 | `max_completion_tokens`로 보내고, `temperature`를 적지 않으면 보내지 않는다 (추론 모델) |
 | Anthropic Claude (`claude`) | API 키 또는 Claude 구독(Claude Code CLI), 모델 | Messages API. 출력 스키마를 도구로 주고 그 호출을 강제해 JSON 을 받는다 |
-| Google Gemini (`gemini`) | AI Studio API 키, 모델 | OpenAI 호환 엔드포인트. 개인 Google 계정의 Gemini CLI 로그인은 2026-06-18 종료돼 구독으로는 쓰지 않는다 |
 
+- **Gemini 무료 등급 한도**: Flash 모델은 대략 분당 10~15회, 분당 25만~100만 토큰, 하루 1,500회 안팎이다 (모델마다 다르고 Google 이 바꾼다. AI Studio 의 사용량 화면에서 본다). 기본 분당 요청 수 5 는 이보다 낮게 잡은 값이다. 하루 한도를 넘기면 다음 날 초기화될 때까지 429 로 거절되고, 그동안 처리하던 작업은 재시도 끝에 실패로 넘어갈 수 있다 (다음 날 대기열에서 다시 시도). 결제를 연결하면 한도가 크게 오른다
 - 키(공급자·TMDB)는 웹 Settings 의 **키** 탭에서 넣는다. 데이터 폴더의 `secrets.toml`(권한 600)에 저장되고 화면에는 끝 4자리만 보인다. **환경 변수의 키는 읽지 않는다**. 공급자는 하나만 쓰고 폴백하지 않는다. 바꾸려면 설정을 고치고 재기동한다
 - 웹 화면 없이 CLI 만 쓰면 데이터 폴더(`--data` → `SUBTITLE_ROBOT_DATA` → `/data`)에 `secrets.toml`을 직접 만든다 (`chmod 600`):
 
   ```toml
-  [providers.nim]
-  api_key = "nvapi-..."
+  [providers.gemini]
+  api_key = "AIza..."
 
   [tmdb]
   api_key = "..."
   ```
 
-- NIM·llama-server 밖의 공급자는 모델 기본값이 없다. `[providers.<이름>] model`을 적거나 웹 Settings 에서 "모델 목록"으로 고른다. 주소·제한 시간은 기본값이 있다
+- Gemini·NIM·llama-server 밖의 공급자는 모델 기본값이 없다. `[providers.<이름>] model`을 적거나 웹 Settings 에서 "모델 목록"으로 고른다. 주소·제한 시간은 기본값이 있다
 - 시간대: `[system] timezone`(IANA 이름, 예 `Asia/Seoul`)이 있으면 로그·큐 시각에 쓴다. 비우면 `TZ` 환경 변수 (Settings 웹 탭에서 검색해 고른다)
 - 공급자를 바꾸면 이어 번역(체크포인트)은 설정이 바뀐 것으로 판정된다 (`--redo-stale` / `--accept-stale`)
 - 확인: `uv run python scripts/llm_smoke.py --data ./data --provider claude --model <모델>` (짧은 구조화 출력 요청 1회)
@@ -238,7 +239,7 @@ scripts/build-images.sh latest claude  # 고른 태그만
 - 시간대는 Settings 웹 탭(`[system] timezone`)이 앞서고, 비우면 `TZ` 환경 변수다 (compose 기본 `Asia/Seoul`). 둘 다 없으면 UTC 로 `queue list`의 대기 시각·로그가 표시된다
 - 추출은 자막 블록이 영상 전체에 흩어져 있어 영상 파일을 끝까지 읽는다. 다운로드 도구(SABnzbd 등)와 같은 디스크를 쓰면 서버가 느려지므로 검사·추출 도구를 낮은 우선순위(`ionice -c3`·`nice 19`, `[media] tool_priority = "low"` 기본)로 실행한다. I/O 우선순위는 디스크 스케줄러가 다룰 때(mq-deadline·BFQ)만 효과가 있다. 서버 전체를 지키려면 컨테이너에 자원 제한을 함께 건다 (rootful Quadlet 이면 `[Service]`의 `CPUQuota`·`MemoryMax`·`IOReadBandwidthMax`)
 - 다운로드 도구가 압축을 푸는 중인 폴더(`[watch] exclude_dirs`, 기본 `_UNPACK_*`·`_FAILED_*`) 안의 파일은 감시하지 않는다. 처음 기동할 때 기존 라이브러리가 크면 `[watch] scan_existing = false`로 두고 나눠 등록할 수 있다
-- 종료(`podman stop`)하면 진행 중인 LLM 요청 하나를 끝내고 멈추며(실행 중인 검사·추출 도구는 바로 끝낸다), 작업은 다음 기동 때 이어서 처리한다. 요청은 최대 300초(NIM 기본 제한 시간) 걸리므로 `podman stop -t 300`(`podman run --stop-timeout 300`, compose 는 `stop_grace_period: 5m`)을 쓴다. 기본 10초면 강제 종료되지만 체크포인트로 이어서 처리하므로 결과는 같다
+- 종료(`podman stop`)하면 진행 중인 LLM 요청 하나를 끝내고 멈추며(실행 중인 검사·추출 도구는 바로 끝낸다), 작업은 다음 기동 때 이어서 처리한다. 요청은 최대 300초(클라우드 공급자 기본 제한 시간) 걸리므로 `podman stop -t 300`(`podman run --stop-timeout 300`, compose 는 `stop_grace_period: 5m`)을 쓴다. 기본 10초면 강제 종료되지만 체크포인트로 이어서 처리하므로 결과는 같다
 - 시리즈 폴더의 새 화는 `[media] series_window`(기본 600초) 동안 같은 작품의 다른 화를 기다렸다가 함께 처리한다. 기다리는 동안 `queue list`에 `대기 HH:MM:SS까지`로 보인다
 - llama-server는 compose에 넣지 않고 따로 띄운다. 같은 호스트에서 쓰는 방법은 둘이다
   - llama-server가 `127.0.0.1`에만 열려 있으면 컨테이너에서 `host.docker.internal`·`host.containers.internal`로 닿지 않는다 (rootless Podman에서 확인). 컨테이너를 호스트 네트워크로 띄우고(`--network host`, compose는 `network_mode: host`) `base_url = "http://127.0.0.1:8080/v1"`

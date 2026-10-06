@@ -31,6 +31,8 @@ from subtitle_robot.llm.catalog import (
     ANTHROPIC_BASE_URL,
     CLOUD_DEFAULT_TIMEOUT_S,
     GEMINI_BASE_URL,
+    GEMINI_DEFAULT_MODEL,
+    GEMINI_DEFAULT_RPM,
     OLLAMA_BASE_URL,
     OLLAMA_DEFAULT_CONTEXT,
     OPENAI_BASE_URL,
@@ -89,11 +91,16 @@ _PROVIDER_DEFAULTS: dict[str, dict[str, Any]] = {
         "base_url": ANTHROPIC_BASE_URL,
         "timeout": CLOUD_DEFAULT_TIMEOUT_S,
     },
+    # 기본 공급자 (WI-10.009l): 모델·분당 요청 수 기본값이 있다 (무료 등급 기준)
     "gemini": {
         "base_url": GEMINI_BASE_URL,
+        "model": GEMINI_DEFAULT_MODEL,
+        "rpm": GEMINI_DEFAULT_RPM,
         "timeout": CLOUD_DEFAULT_TIMEOUT_S,
     },
 }
+# 설정 파일에 [llm] provider 가 없을 때 쓰는 공급자 (0.8.2 까지 nim, 사용자 결정 2026-10-06)
+DEFAULT_PROVIDER: ProviderName = "gemini"
 
 
 class ConfigError(ValueError):
@@ -119,7 +126,7 @@ class _Strict(BaseModel):
 class LlmSection(_Strict):
     """`[llm]`."""
 
-    provider: ProviderName = "nim"
+    provider: ProviderName = DEFAULT_PROVIDER
 
 
 class ProviderConfig(_Strict):
@@ -365,7 +372,7 @@ class AppConfig(_Strict):
 
 
 def load_config(path: Path | None = None) -> AppConfig:
-    """설정 파일을 읽는다. 경로가 없으면 기본값(NIM)만으로 만든다.
+    """설정 파일을 읽는다. 경로가 없으면 기본값(Gemini)만으로 만든다.
 
     Raises:
         ConfigError: 파일이 없거나, TOML 문법이 틀렸거나, 값이 잘못됐다.
@@ -416,7 +423,7 @@ def with_provider_defaults(raw: dict[str, Any], *, source: str) -> dict[str, Any
     user_providers = raw.get("providers", {})
     if not isinstance(user_providers, dict):
         raise ConfigError(f"{source}: providers 는 표([providers.<이름>])여야 한다")
-    providers: dict[str, Any] = {"nim": {**_PROVIDER_DEFAULTS["nim"]}}
+    providers: dict[str, Any] = {DEFAULT_PROVIDER: {**_PROVIDER_DEFAULTS[DEFAULT_PROVIDER]}}
     # 고른 공급자가 파일에 없어도 기본값으로 채운다 (오류가 "모델이 비어 있다"로 구체적이게)
     llm = raw.get("llm")
     active = llm.get("provider") if isinstance(llm, dict) else None

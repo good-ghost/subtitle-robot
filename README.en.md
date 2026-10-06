@@ -2,7 +2,7 @@
 
 English | [한국어](README.md)
 
-**Subtitle Robot** (`subtitle-robot`) is a Python CLI and watch daemon that translates subtitles. The source can be any language (English and Japanese have dedicated rules); the target language is Korean by default and can be changed in the settings. Before translating, it analyses the whole title to build a glossary of names and proper nouns, so that **the same character or term is written the same way across a whole TV series**. The LLM is one of NVIDIA NIM (default), a local llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI (ChatGPT), Anthropic Claude or Google Gemini.
+**Subtitle Robot** (`subtitle-robot`) is a Python CLI and watch daemon that translates subtitles. The source can be any language (English and Japanese have dedicated rules); the target language is Korean by default and can be changed in the settings. Before translating, it analyses the whole title to build a glossary of names and proper nouns, so that **the same character or term is written the same way across a whole TV series**. The LLM is one of Google Gemini (default), NVIDIA NIM, a local llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI (ChatGPT) or Anthropic Claude.
 
 The current version is 0.8.2. Main features:
 
@@ -38,30 +38,31 @@ uv tool install .            # or install the command: subtitle-robot ...
 
 ## Configuration
 
-Without a configuration file, the NIM defaults are used. To change them, copy [examples/config.example.toml](examples/config.example.toml), edit it and pass it with `--config` or the `SUBTITLE_ROBOT_CONFIG` environment variable.
+Without a configuration file, the Gemini defaults are used (`gemini-3.5-flash`, 5 requests per minute). To change them, copy [examples/config.example.toml](examples/config.example.toml), edit it and pass it with `--config` or the `SUBTITLE_ROBOT_CONFIG` environment variable.
 
 | Provider (`llm.provider`) | Needs | Notes |
 |---|---|---|
-| NVIDIA NIM (`nim`, default) | API key. Default model `deepseek-ai/deepseek-v4.1-flash`, 30 RPM | |
+| Google Gemini (`gemini`, default) | AI Studio API key. Default model `gemini-3.5-flash`, 5 requests per minute | OpenAI-compatible endpoint. Gemini CLI sign-in for personal Google accounts ended on 2026-06-18, so it is not used as a subscription |
+| NVIDIA NIM (`nim`) | API key. Default model `deepseek-ai/deepseek-v4.1-flash`, 30 RPM | |
 | llama-server (`local`) | `base_url` of a server you start yourself; its key if started with `--api-key` | Uses `/props` and `/tokenize` for context and token counts |
 | Ollama (`ollama`) | Server address (default `http://127.0.0.1:11434`), model | Native `/api/chat`. Sends `context_tokens` (default 8192) as `num_ctx`. For thinking models use `extra_body = { think = false }` |
 | OpenRouter (`openrouter`) | API key, model | If the model does not accept json_schema, use `response_format = "json_object"` |
 | OpenAI (`openai`) | API key or ChatGPT subscription (Codex CLI), model | Sends `max_completion_tokens`; `temperature` is not sent unless set (reasoning models) |
 | Anthropic Claude (`claude`) | API key or Claude subscription (Claude Code CLI), model | Messages API. The output schema is given as a tool and that tool call is forced to get JSON |
-| Google Gemini (`gemini`) | AI Studio API key, model | OpenAI-compatible endpoint. Gemini CLI sign-in for personal Google accounts ended on 2026-06-18, so it is not used as a subscription |
 
+- **Gemini free-tier limits**: Flash models allow roughly 10–15 requests per minute, 250k–1M tokens per minute and about 1,500 requests per day (they differ per model and Google changes them; see the usage page in AI Studio). The default of 5 requests per minute stays below that. After the daily limit, requests are rejected with 429 until it resets the next day, and jobs in progress may end up failed after their retries (retry them from the Queue List the next day). Linking billing raises the limits considerably
 - Keys (providers, TMDB) are entered in the **Keys** tab of the web Settings. They are stored in `secrets.toml` in the data folder (mode 600) and only the last 4 characters are shown. **Keys in environment variables are not read**. Only one provider is used and there is no fallback; to change it, edit the settings and restart.
 - If you use only the CLI without the web console, create `secrets.toml` yourself in the data folder (`--data` → `SUBTITLE_ROBOT_DATA` → `/data`) and `chmod 600` it:
 
   ```toml
-  [providers.nim]
-  api_key = "nvapi-..."
+  [providers.gemini]
+  api_key = "AIza..."
 
   [tmdb]
   api_key = "..."
   ```
 
-- Providers other than NIM and llama-server have no default model. Set `[providers.<name>] model`, or pick one with "Model list" in the web Settings. Address and timeout have defaults.
+- Providers other than Gemini, NIM and llama-server have no default model. Set `[providers.<name>] model`, or pick one with "Model list" in the web Settings. Address and timeout have defaults.
 - Time zone: `[system] timezone` (an IANA name such as `Asia/Seoul`) is used for log and queue times. If empty, the `TZ` environment variable is used (search and pick it in the Web tab of Settings).
 - Changing the provider makes resumed translations count as "settings changed" (`--redo-stale` / `--accept-stale`).
 - Check a provider: `uv run python scripts/llm_smoke.py --data ./data --provider claude --model <model>` (one short structured-output request).
@@ -237,7 +238,7 @@ scripts/build-images.sh latest claude  # selected tags only
 - The time zone from the Web tab of Settings (`[system] timezone`) comes first; if empty, the `TZ` environment variable (compose default `Asia/Seoul`). With neither, `queue list` times and logs are in UTC.
 - Extraction reads the whole video because subtitle blocks are spread over the file. If the disk is shared with a download tool (SABnzbd etc.), the server slows down, so probing and extraction tools run at low priority (`ionice -c3`, `nice 19`, `[media] tool_priority = "low"` by default). I/O priority only works when the disk scheduler handles it (mq-deadline, BFQ). To protect the whole server, add resource limits to the container (with rootful Quadlet: `CPUQuota`, `MemoryMax`, `IOReadBandwidthMax` in `[Service]`).
 - Files in folders that a download tool is still unpacking (`[watch] exclude_dirs`, default `_UNPACK_*`, `_FAILED_*`) are not watched. If the library is large at the first start, set `[watch] scan_existing = false` and register it in parts.
-- On stop (`podman stop`), the LLM request in progress is finished and the daemon stops (running probe and extract tools are ended at once); the job continues at the next start. A request can take up to 300 s (NIM default timeout), so use `podman stop -t 300` (`podman run --stop-timeout 300`, `stop_grace_period: 5m` in compose). With the default 10 s it is killed, but the result is the same because it resumes from the checkpoint.
+- On stop (`podman stop`), the LLM request in progress is finished and the daemon stops (running probe and extract tools are ended at once); the job continues at the next start. A request can take up to 300 s (default timeout of the cloud providers), so use `podman stop -t 300` (`podman run --stop-timeout 300`, `stop_grace_period: 5m` in compose). With the default 10 s it is killed, but the result is the same because it resumes from the checkpoint.
 - A new episode in a series folder waits `[media] series_window` (default 600 s) for other episodes of the same title and is processed with them. While waiting, `queue list` shows `대기 HH:MM:SS까지` (waiting until HH:MM:SS; CLI output is in Korean).
 - llama-server is not part of compose; start it separately. Two ways to use it on the same host:
   - If llama-server listens only on `127.0.0.1`, the container cannot reach it through `host.docker.internal` or `host.containers.internal` (confirmed with rootless Podman). Run the container on the host network (`--network host`, `network_mode: host` in compose) with `base_url = "http://127.0.0.1:8080/v1"`.

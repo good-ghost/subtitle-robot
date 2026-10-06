@@ -28,6 +28,10 @@ OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 OPENAI_BASE_URL = "https://api.openai.com/v1"
 ANTHROPIC_BASE_URL = "https://api.anthropic.com"
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai"
+# 기본 공급자 Gemini 의 기본 모델과 분당 요청 수 (사용자 결정 2026-10-06, WI-10.009l).
+# 무료 등급 Flash 한도는 모델마다 분당 10~15회·25만~100만 TPM·하루 1,500회 안팎이라 낮은 값으로 둔다
+GEMINI_DEFAULT_MODEL = "gemini-3.5-flash"
+GEMINI_DEFAULT_RPM = 5
 # 클라우드 공급자 요청 하나의 제한 시간 (NIM 과 같은 근거: 큰 배치는 2분을 넘는다)
 CLOUD_DEFAULT_TIMEOUT_S = 300.0
 # Ollama 기본 컨텍스트. Ollama 자체 기본(2048~4096)은 배치가 조용히 잘릴 만큼 작다 (§27.1)
