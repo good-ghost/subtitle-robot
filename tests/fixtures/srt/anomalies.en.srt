@@ -1,0 +1,44 @@
+Some Movie (2026) - English subtitles
+
+1
+00:00:04,046 --> 00:00:06,048
+[intriguing music playing]
+
+2
+00:00:49,842 --> 00:00:51,302
+- All right. You ready?
+- [child] Okay. Yeah.
+
+00:00:52.5 --> 00:00:54,000
+Number line is missing here,
+3
+00:00:54,100 --> 00:00:56,000
+and the blank separator above is missing.
+
+3
+00:00:55,000 --> 00:00:57,000   
+Duplicate number, overlapping the previous block.   
+
+x4
+00:00:58,000 --> 00:01:00,000  X1:100 X2:500 Y1:10 Y2:40
+Non-numeric number with a coordinate tail.
+
+9
+00:01:01,000 --> 00:01:02,000
+
+
+10
+00:01:03,000 --> 00:01:0x
+Broken timing line is kept as is.
+
+11
+0:01:05,5 -> 00:01:07,000
+<i>One-digit hour, one-digit fraction,</i>
+
+<i>single arrow and a blank line inside.</i>
+
+12
+00:01:08,000 --> 00:01:09,000
+♪ Lyrics line ♪
+
+

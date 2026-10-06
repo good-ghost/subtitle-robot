@@ -1,0 +1,69 @@
+# 0.6.0 전 형식 (ko·ko_source·title_ko) 호환 테스트용 — examples/glossary.example.yaml 의 옛 판
+# 용어집 예시 (PROJECT-PLAN §12.2). 용어집에는 이름 본체만 둔다 — 경칭은 정책 맵으로 조합한다 (§8.6)
+series: "My Series"
+schema_version: 2
+entries:
+  - id: E0003
+    rev: 2                     # 변경될 때마다 증가 (fingerprint에 사용)
+    type: person               # person | place | org | term | brand | work
+    status: locked
+    scope: series
+    src_lang: en
+    source: "John Miller"
+    ko: "존 밀러"
+    ko_source: llm             # manual | official | generated | llm
+    policy: transliterate      # transliterate | translate | keep
+    variants:
+      - { src: "John",   ko: "존" }
+      - { src: "Johnny", ko: "조니" }
+      - { src: "Miller", ko: "밀러" }
+    title_ko: null             # 예: "선장" (Captain 고정 시)
+    avoid: []
+    ambiguous: false
+    first_seen: "S01E01#12"
+    note: "male, protagonist"
+
+  - id: E0007
+    rev: 1
+    type: person
+    status: auto
+    scope: series
+    src_lang: ja
+    source: "田中ヒロシ"
+    reading: "たなか ひろし"
+    reading_confidence: medium
+    ko: "타나카 히로시"
+    ko_source: generated
+    policy: transliterate
+    variants:
+      - { src: "田中",   reading: "たなか", ko: "타나카" }
+      - { src: "ヒロシ", reading: "ひろし", ko: "히로시" }
+      - { src: "ヒロ",   reading: "ひろ",   ko: "히로" }
+    avoid: ["다나카"]
+    seen_suffixes: ["さん", "くん"]
+    first_seen: "S01E01#33"
+    note: "male, 一人称: 俺"
+
+  - id: E0012
+    rev: 1
+    type: person
+    status: auto
+    scope: series
+    src_lang: ja
+    source: "佐藤"
+    reading: "さとう"
+    reading_confidence: high
+    ko: "사토"
+    ko_source: generated
+    policy: transliterate
+
+relations:
+  - from: E0007
+    to: E0012
+    address_name: { variant: "佐藤", suffix: "さん" }   # 런타임 조합 → "사토 상"
+    speech_level: 해요체        # 하십시오체 | 해요체 | 해체 | 해라체 | 혼용
+    valid_from: "S01E01"
+  - from: E0012
+    to: E0007
+    address_term: { src: "お兄ちゃん", ko: "오빠" }     # 관계 고유 호칭은 고정 텍스트
+    speech_level: 해체

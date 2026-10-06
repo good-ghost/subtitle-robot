@@ -1,0 +1,70 @@
+# 용어집 예시 (PROJECT-PLAN §12.2). 용어집에는 이름 본체만 둔다 — 경칭은 정책 맵으로 조합한다 (§8.6)
+# target 은 대상 언어 표기다 (대상 ko 는 glossary.yaml, 그 밖은 glossary.<언어>.yaml, §26.5).
+# 0.6.0 전 이름(ko, ko_source, title_ko)도 읽는다
+series: "My Series"
+schema_version: 2
+entries:
+  - id: E0003
+    rev: 2                     # 변경될 때마다 증가 (fingerprint에 사용)
+    type: person               # person | place | org | term | brand | work
+    status: locked
+    scope: series
+    src_lang: en
+    source: "John Miller"
+    target: "존 밀러"
+    target_source: llm             # manual | official | generated | llm
+    policy: transliterate      # transliterate | translate | keep
+    variants:
+      - { src: "John",   target: "존" }
+      - { src: "Johnny", target: "조니" }
+      - { src: "Miller", target: "밀러" }
+    title_target: null             # 예: "선장" (Captain 고정 시)
+    avoid: []
+    ambiguous: false
+    first_seen: "S01E01#12"
+    note: "male, protagonist"
+
+  - id: E0007
+    rev: 1
+    type: person
+    status: auto
+    scope: series
+    src_lang: ja
+    source: "田中ヒロシ"
+    reading: "たなか ひろし"
+    reading_confidence: medium
+    target: "타나카 히로시"
+    target_source: generated
+    policy: transliterate
+    variants:
+      - { src: "田中",   reading: "たなか", target: "타나카" }
+      - { src: "ヒロシ", reading: "ひろし", target: "히로시" }
+      - { src: "ヒロ",   reading: "ひろ",   target: "히로" }
+    avoid: ["다나카"]
+    seen_suffixes: ["さん", "くん"]
+    first_seen: "S01E01#33"
+    note: "male, 一人称: 俺"
+
+  - id: E0012
+    rev: 1
+    type: person
+    status: auto
+    scope: series
+    src_lang: ja
+    source: "佐藤"
+    reading: "さとう"
+    reading_confidence: high
+    target: "사토"
+    target_source: generated
+    policy: transliterate
+
+relations:
+  - from: E0007
+    to: E0012
+    address_name: { variant: "佐藤", suffix: "さん" }   # 런타임 조합 → "사토 상"
+    speech_level: 해요체        # 하십시오체 | 해요체 | 해체 | 해라체 | 혼용
+    valid_from: "S01E01"
+  - from: E0012
+    to: E0007
+    address_term: { src: "お兄ちゃん", target: "오빠" }     # 관계 고유 호칭은 고정 텍스트
+    speech_level: 해체

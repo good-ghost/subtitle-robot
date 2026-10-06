@@ -1,0 +1,67 @@
+[project]
+name = "subtitle-robot"
+version = "0.8.2"
+description = "Subtitle Robot: 영어·일본어 자막(SRT·ASS·VTT·동영상 트랙)을 한국어로 번역하는 CLI·감시 데몬 (시리즈 전체 인명·고유명사 표기 일관성)"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+# Docker 베이스 python:3.13-alpine 의 Python 과 맞춘다 (PROJECT-PLAN §21.9, NFR-005)
+requires-python = ">=3.13"
+dependencies = [
+    "charset-normalizer>=3.3",
+    "fastapi>=0.115",
+    "httpx>=0.27",
+    "pydantic>=2.7",
+    "pyyaml>=6.0",
+    "tomlkit>=0.13",
+    "uvicorn>=0.30",
+    "watchdog>=6",
+]
+
+[project.scripts]
+subtitle-robot = "subtitle_robot.cli:main"
+# 0.4.0 이전 이름 (호환 별칭)
+srt-translate = "subtitle_robot.cli:main"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.11",
+    "pytest>=8.3",
+    "ruff>=0.6",
+    "types-pyyaml>=6.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.25,<0.12"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+# M0 스파이크는 독립 스크립트라 본 구현 규칙을 적용하지 않는다.
+# 문서의 코드 블록은 스케치이고, Markdown 에는 포매터를 돌리지 않는다 (한글 표 정렬 보호).
+# web/ 은 화면(Node) 프로젝트다. vendor 는 vue-smartview 배포본 사본이라 고치지 않는다
+extend-exclude = ["spikes", "*.md", "web"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "N", "UP", "B", "C4", "SIM", "RUF", "FURB", "DTZ",
+    "PT", "PIE", "PERF", "PTH", "RET", "BLE", "S",
+]
+ignore = [
+    # 일본어 전각 기호(（ ）、。)는 의도한 문자다
+    "RUF001", "RUF002", "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# 테스트의 가짜 키·assert 는 의도한 것이다
+"tests/**" = ["S101", "S105", "S106"]
+
+[tool.mypy]
+strict = true
+files = ["src", "tests", "scripts"]
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers"]

@@ -1,0 +1,14 @@
+# Subtitle Robot — 태그 codex: ChatGPT 구독용 Codex CLI (PROJECT-PLAN §28.1, WI-10.009d)
+# 이 파일은 subtitle-robot:latest(기본 Dockerfile) 위에 CLI 층만 더한다. latest 를 먼저 빌드한다 (scripts/build-images.sh 가 순서를 지킨다).
+#   다른 이름·레지스트리의 기본 이미지는 --build-arg BASE_IMAGE=… 로 준다. npm 은 설치에만 쓰고 지운다.
+ARG BASE_IMAGE=subtitle-robot:latest
+FROM ${BASE_IMAGE}
+# Codex 는 Node 실행 스크립트(codex.js)가 네이티브 실행 파일을 띄우므로 Node 가 남는다.
+#   버전: --build-arg CODEX_VERSION=0.x
+ARG CODEX_VERSION=latest
+RUN apk add --no-cache nodejs \
+    && apk add --no-cache --virtual .npm npm \
+    && npm install -g --no-audit --no-fund "@openai/codex@${CODEX_VERSION}" \
+    && npm cache clean --force \
+    && apk del .npm \
+    && codex --version

@@ -1,0 +1,22 @@
+{
+  // Node 에서 도는 파일: 설정·E2E
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"],
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    // E2E 가 화면 문구(src/i18n.ts)를 읽는다. 그 파일의 타입 import 경로
+    "paths": {
+      "vue-smartview": ["./vendor/vue-smartview/dist/types/index.d.ts"]
+    }
+  },
+  "include": ["vite.config.ts", "playwright.config.ts", "e2e/**/*.ts"]
+}

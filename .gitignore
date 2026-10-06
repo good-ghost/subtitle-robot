@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# 비밀 (견본 .env.example 은 커밋한다)
+.env
+.env.*
+!.env.example
+
+# M0 스파이크 결과: 자막 원문·번역문과 요청·응답 원문이 들어 있다
+spikes/m0/results/
+
+# 샘플 자막: 저작권이 있는 외부 자막이라 커밋하지 않는다 (spikes/m0/m0.toml 이 로컬 경로로 참조)
+docs/sample.*.srt
+docs/series/
+
+# 웹 화면 E2E 녹화·캡처 (web/e2e, 수십 MB). 결과 요약은 docs/phases/PHASE-PLAN-07.md
+docs/e2e/

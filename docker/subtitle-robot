@@ -1,0 +1,24 @@
+#!/bin/sh
+# PATH 앞에 둔 subtitle-robot 래퍼 (PROJECT-PLAN §21.9).
+# `podman exec <컨테이너> subtitle-robot ...` 는 root 로 실행되므로, 데몬과 같은 PUID:PGID 로 낮춰서
+# /data 에 root 소유 파일이 생기지 않게 한다. /config/config.toml 이 있으면 설정으로 쓴다.
+set -eu
+
+# 0.4.0 이전 환경 변수 이름도 받는다
+: "${SUBTITLE_ROBOT_CONFIG:=${SRT_TRANSLATE_CONFIG:-}}"
+: "${SUBTITLE_ROBOT_DATA:=${SRT_TRANSLATE_DATA:-}}"
+[ -n "$SUBTITLE_ROBOT_CONFIG" ] && export SUBTITLE_ROBOT_CONFIG || unset SUBTITLE_ROBOT_CONFIG
+[ -n "$SUBTITLE_ROBOT_DATA" ] && export SUBTITLE_ROBOT_DATA || unset SUBTITLE_ROBOT_DATA
+
+if [ -z "${SUBTITLE_ROBOT_CONFIG:-}" ] && [ -f /config/config.toml ]; then
+    export SUBTITLE_ROBOT_CONFIG=/config/config.toml
+fi
+
+if [ "$(id -u)" = "0" ]; then
+    case "${PUID:-}" in ''|*[!0-9]*) echo "PUID 는 숫자여야 한다: ${PUID:-}" >&2; exit 2 ;; esac
+    case "${PGID:-}" in ''|*[!0-9]*) echo "PGID 는 숫자여야 한다: ${PGID:-}" >&2; exit 2 ;; esac
+    export HOME="${SUBTITLE_ROBOT_DATA:-/data}"
+    exec setpriv --reuid="$PUID" --regid="$PGID" --clear-groups -- /app/.venv/bin/subtitle-robot "$@"
+fi
+
+exec /app/.venv/bin/subtitle-robot "$@"

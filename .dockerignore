@@ -1,0 +1,17 @@
+.git
+.venv
+**/__pycache__
+.mypy_cache
+.ruff_cache
+.pytest_cache
+.env
+.env.*
+docs
+spikes
+tests
+data
+config
+# 화면은 이미지 안에서 다시 설치·빌드한다
+web/node_modules
+web/dist
+web/test-results

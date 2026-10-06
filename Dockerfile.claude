@@ -1,0 +1,15 @@
+# Subtitle Robot — 태그 claude: Claude 구독용 Claude Code CLI (PROJECT-PLAN §28.1, WI-10.009d)
+# 이 파일은 subtitle-robot:latest(기본 Dockerfile) 위에 CLI 층만 더한다. latest 를 먼저 빌드한다 (scripts/build-images.sh 가 순서를 지킨다).
+#   다른 이름·레지스트리의 기본 이미지는 --build-arg BASE_IMAGE=… 로 준다. npm 은 설치에만 쓰고 지운다.
+ARG BASE_IMAGE=subtitle-robot:latest
+FROM ${BASE_IMAGE}
+# Claude Code 는 musl 네이티브 실행 파일이라 실행에 Node 가 필요 없다 (설치 뒤 지운다).
+#   musl 에서는 libgcc·libstdc++·시스템 ripgrep 을 쓴다 (설치 문서). 버전: --build-arg CLAUDE_CODE_VERSION=2.1.x
+ARG CLAUDE_CODE_VERSION=latest
+RUN apk add --no-cache libgcc libstdc++ ripgrep \
+    && apk add --no-cache --virtual .cli nodejs npm \
+    && npm install -g --no-audit --no-fund "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" \
+    && npm cache clean --force \
+    && apk del .cli \
+    && claude --version
+ENV USE_BUILTIN_RIPGREP=0

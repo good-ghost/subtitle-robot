@@ -1,0 +1,60 @@
+# M0 모델 스파이크 설정 (PROJECT-PLAN §16 M0)
+# 측정 항목은 기술 지표만 둔다: JSON 성공률, idx 보존율, 검증 error 발생률, 지연, 구조화 출력 지원 여부.
+
+out_dir = "spikes/m0/results"
+blocks = 200                # 언어별 샘플 블록 수 (빈 블록 제외)
+batch_blocks = 40           # 배치당 목표 블록 수. unit 경계에서만 자른다 (토큰 예산 배처는 M6)
+prev_context_blocks = 3     # 직전 배치 번역을 문맥으로 넘기는 블록 수
+max_line_chars = 22         # warning: 한국어 한 줄 길이 상한
+max_lines = 2               # warning: 블록당 줄 수 상한
+
+[unit]                      # §10.1 기본값
+max_blocks = 4
+max_duration = 10.0
+max_gap = 1.0
+
+[[samples]]
+lang = "en"
+path = "docs/sample.en.srt"   # 저장소 루트 기준 상대 경로 (저작권 있는 샘플이라 커밋하지 않는다)
+start = 100                 # 문장이 잘린 블록이 가장 많은 구간 (SDH, 화자 대시, <i> 포함)
+
+[[samples]]
+lang = "ja"
+path = "docs/sample.ja.srt"   # 저장소 루트 기준 상대 경로
+start = 3                   # 1~3은 중국어 자막 제작진 메모(ASS 태그, 시간 역순)라 제외
+
+[providers.nim]
+enabled = true
+base_url = "https://integrate.api.nvidia.com/v1"
+api_key_env = "NVIDIA_API_KEY"
+# 계획서의 후보(qwen3-next-80b ×2, deepseek-v4-flash)는 2026-10-01 기준 NIM 목록에 없어 사용자 결정으로 교체
+models = ["deepseek-ai/deepseek-v4.1-flash", "z-ai/glm-5.3"]
+# json_schema: response_format json_schema / guided_json: nvext.guided_json
+# json_object: response_format json_object / prompt: 제약 없이 프롬프트 지시만
+modes = ["json_schema", "guided_json", "json_object", "prompt"]
+rpm = 30
+timeout = 120
+temperature = 0.2
+max_tokens = 8192
+extra_body = {}
+
+[providers.nim.model_extra_body]
+# 모델별 추가 요청 필드. §6.2 Pass 2는 thinking 끔.
+# 2026-10-02 실측: 두 모델 모두 기본이 thinking 켜짐. deepseek은 끄면 "Good boy." 번역이 7 토큰·1.5초
+# (켜면 수천 reasoning 토큰). 구조화 출력 + thinking 켜짐이면 content=null, JSON이 reasoning_content로 옴
+"deepseek-ai/deepseek-v4.1-flash" = { chat_template_kwargs = { enable_thinking = false } }
+"z-ai/glm-5.3" = { chat_template_kwargs = { enable_thinking = false } }
+
+[providers.local]
+enabled = true
+base_url = "http://127.0.0.1:8080/v1"   # 별도 기동한 llama-server 주소. 비어 있으면 건너뛴다
+api_key_env = "LLAMA_API_KEY"
+models = ["Qwen3.8-27B-UD-Q4_K_XL"]
+modes = ["json_schema", "prompt"]
+rpm = 0
+timeout = 600
+temperature = 0.2
+max_tokens = 8192
+extra_body = { chat_template_kwargs = { enable_thinking = false } }   # §6.2 Pass 2는 thinking 끔
+
+[providers.local.model_extra_body]

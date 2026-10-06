@@ -1,0 +1,25 @@
+/* 셸·로그인 요소가 화면을 채우고 색은 vue-smartview 테마가 칠한다 (페이지에는 색을 두지 않는다) */
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+body[data-theme='dark'] {
+  color-scheme: dark;
+}
+body[data-theme='light'] {
+  color-scheme: light;
+}
+
+/* vue-smartview 공용 오버레이 호스트(<body> 끝에 붙는다)를 문서 흐름에서 뺀다.
+   호스트가 일반 흐름(inline-flex)에 놓여, 닫힌 오버레이(토스트·모달, 화면 높이)가 앱 아래에 화면 한 장만큼
+   빈 공간을 만들고 문서 스크롤바가 하나 더 생겼다 (운영 화면 Queue List, 2026-10-04).
+   화면에 고정한 호스트가 오버레이의 기준 상자가 되고, 빈 곳은 클릭이 아래 앱으로 지나가게 한다
+   (오버레이 내용·scrim 은 Vuetify 가 pointer-events: auto 로 받는다). 앱 바보다 위에 그린다.
+   근본 수정은 vue-smartview(VUE-X) 쪽 호스트 스타일이다 */
+smartview-overlay-host {
+  position: fixed;
+  inset: 0;
+  z-index: 2400;
+  pointer-events: none;
+}

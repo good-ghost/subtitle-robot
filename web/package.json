@@ -1,0 +1,35 @@
+{
+  "name": "subtitle-robot-web",
+  "version": "0.8.2",
+  "private": true,
+  "license": "MIT",
+  "description": "Subtitle Robot 감시 데몬의 웹 운영 화면 (PROJECT-PLAN §25). UI 는 vendor/vue-smartview (배포본 dist 사본)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json && vue-tsc --noEmit -p tsconfig.node.json",
+    "lint": "eslint --max-warnings 0 .",
+    "test": "vitest run",
+    "test:e2e": "npm run build && playwright test"
+  },
+  "dependencies": {
+    "vue": "^3.5.43"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "1.63.0",
+    "@types/node": "^22.20.4",
+    "@vitejs/plugin-vue": "^6.0.9",
+    "eslint": "^10.11.0",
+    "eslint-plugin-vue": "^10.11.1",
+    "globals": "^17.12.0",
+    "happy-dom": "^20.14.5",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.70.1",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.2",
+    "vue-eslint-parser": "^10.4.1",
+    "vue-tsc": "^3.3.11"
+  }
+}

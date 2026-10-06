@@ -1,0 +1,25 @@
+{
+  // 화면 소스(브라우저). e2e·설정 파일은 tsconfig.node.json 이 검사한다.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    // 타입 검사용 경로. 실제 import 는 vite.config.ts 의 alias 가 dist 파일로 바꾼다 (CONSUMING 4절)
+    "paths": {
+      "vue-smartview": ["./vendor/vue-smartview/dist/types/index.d.ts"],
+      "vue-smartview/elements/*": ["./vendor/vue-smartview/dist/types/entries/*.d.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}

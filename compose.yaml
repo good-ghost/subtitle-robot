@@ -1,0 +1,35 @@
+# 감시 데몬 (PROJECT-PLAN §21.9). Podman: podman compose up -d
+# llama-server 는 이 compose 에 넣지 않고 따로 띄운다 (config.toml [providers.local] base_url)
+services:
+  subtitle-robot:
+    build: .
+    image: subtitle-robot:latest
+    container_name: subtitle-robot
+    restart: unless-stopped
+    # 키·관리 계정·구독 로그인은 웹 화면(Settings)에서 넣는다 (/data/secrets.toml, 권한 600).
+    # 0.8.0 부터 환경 변수(.env)의 키는 읽지 않는다
+    environment:
+      - PUID=1000                      # 미디어 파일 소유자와 맞춘다
+      - PGID=1000
+      - TZ=Asia/Seoul                  # 로그·queue list 시각. Settings 웹 탭의 시간대가 있으면 그것이 앞선다
+    volumes:
+      - /srv/media:/media              # 감시 대상, 사이드카 출력 (mirror 모드면 :ro)
+      - ./data:/data                   # state.db, 작업공간, 보관본
+      - ./config:/config               # config.toml (웹 Settings 로 저장하려면 쓰기 가능. 보기만 하려면 :ro)
+    # 같은 호스트의 llama-server (README "감시 데몬과 컨테이너")
+    # - llama-server 가 0.0.0.0 에 열려 있으면: base_url = "http://host.docker.internal:8080/v1"
+    # - 127.0.0.1 에만 열려 있으면: 아래 extra_hosts 대신 network_mode: host, base_url = "http://127.0.0.1:8080/v1"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: ["watch"]
+    # 웹 화면. 처음 접속에서 관리 계정을 만든다. Settings 의 적용(재기동)은 restart 정책으로 다시 뜬다
+    ports:
+      - "8949:8949"
+    # 종료 요청을 받으면 진행 중인 LLM 요청 하나를 끝내고 멈춘다 (NIM 요청 제한 시간 300초)
+    stop_grace_period: 5m
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/subtitle-robot", "health"]
+      interval: 60s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
