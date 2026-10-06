@@ -50,7 +50,7 @@ Without a configuration file, the NIM defaults are used. To change them, copy [e
 | Anthropic Claude (`claude`) | API key or Claude subscription (Claude Code CLI), model | Messages API. The output schema is given as a tool and that tool call is forced to get JSON |
 | Google Gemini (`gemini`) | AI Studio API key, model | OpenAI-compatible endpoint. Gemini CLI sign-in for personal Google accounts ended on 2026-06-18, so it is not used as a subscription |
 
-- Keys (providers, TMDB) are entered in the **Keys** tab of the web Settings. They are stored in `secrets.toml` in the data folder (mode 600) and only the last 4 characters are shown. **Keys in environment variables are not read** (0.8.0, see "Upgrading to 0.8.0"). Only one provider is used and there is no fallback; to change it, edit the settings and restart.
+- Keys (providers, TMDB) are entered in the **Keys** tab of the web Settings. They are stored in `secrets.toml` in the data folder (mode 600) and only the last 4 characters are shown. **Keys in environment variables are not read**. Only one provider is used and there is no fallback; to change it, edit the settings and restart.
 - If you use only the CLI without the web console, create `secrets.toml` yourself in the data folder (`--data` → `SUBTITLE_ROBOT_DATA` → `/data`) and `chmod 600` it:
 
   ```toml
@@ -167,7 +167,7 @@ subtitle-robot series review ./MySeries --phrase-accept P0002       # confirm th
 
 Episode files can be SRT, ASS, SSA or VTT. An ASS episode produces `out/S01E01.ko.ass` (`exclude_styles` and `font` in `[ass]`).
 
-Each target language has its own glossary, repeated lines and work folder: for Korean `glossary.yaml`, `phrases.yaml`, `work/`; for other targets `glossary.<lang>.yaml`, `phrases.<lang>.yaml`, `work-<lang>/`, with output `out/S01E01.<lang>.srt`. Translating one workspace into several target languages keeps them apart. Spelling fields in glossary entries are `target`, `target_source` and `title_target` (the pre-0.6.0 names `ko`, `ko_source`, `title_ko` are still read).
+Each target language has its own glossary, repeated lines and work folder: for Korean `glossary.yaml`, `phrases.yaml`, `work/`; for other targets `glossary.<lang>.yaml`, `phrases.<lang>.yaml`, `work-<lang>/`, with output `out/S01E01.<lang>.srt`. Translating one workspace into several target languages keeps them apart. Spelling fields in glossary entries are `target`, `target_source` and `title_target`.
 
 ## Videos (MKV, MP4)
 
@@ -242,14 +242,6 @@ scripts/build-images.sh latest claude  # selected tags only
 - llama-server is not part of compose; start it separately. Two ways to use it on the same host:
   - If llama-server listens only on `127.0.0.1`, the container cannot reach it through `host.docker.internal` or `host.containers.internal` (confirmed with rootless Podman). Run the container on the host network (`--network host`, `network_mode: host` in compose) with `base_url = "http://127.0.0.1:8080/v1"`.
   - Or start llama-server with `--host 0.0.0.0 --api-key <key>` and use `base_url = "http://host.docker.internal:8080/v1"`, with the key as the llama-server key in the Keys tab.
-
-### Upgrading to 0.8.0
-
-- Keys are no longer read from environment variables (`.env`). After upgrading, create the admin account in the web console (first-run setup), enter the provider and TMDB keys again in Settings → Keys and Apply (restart). Then delete `.env` and the `env_file` in compose.
-- `SUBTITLE_ROBOT_WEB_TOKEN` sign-in is gone. The web console is on when `[web] enabled` is set, and you sign in with the admin account.
-- The default web port changed from 8090 to **8949**. Update the port mapping in compose or `podman run` (`8949:8949`). If `[web] port` is set in the config file, that value is still used.
-- `api_key_env` in `config.toml` is no longer read (a warning is logged if it is still there).
-- Before keys are entered, the daemon still shows the web console but does not start translation workers (log `translation workers are not started`).
 
 ## Web console
 
@@ -358,7 +350,6 @@ The documents below are in Korean.
 |---|---|
 | `guide/HowToCloud.md` | Cloud LLM account setup (Claude and ChatGPT subscriptions, Gemini API key) |
 | `guide/OVERVIEW.md` | Container image introduction and how to run it (Docker Hub overview; English: `OVERVIEW.en.md`) |
-| `spikes/m0/` | M0 measurement harness (independent of the implementation) |
 
 ## License
 

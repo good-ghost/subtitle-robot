@@ -50,7 +50,7 @@ uv tool install .            # 또는 명령으로 설치: subtitle-robot ...
 | Anthropic Claude (`claude`) | API 키 또는 Claude 구독(Claude Code CLI), 모델 | Messages API. 출력 스키마를 도구로 주고 그 호출을 강제해 JSON 을 받는다 |
 | Google Gemini (`gemini`) | AI Studio API 키, 모델 | OpenAI 호환 엔드포인트. 개인 Google 계정의 Gemini CLI 로그인은 2026-06-18 종료돼 구독으로는 쓰지 않는다 |
 
-- 키(공급자·TMDB)는 웹 Settings 의 **키** 탭에서 넣는다. 데이터 폴더의 `secrets.toml`(권한 600)에 저장되고 화면에는 끝 4자리만 보인다. **환경 변수의 키는 읽지 않는다** (0.8.0, 아래 "0.8.0 으로 올리기"). 공급자는 하나만 쓰고 폴백하지 않는다. 바꾸려면 설정을 고치고 재기동한다
+- 키(공급자·TMDB)는 웹 Settings 의 **키** 탭에서 넣는다. 데이터 폴더의 `secrets.toml`(권한 600)에 저장되고 화면에는 끝 4자리만 보인다. **환경 변수의 키는 읽지 않는다**. 공급자는 하나만 쓰고 폴백하지 않는다. 바꾸려면 설정을 고치고 재기동한다
 - 웹 화면 없이 CLI 만 쓰면 데이터 폴더(`--data` → `SUBTITLE_ROBOT_DATA` → `/data`)에 `secrets.toml`을 직접 만든다 (`chmod 600`):
 
   ```toml
@@ -167,7 +167,7 @@ subtitle-robot series review ./MySeries --phrase-accept P0002       # 지금 번
 
 에피소드 파일은 SRT·ASS·SSA·VTT 모두 된다. ASS 에피소드의 결과는 `out/S01E01.ko.ass`다 (`[ass]` 의 `exclude_styles`·`font`).
 
-대상 언어마다 용어집·반복 대사·작업 폴더가 따로 있다. 한국어는 `glossary.yaml`·`phrases.yaml`·`work/`, 다른 대상은 `glossary.<언어>.yaml`·`phrases.<언어>.yaml`·`work-<언어>/`이고 출력은 `out/S01E01.<언어>.srt`다. 한 작업공간에서 여러 대상 언어로 번역해도 서로 건드리지 않는다. 용어집 항목의 표기 필드는 `target`·`target_source`·`title_target`이다 (0.6.0 전 이름 `ko`·`ko_source`·`title_ko`도 읽는다).
+대상 언어마다 용어집·반복 대사·작업 폴더가 따로 있다. 한국어는 `glossary.yaml`·`phrases.yaml`·`work/`, 다른 대상은 `glossary.<언어>.yaml`·`phrases.<언어>.yaml`·`work-<언어>/`이고 출력은 `out/S01E01.<언어>.srt`다. 한 작업공간에서 여러 대상 언어로 번역해도 서로 건드리지 않는다. 용어집 항목의 표기 필드는 `target`·`target_source`·`title_target`이다.
 
 ## 동영상 (MKV·MP4)
 
@@ -243,14 +243,6 @@ scripts/build-images.sh latest claude  # 고른 태그만
 - llama-server는 compose에 넣지 않고 따로 띄운다. 같은 호스트에서 쓰는 방법은 둘이다
   - llama-server가 `127.0.0.1`에만 열려 있으면 컨테이너에서 `host.docker.internal`·`host.containers.internal`로 닿지 않는다 (rootless Podman에서 확인). 컨테이너를 호스트 네트워크로 띄우고(`--network host`, compose는 `network_mode: host`) `base_url = "http://127.0.0.1:8080/v1"`
   - 또는 llama-server를 `--host 0.0.0.0 --api-key <키>`로 띄우고 `base_url = "http://host.docker.internal:8080/v1"`, 키는 Settings 키 탭의 llama-server 키
-
-### 0.8.0 으로 올리기
-
-- 키를 환경 변수(`.env`)에서 읽지 않는다. 올린 뒤 웹 화면에서 관리 계정을 만들고(처음 설정), Settings → 키 탭에 공급자·TMDB 키를 다시 넣고 적용(재기동)한다. 그다음 `.env`와 compose 의 `env_file`을 지운다
-- `SUBTITLE_ROBOT_WEB_TOKEN` 로그인은 없어졌다. 웹 화면은 `[web] enabled`면 켜지고 관리 계정으로 로그인한다
-- 웹 화면 기본 포트가 8090 에서 **8949** 로 바뀌었다. compose·`podman run`의 포트 연결(`8949:8949`)을 고친다. 설정 파일에 `[web] port`를 적었으면 그 값을 그대로 쓴다
-- `config.toml`의 `api_key_env`는 읽지 않는다 (남아 있으면 경고만 한다)
-- 키를 넣기 전에도 데몬은 웹 화면을 띄우고, 번역 워커는 시작하지 않는다 (로그 `translation workers are not started`)
 
 ## 웹 화면
 
@@ -357,7 +349,6 @@ WantedBy=multi-user.target
 |---|---|
 | `guide/HowToCloud.md` | 클라우드 LLM 계정 설정 (Claude·ChatGPT 구독, Gemini API 키) |
 | `guide/OVERVIEW.md` | 컨테이너 이미지 소개·실행 방법 (Docker Hub 개요, 영어판 `OVERVIEW.en.md`) |
-| `spikes/m0/` | M0 측정 하네스 (본 구현과 독립) |
 
 ## 라이선스
 

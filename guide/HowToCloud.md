@@ -2,9 +2,9 @@
 
 Subtitle Robot 은 API 키 대신 **개인 구독 계정**(Claude Pro/Max, ChatGPT Plus/Pro)으로 번역할 수 있다. Google Gemini 는 **AI Studio API 키**로 쓴다: 개인 Google 계정의 Gemini CLI 로그인이 2026-06-18 에 종료돼 구독 방식으로는 쓸 수 없다 ([7장](#7-google-gemini-ai-studio-api-키)). 이 문서는 세 공급자를 설정하는 순서를 처음부터 끝까지 설명한다.
 
-- 대상 버전: 0.8.1 이상
+- 대상 버전: 0.8.2
 
-> **실측 상태 (WI-10.010)**: Claude 구독은 2026-10-05 실제 계정으로 영상 번역까지 확인했다 (Claude Code 2.1.289, `claude` 이미지). ChatGPT(Codex) 구독은 아직 실제 계정으로 시험하지 않았다. 아래 절차는 구현과 각 CLI 공식 문서를 기준으로 썼고, 가짜 CLI 로 자동 시험했다. 확인이 필요한 항목은 [10. 아직 확인하지 않은 것](#10-아직-확인하지-않은-것)에 모았다.
+> **시험 상태**: Claude 구독은 실제 계정으로 영상 번역까지 확인했다 (2026-10-05, Claude Code 2.1.289, `claude` 이미지). 내장 도구를 모두 끈 상태에서 구조화 출력이 정상으로 나오고, `setup-token` 토큰만으로 컨테이너 안에서 로그인된다. ChatGPT(Codex) 구독은 아직 실제 계정으로 시험하지 않았다. 아래 절차는 구현과 각 CLI 공식 문서를 기준으로 썼고, 가짜 CLI 로 자동 시험했다. 확인이 필요한 항목은 [10. 아직 확인하지 않은 것](#10-아직-확인하지-않은-것)에 모았다.
 
 ## 목차
 
@@ -231,7 +231,7 @@ Gemini 는 구독이 아니라 **Google AI Studio 에서 만든 API 키**로 쓴
 - Google 은 2026-06-18 부터 개인 Google 계정(무료·Google AI Pro·Ultra)의 **Gemini CLI Google 로그인**을 종료했다. 로그인하면 "This client is no longer supported for Gemini Code Assist for individuals. To continue using Gemini, please migrate to the Antigravity suite of products"가 나오고, 다시 설치하거나 다른 계정으로 해도 같다.
 - Gemini CLI 는 지금 유료 Gemini API 키나 기업용(Code Assist Standard·Enterprise)으로만 쓸 수 있다. API 키를 쓸 바에는 CLI 없이 API 를 직접 부르는 이 방식이 간단하다.
 - Google 이 안내하는 대체품 Antigravity CLI(`agy`)는 비대화형 실행을 지원한다고 밝혔지만, 터미널이 아닌 곳에서 출력이 사라지는 문제가 열려 있고 서버 로그인 방법이 확인되지 않아 이 도구는 아직 쓰지 않는다.
-- 그래서 Gemini CLI 를 넣은 `gemini` 이미지 태그는 없앴다 (2026-10-05). Gemini 는 `latest` 이미지와 API 키로 쓴다.
+- 그래서 Gemini CLI 를 넣은 이미지는 만들지 않는다. Gemini 는 `latest` 이미지와 API 키로 쓴다.
 
 ### 7.2 API 키 만들기
 
@@ -268,7 +268,7 @@ Gemini 는 구독이 아니라 **Google AI Studio 에서 만든 API 키**로 쓴
 
 - 404 는 시도 횟수만 쓰고 계속 실패한다. 로그의 `job … failed: LlmHttpError: HTTP 404`를 보면 모델을 바꾼다.
 - 503 은 공급자 불가로 보고 대기열을 60초씩 멈추며 다시 시도한다. 같은 요청이 3번 실패하면 작업이 실패로 넘어가고, 재시도 간격을 두고 다시 처리된다 (`[queue] max_attempts`, 기본 5). 계속되면 모델을 바꾼다.
-- 모델을 바꾼 뒤 **저장 → 적용 (재기동)**. 실패한 작업과 다음 시도를 기다리는 작업(오류가 보이는 대기)은 **대기열**의 재시도 아이콘(**지금 다시 시도**)이나 **모두 다시 시도**로 기다리지 않고 바로 다시 처리한다 (0.8.2).
+- 모델을 바꾼 뒤 **저장 → 적용 (재기동)**. 실패한 작업과 다음 시도를 기다리는 작업(오류가 보이는 대기)은 **대기열**의 재시도 아이콘(**지금 다시 시도**)이나 **모두 다시 시도**로 기다리지 않고 바로 다시 처리한다.
 
 ### 7.5 동작 방식 (참고)
 
@@ -315,17 +315,15 @@ uv run python scripts/llm_smoke.py --config <config.toml> --data <데이터 폴�
 
 ## 10. 아직 확인하지 않은 것
 
-실제 구독 계정으로 시험(WI-10.010)할 때 확인할 항목이다. 결과에 따라 이 문서와 구현을 고친다.
+실제 구독 계정으로 아직 확인하지 못한 항목이다. 확인되는 대로 이 문서와 구현을 고친다.
 
 | 항목 | 내용 |
 |---|---|
-| ~~Claude `--tools ""` + `--json-schema`~~ | **확인함 (2026-10-05)**: 내장 도구를 모두 끈 상태에서 구조화 출력이 정상으로 나왔다. `setup-token` 토큰만으로 컨테이너 안에서 로그인됐다 |
 | Codex 엄격 스키마 | 번역 스키마를 엄격 규칙으로 바꾼 것을 Codex 가 받아들이는지 |
 | Codex 샌드박스 | 컨테이너 안에서 `--sandbox read-only`가 오류 없이 도는지 |
 | Codex 기기 코드 | ChatGPT 계정 설정에 따라 기기 코드 로그인이 막히는지, 출력에서 주소·코드를 제대로 읽는지 |
 | 오류 문구 | 각 CLI 의 실제 만료·한도 메시지가 위 분류에 맞게 잡히는지 |
 | 모델 이름 | Codex 구독 플랜에서 쓸 수 있는 모델 이름 |
-| ~~기록되는 모델 이름~~ | **고침 (0.8.2)**: 완료 목록·리포트가 응답의 실제 모델을 `실제 [요청]`으로 보인다 (예: `claude-sonnet-… [sonnet (subscription)]`) |
 
 ## 11. 문제 해결
 
