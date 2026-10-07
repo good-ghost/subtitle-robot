@@ -170,14 +170,17 @@ def test_backlog_order_and_external_subtitles(env: Env) -> None:
     with_sub = env.video("movies/D.mkv", mtime=OLD + 300)
     (env.movies / "D.eng.srt").write_text("external", encoding="utf-8")
 
-    report = env.watcher().scan()
+    env.watcher().scan()
 
-    assert report.paths("has_external") == [with_sub]
-    assert [j.path.name for j in env.queued()] == ["B.mkv", "C.mkv", "A.mkv"]  # 최근 수정순
-    entry = env.ledger.find(with_sub)
-    assert entry is not None
-    assert (entry.verdict, entry.reason) == ("has_external", "백로그 외부 자막 D.eng.srt")
-    assert env.watcher().scan().outcomes == {}  # has_external 로 기록돼 다시 보지 않는다
+    # 외부 자막이 있어도 큐에 넣는다: 내장 텍스트 자막이 없으면 외부 자막으로 번역하므로
+    # 건너뛸지는 워커가 영상을 검사한 뒤 정한다 (WI-5.004b)
+    assert [j.path.name for j in env.queued()] == [
+        "D.mkv",
+        "B.mkv",
+        "C.mkv",
+        "A.mkv",
+    ]  # 최근 수정순
+    assert env.ledger.find(with_sub) is None
 
 
 def test_backlog_path_order(env: Env) -> None:

@@ -261,3 +261,64 @@ def test_other_providers_keep_retrying_daily_quota_bodies() -> None:
     with pytest.raises(ProviderUnavailableError):
         adapter.chat(REQUEST)
     assert len(recorder.requests) == RetryPolicy().max_attempts
+
+
+PREPAY_DEPLETED = [
+    {
+        "error": {
+            "code": 402,
+            "message": "Your prepayment credits are depleted. Please go to AI Studio to manage "
+            "your project and billing.",
+            "status": "RESOURCE_EXHAUSTED",
+        }
+    }
+]
+
+
+def test_gemini_credits_depleted_pauses_until_restart() -> None:
+    """402(선불 크레딧 소진)는 재시도·시도 횟수 없이 재기동할 때까지 멈춘다 (WI-10.009n)."""
+    fake = FakeTime()
+    recorder = Recorder(httpx.Response(402, json=PREPAY_DEPLETED))
+    adapter = _gemini_with_time(recorder, fake)
+
+    with pytest.raises(ProviderUnavailableError, match="결제·크레딧") as caught:
+        adapter.chat(REQUEST)
+    assert "prepayment credits are depleted" in str(caught.value)
+    assert len(recorder.requests) == 1  # 재시도하지 않는다
+
+    fake.now_s += 3 * 24 * 3600  # 며칠이 지나도 충전 여부를 알 수 없으므로 재기동까지 기다린다
+    assert adapter.health_check() is False
+    with pytest.raises(ProviderUnavailableError, match="결제·크레딧"):
+        adapter.chat(REQUEST)
+    assert len(recorder.requests) == 1  # /models 도 실제 요청도 보내지 않는다
+
+
+def test_openrouter_insufficient_credits_402_pauses() -> None:
+    recorder = Recorder(
+        httpx.Response(402, json={"error": {"code": 402, "message": "Insufficient credits"}})
+    )
+    adapter = _adapter("openrouter", recorder)
+
+    with pytest.raises(ProviderUnavailableError, match="결제·크레딧"):
+        adapter.chat(REQUEST)
+    assert len(recorder.requests) == 1
+    assert adapter.health_check() is False
+
+
+def test_openai_insufficient_quota_pauses_but_rate_limit_retries() -> None:
+    quota = httpx.Response(
+        429,
+        json={"error": {"message": "You exceeded your current quota", "type": "insufficient_quota",
+                        "code": "insufficient_quota"}},
+    )  # fmt: skip
+    billing = Recorder(quota)
+    with pytest.raises(ProviderUnavailableError, match="결제·크레딧"):
+        _adapter("openai", billing).chat(REQUEST)
+    assert len(billing.requests) == 1
+
+    rate = Recorder(
+        httpx.Response(429, json={"error": {"type": "requests", "code": "rate_limit_exceeded"}}),
+        _ok(),
+    )
+    assert _adapter("openai", rate).chat(REQUEST).content == '{"text": "x"}'
+    assert len(rate.requests) == 2

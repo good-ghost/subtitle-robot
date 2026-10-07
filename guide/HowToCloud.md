@@ -301,6 +301,7 @@ uv run python scripts/llm_smoke.py --config <config.toml> --data <데이터 폴�
 | 로그인 만료·거부 (`authentication`, `401`, `Please run /login` 등) | 대기열을 **멈춘다**. 로그 `… login failed or expired; sign in again in the web Settings and restart` | 해당 공급자를 **다시 로그인**하고 재기동한다. 멈춘 작업은 이어서 처리한다 |
 | 사용량 한도 (`usage limit`, `rate limit`, `429`, `quota` 등) | 풀리는 시각까지 대기열을 멈춘다. 시각을 모르면 15분 뒤 다시 시도한다. 로그 `… usage limit reached; pausing until <시각>` | 기다리면 자동으로 이어진다 |
 | 시간 초과·과부하 (`overloaded`, `5xx`) | 공급자 불가로 보고 상태를 확인하며 다시 시도한다 | 계속되면 요청 제한 시간을 늘린다 |
+| 결제·크레딧 문제 (API 키 공급자의 `HTTP 402`, OpenAI `insufficient_quota`) | 재시도하지 않고 대기열을 **멈춘다**. 로그 `… billing problem (credits depleted or no quota) …` | 공급자 콘솔에서 충전·결제를 확인한 뒤 재기동한다. 멈춘 작업은 이어서 처리한다 |
 | CLI 실행 파일 없음 | 공급자 불가 | 이미지 태그를 확인한다 |
 
 대기열이 멈춰 있는 동안 작업의 시도 횟수는 늘지 않는다.
@@ -337,6 +338,7 @@ uv run python scripts/llm_smoke.py --config <config.toml> --data <데이터 폴�
 | Gemini 요청이 429 로 자주 멈춘다 | 무료 등급 한도에 닿았다. 분당 요청 수를 모델 한도 이하(예: `5`)로 두거나 결제를 연결한다 |
 | Gemini `HTTP 404` "no longer available to new users" | 새 계정이 쓸 수 없는 모델이다 (목록에는 보인다). 다른 모델로 바꾼다 (7.4) |
 | Gemini `HTTP 503` "experiencing high demand" | Google 쪽 과부하다. 기다리거나 다른 모델로 바꾼다 (7.4) |
+| `HTTP 402` "prepayment credits are depleted" 등 결제·크레딧 오류 | 결제를 연결한 프로젝트의 선불 크레딧을 다 썼거나 결제가 막혔다 (OpenRouter 크레딧 부족 402, OpenAI `insufficient_quota`도 같다). 데몬은 재시도하지 않고 대기열을 멈춘다 (작업 시도 횟수는 쓰지 않는다). 공급자 콘솔(Gemini 는 https://ai.studio/projects)에서 충전·결제를 확인한 뒤 **적용 (재기동)**. 결제를 연결하지 않은 프로젝트의 키로 바꾸면 무료 등급으로 쓴다 |
 | "데몬에 Codex CLI 가 없습니다" | 기기 코드 로그인은 서버의 `codex`가 필요하다. `codex` 태그로 바꾼다 |
 | "코드가 만료됐습니다" | 15분 안에 코드를 넣지 못했다. 다시 시작한다 |
 | 로그인했는데 번역이 시작되지 않는다 | 재기동하지 않았다. **적용 (재기동)**. 로그에 `translation workers are not started`가 있으면 그 줄 앞의 이유를 본다 |

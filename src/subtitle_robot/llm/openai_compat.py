@@ -275,7 +275,7 @@ def http_error(response: httpx.Response, *, structured: bool) -> LlmHttpError:
     status = response.status_code
     snippet = response.text[:_ERROR_SNIPPET_CHARS]
     if status in (_HTTP_UNAUTHORIZED, _HTTP_FORBIDDEN):
-        return LlmAuthError(status, "인증 실패. API 키 환경 변수를 확인해야 한다")
+        return LlmAuthError(status, "인증 실패. 웹 Settings 의 키 탭에서 API 키를 확인한다")
     if structured and status in (_HTTP_BAD_REQUEST, _HTTP_UNPROCESSABLE):
         return StructuredOutputRejectedError(status, f"구조화 출력 요청 거부: {snippet}")
     return LlmHttpError(status, snippet)

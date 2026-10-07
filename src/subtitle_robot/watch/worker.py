@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import functools
 import logging
 import shutil
 import threading
@@ -18,6 +19,7 @@ from typing import Any
 
 from subtitle_robot.checkpoint import StaleCheckpointError
 from subtitle_robot.config import AppConfig
+from subtitle_robot.io.atomic import atomic_write_text
 from subtitle_robot.io.convert import ass_to_srt
 from subtitle_robot.io.encoding import EncodingDetectionError
 from subtitle_robot.io.langdetect import LanguageDetectionError
@@ -26,6 +28,7 @@ from subtitle_robot.llm.availability import GuardedAdapter, ProviderGuard
 from subtitle_robot.llm.base import LlmAdapter
 from subtitle_robot.llm.errors import LlmError
 from subtitle_robot.media.commands import CommandCancelled, MediaToolError, tool_runner
+from subtitle_robot.media.external import convert_sami_sidecars, external_sources
 from subtitle_robot.media.extract import (
     EXTRACT_TIMEOUT_S,
     ExtractedTrack,
@@ -225,6 +228,7 @@ class MediaWorker:
         # 중단된 이 작업이 기록 전에 쓴 사이드카 (재시작 뒤 이어서 처리할 때)
         partial = _partial_record(job)
         known = partial or (previous.sidecars if previous else None)
+        external: list[Path] = []
         if not job.force:
             if lookup.kind == "same" and previous is not None:
                 return JobOutcome("skipped", previous.verdict, f"이미 처리함 ({previous.verdict})")
@@ -236,21 +240,14 @@ class MediaWorker:
                 return JobOutcome(
                     "skipped", entry.verdict, f"{lookup.kind}: 사이드카 복원", outputs
                 )
-            skip_external = job.priority == "backlog" or job.detail.get("origin") == "media"
-            own = {str(p).casefold() for p in own_outputs(known)}
-            external = (
-                [p for p in external_subtitles(path) if str(p).casefold() not in own]
-                if skip_external
-                else []
-            )
-            if external:
-                self._ledger.record(
-                    path,
-                    verdict="has_external",
-                    reason=f"외부 자막 {external[0].name}",
-                    identity=lookup.content_id,
-                )
-                return JobOutcome("skipped", "has_external", f"외부 자막 {external[0].name}")
+            # 백로그·media 등록은 외부 자막이 있으면 건너뛴다. 다만 내장 텍스트 자막이 없으면
+            # 외부 자막으로 번역하므로 영상을 검사한 뒤 정한다 (WI-5.004b, 2026-10-07 사용자 결정)
+            skip_external = (
+                job.priority == "backlog" and self._config.watch.backlog_skip_if_external
+            ) or job.detail.get("origin") == "media"
+            if skip_external:
+                own = {str(p).casefold() for p in own_outputs(known)}
+                external = [p for p in external_subtitles(path) if str(p).casefold() not in own]
 
         target = self._target(path)
         writer = SidecarWriter(
@@ -259,19 +256,43 @@ class MediaWorker:
             previous=known,
         )
         probed = probe(path, run=self._probe_run)
+        if external and any(track.is_text for track in probed.tracks):
+            reason = f"외부 자막 {external[0].name}"
+            self._ledger.record(
+                path, verdict="has_external", reason=reason, identity=lookup.content_id
+            )
+            return JobOutcome("skipped", "has_external", reason)
         self._queue.advance(job.id, "extracting")
         origin = self._origin(target, path)
         extraction = self._extract(
             probed, target, origin, sidecar_dir=self._sidecar_dir(path), install=writer
         )
+        sidecar_dir = self._sidecar_dir(path)
+        converted = convert_sami_sidecars(
+            path,
+            external_subtitles(path),
+            sidecar_dir=sidecar_dir,
+            write=writer.write_text,
+            tool_outputs=[*own_outputs(known), *own_outputs(writer.record)],
+        )
         self._save_partial(job, writer)
+        own_now = own_outputs(writer.record)
+        own_names = {str(p).casefold() for p in [*own_now, *own_outputs(known)]}
+
+        def externals() -> list[ExtractedTrack]:
+            user = [p for p in external_subtitles(path) if str(p).casefold() not in own_names]
+            return external_sources(
+                path, [*user, *converted], self._work_dir(target), target=self._language
+            )
+
         decision = decide(
             probed,
             extraction,
             self._config.media,
             target=self._language,
             origin=origin,
-            tool_outputs=own_outputs(writer.record),
+            tool_outputs=own_now,
+            external=externals,
         )
         if decision.verdict != "translate" or decision.source is None:
             return self._settle(job, decision, writer.record, lookup.content_id, probed.segment_uid)
@@ -279,7 +300,6 @@ class MediaWorker:
         self._queue.advance(job.id, "translating")
         source = decision.source
         text, provider, model = self._translate(job, target, source)
-        sidecar_dir = self._sidecar_dir(path)
         stem = f"{path.stem}.{self._language}"
         if self._translation_input(source).suffix.lower() == ".ass":
             writer.write_text(sidecar_dir / f"{stem}.ass", text)
@@ -441,7 +461,12 @@ class MediaWorker:
                 logger.warning("prescan staging skipped %s: %s", other.path, exc)
                 continue
             decision = decide(
-                probed, extraction, self._config.media, target=self._language, origin=origin
+                probed,
+                extraction,
+                self._config.media,
+                target=self._language,
+                origin=origin,
+                external=functools.partial(self._staging_externals, other.path, other_target),
             )
             if decision.verdict == "translate" and decision.source is not None:
                 language = decision.source.language
@@ -450,6 +475,21 @@ class MediaWorker:
                     workspace, other_target.episode, self._translation_input(decision.source),
                     language,
                 )  # fmt: skip
+
+    def _staging_externals(self, video: Path, target: MediaTarget) -> list[ExtractedTrack]:
+        """prescan 묶음의 다른 화의 외부 자막 소스.
+
+        사이드카는 쓰지 않고 SAMI 는 작업 폴더에서 바꾼다.
+        """
+        work = self._work_dir(target)
+
+        def write(dest: Path, text: str) -> Path:
+            atomic_write_text(dest, text)
+            return dest
+
+        subtitles = external_subtitles(video)
+        converted = convert_sami_sidecars(video, subtitles, sidecar_dir=work / "sami", write=write)
+        return external_sources(video, [*subtitles, *converted], work, target=self._language)
 
     def _translation_input(self, source: ExtractedTrack) -> Path:
         """번역 입력: ASS 출력을 원하고 ASS 트랙이면 원본 ASS, 아니면 SRT 변환본 (WI-6.003)."""

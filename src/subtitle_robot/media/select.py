@@ -4,6 +4,8 @@
   (내장 트랙, `*.<대상>.*` 외부 자막, 언어 표시 없는 외부 자막의 내용)
 - 소스는 작품 원어(TMDB)의 텍스트 트랙, 없으면 텍스트 트랙 중 컨테이너 순서상 첫 번째
   (대상 언어·forced·Signs/Songs 제외, WI-8.006)
+- 내장 텍스트 트랙이 없으면 같은 규칙으로 외부 자막(SRT·ASS·VTT·SAMI 변환본)을 소스로 쓴다
+  (WI-5.004b)
 - 시리즈는 작품 폴더(시즌 폴더 위)로 식별해 `/data/series/<slug>/` 작업공간을 자동으로 만든다
 """
 
@@ -12,7 +14,7 @@ from __future__ import annotations
 import re
 import shutil
 import unicodedata
-from collections.abc import Collection
+from collections.abc import Callable, Collection, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
@@ -21,6 +23,7 @@ from subtitle_robot.config import MediaConfig
 from subtitle_robot.io.convert import SubtitleConversionError, ass_to_srt, vtt_to_srt
 from subtitle_robot.io.langdetect import detect_content_language
 from subtitle_robot.io.normalize import normalize_srt
+from subtitle_robot.io.sami import SAMI_SUFFIXES, SamiError, read_sami
 from subtitle_robot.lang.codes import (
     DEFAULT_TARGET,
     language_name,
@@ -39,8 +42,10 @@ WatchKind = Literal["movie", "series", "auto"]
 MediaKind = Literal["movie", "series"]
 
 # §21.7: 영상 파일명으로 시작하는 이 확장자의 파일이 외부 자막이다 (언어 무관)
-SUBTITLE_EXTENSIONS = frozenset({".srt", ".ass", ".ssa", ".vtt", ".sub", ".idx", ".sup"})
-_TEXT_SUBTITLE_EXTENSIONS = frozenset({".srt", ".ass", ".ssa", ".vtt"})
+SUBTITLE_EXTENSIONS = frozenset(
+    {".srt", ".ass", ".ssa", ".vtt", ".smi", ".sami", ".sub", ".idx", ".sup"}
+)
+_TEXT_SUBTITLE_EXTENSIONS = frozenset({".srt", ".ass", ".ssa", ".vtt", ".smi", ".sami"})
 # 언어가 아닌 사이드카 이름 표시. 이것만 있으면 언어 표시가 없는 외부 자막이다
 _FLAG_TOKENS = frozenset({"forced", "sdh", "cc", "hi", "default", "orig", "full", "signs", "songs"})
 # §21.5: 일부 대사만 있는 트랙 (번역해도 불완전한 자막)
@@ -145,7 +150,7 @@ def target_evidence(
                for token in tokens if token not in _FLAG_TOKENS):  # fmt: skip
             return f"외부 자막 {subtitle.name}"
         unmarked = all(token in _FLAG_TOKENS or token.isdigit() for token in tokens)
-        if unmarked and _content_language(subtitle) == target:
+        if unmarked and target in _content_languages(subtitle):
             return f"외부 자막 {subtitle.name} (내용 {label})"
     return None
 
@@ -155,10 +160,21 @@ def _language_label(code: str) -> str:
     return "한국어" if code == DEFAULT_TARGET else f"{language_name(code)}({code})"
 
 
+def _content_languages(subtitle: Path) -> set[str]:
+    """언어 표시 없는 외부 자막의 내용 언어. SAMI 는 클래스마다 (여러 언어). 못 읽으면 빈 집합."""
+    if subtitle.suffix.lower() in SAMI_SUFFIXES:
+        try:
+            return {t.language for t in read_sami(subtitle.read_bytes()) if t.language}
+        except (SamiError, ValueError):
+            return set()
+    language = _content_language(subtitle)
+    return {language} if language else set()
+
+
 def _content_language(subtitle: Path) -> str | None:
     """언어 표시 없는 외부 자막의 내용 언어. 읽을 수 없는 형식(이미지)이면 None."""
     suffix = subtitle.suffix.lower()
-    if suffix not in _TEXT_SUBTITLE_EXTENSIONS:
+    if suffix not in _TEXT_SUBTITLE_EXTENSIONS or suffix in SAMI_SUFFIXES:
         return None
     data = subtitle.read_bytes()
     try:
@@ -209,9 +225,22 @@ def select_source(
     원어를 모르거나 원어 트랙이 없으면 영어를 쓴다: 여러 언어가 든 릴리스는 첫 트랙이
     아랍어 등인 경우가 있고, 영어 자막은 대개 원본에서 직접 만든 번역이다.
     """
+    return pick_source(
+        extraction.extracted, original=original, target=target, skip_forced=skip_forced
+    )
+
+
+def pick_source(
+    sources: Sequence[ExtractedTrack],
+    *,
+    original: str | None = None,
+    target: str = DEFAULT_TARGET,
+    skip_forced: bool = True,
+) -> ExtractedTrack | None:
+    """후보 중 소스 (원어 → 영어 → 순서상 첫 후보). 내장 트랙과 외부 자막이 같은 규칙을 쓴다."""
     candidates = [
         item
-        for item in sorted(extraction.extracted, key=lambda item: item.track.order)
+        for item in sorted(sources, key=lambda item: item.track.order)
         if item.language != target and not (skip_forced and is_partial_track(item.track))
     ]
     for language in dict.fromkeys(code for code in (original, FALLBACK_SOURCE_LANGUAGE) if code):
@@ -219,6 +248,15 @@ def select_source(
         if preferred:
             return preferred[0]
     return candidates[0] if candidates else None
+
+
+def _how(language: str, original: str | None, noun: str) -> str:
+    """고른 근거: 원어 → 영어 → 첫 후보."""
+    if language == original:
+        return f"원어 {noun}"
+    if language == FALLBACK_SOURCE_LANGUAGE:
+        return f"영어 {noun}"
+    return f"첫 {noun}"
 
 
 def decide(
@@ -229,12 +267,15 @@ def decide(
     target: str = DEFAULT_TARGET,
     origin: OriginLanguage | None = None,
     tool_outputs: Collection[Path] = (),
+    external: Callable[[], Sequence[ExtractedTrack]] | None = None,
 ) -> Decision:
     """번역할지 정하고 소스를 고른다 (§21.5, §26.6). tool_outputs 는 이 도구의 이전 출력이다.
 
     Args:
         target: 번역 대상 언어.
         origin: 작품 원어 조회 결과 (TMDB). 없으면 영어 트랙, 그것도 없으면 첫 후보 트랙.
+        external: 외부 자막 소스 후보를 만드는 함수. 내장 텍스트 트랙이 없을 때만 부른다
+            (WI-5.004b: 내장 자막이 있으면 지금처럼 내장 트랙만 본다).
     """
     settings = settings or MediaConfig()
     evidence = target_evidence(
@@ -247,18 +288,13 @@ def decide(
     if evidence:
         return Decision("has_target", None, evidence)
     original = origin.language if origin is not None else None
+    origin_note = f"원어 {original or '모름'}" + (f", {origin.source}" if origin else "")
     source = select_source(
         extraction, original=original, target=target, skip_forced=settings.skip_forced
     )
     if source is not None:
         track = source.track
-        if source.language == original:
-            how = "원어 트랙"
-        elif source.language == FALLBACK_SOURCE_LANGUAGE:
-            how = "영어 트랙"
-        else:
-            how = "첫 트랙"
-        origin_note = f"원어 {original or '모름'}" + (f", {origin.source}" if origin else "")
+        how = _how(source.language, original, "트랙")
         return Decision(
             "translate",
             source,
@@ -266,6 +302,18 @@ def decide(
             f"({source.language}, {track.codec}, {track.name or '이름 없음'}) — "
             f"{how} ({origin_note})",
         )
+    if external is not None and not any(track.is_text for track in probe.tracks):
+        source = pick_source(
+            external(), original=original, target=target, skip_forced=settings.skip_forced
+        )
+        if source is not None:
+            how = _how(source.language, original, "외부 자막")
+            return Decision(
+                "translate",
+                source,
+                f"외부 자막 {source.track.name} ({source.language}) — 내장 텍스트 자막 없음, "
+                f"{how} ({origin_note})",
+            )
     if probe.tracks and all(track.is_image for track in probe.tracks):
         return Decision("image_only", None, "이미지 자막만 있음 (OCR 범위 밖)")
     if not probe.tracks:

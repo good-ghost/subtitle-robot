@@ -27,7 +27,13 @@ from subtitle_robot.llm.openai_compat import OpenAICompatClient
 logger = logging.getLogger(__name__)
 
 _HTTP_OK = 200
+_HTTP_PAYMENT_REQUIRED = 402
 _HTTP_TOO_MANY_REQUESTS = 429
+# 결제·크레딧 문제는 충전·결제 전에는 풀리지 않는다 (WI-10.009n): 재시도하지 않고 재기동할 때까지
+# 대기열을 멈춘다. Gemini 선불 크레딧 소진·OpenRouter 크레딧 부족은 402,
+# OpenAI 는 429 insufficient_quota
+_INSUFFICIENT_QUOTA = '"insufficient_quota"'
+_BILLING_SNIPPET_CHARS = 200
 # Gemini 하루 요청 한도(RPD)는 태평양 시간 자정에 초기화된다
 # (https://ai.google.dev/gemini-api/docs/rate-limits). 분당 한도의 429 는 지금처럼 재시도하고,
 # 하루 한도의 429 만 초기화 시각까지 대기열을 멈춘다 (WI-10.009m)
@@ -50,6 +56,13 @@ def next_gemini_quota_reset(now: datetime) -> datetime:
     local = now.astimezone(GEMINI_QUOTA_TZ)
     midnight = datetime.combine(local.date() + timedelta(days=1), time(), tzinfo=GEMINI_QUOTA_TZ)
     return midnight.astimezone(now.tzinfo) + _QUOTA_RESET_MARGIN
+
+
+def billing_problem(response: httpx.Response) -> bool:
+    """크레딧 소진·결제 필요 응답인지 (402, OpenAI 의 429 insufficient_quota)."""
+    if response.status_code == _HTTP_PAYMENT_REQUIRED:
+        return True
+    return response.status_code == _HTTP_TOO_MANY_REQUESTS and _INSUFFICIENT_QUOTA in response.text
 
 
 # OpenRouter 가 요청을 보낸 앱을 표시하는 헤더 (선택, https://openrouter.ai/docs)
@@ -114,9 +127,13 @@ class CloudCompatAdapter:
         self.estimator = TokenEstimator()
         # 하루 한도에 닿으면 풀리는 시각까지 요청을 보내지 않고 상태 확인을 실패로 돌린다
         self._blocked_until: datetime | None = None
+        # 결제·크레딧 문제 응답 (재기동할 때까지 요청을 보내지 않는다)
+        self._billing: str | None = None
         self._lock = threading.Lock()
 
     def _classify(self, response: httpx.Response) -> Outcome:
+        if billing_problem(response):
+            return self._block_for_billing(response)
         daily, reset = self._profile.daily_quota, self._profile.daily_reset
         if daily is None or reset is None or not daily(response):
             return default_classifier(response)
@@ -131,6 +148,30 @@ class CloudCompatAdapter:
                 until.astimezone().strftime("%Y-%m-%d %H:%M"),
             )
         return Outcome.UNAVAILABLE
+
+    def _block_for_billing(self, response: httpx.Response) -> Outcome:
+        snippet = " ".join(response.text.split())[:_BILLING_SNIPPET_CHARS]
+        with self._lock:
+            first = self._billing is None
+            self._billing = f"HTTP {response.status_code}: {snippet}"
+        if first:
+            logger.error(
+                "%s billing problem (credits depleted or no quota); top up or check billing "
+                "in the provider console, then Apply (restart): %s",
+                self.provider,
+                self._billing,
+            )
+        return Outcome.UNAVAILABLE
+
+    def _billing_error(self) -> ProviderUnavailableError | None:
+        with self._lock:
+            billing = self._billing
+        if billing is None:
+            return None
+        return ProviderUnavailableError(
+            f"{self.provider}: 결제·크레딧 문제. 공급자 콘솔에서 충전·결제를 확인한 뒤 "
+            f"적용(재기동)한다 ({billing})"
+        )
 
     def _blocked(self) -> datetime | None:
         with self._lock:
@@ -148,14 +189,20 @@ class CloudCompatAdapter:
 
         Raises:
             ProviderUnavailableError: 재시도 상한을 넘었거나, 하루 요청 한도에 닿아
-                초기화를 기다린다.
+                초기화를 기다리거나, 결제·크레딧 문제로 재기동을 기다린다.
         """
+        billing = self._billing_error()
+        if billing is not None:
+            raise billing
         until = self._blocked()
         if until is not None:
             raise self._blocked_error(until)
         try:
             result = self._client.chat(request)
         except ProviderUnavailableError as exc:
+            billing = self._billing_error()
+            if billing is not None:
+                raise billing from exc
             until = self._blocked()
             if until is not None:
                 raise self._blocked_error(until) from exc
@@ -181,8 +228,12 @@ class CloudCompatAdapter:
         return self.estimator.estimate(text)
 
     def health_check(self) -> bool:
-        """`/models` 가 200 이면 요청을 받을 수 있다고 본다. 하루 한도 초기화 전에는 거짓."""
-        if self._blocked() is not None:
+        """`/models` 가 200 이면 요청을 받을 수 있다고 본다.
+
+        하루 한도 초기화 전과, 결제·크레딧 문제 뒤(재기동 전)에는 거짓이다. `/models`는 크레딧이
+        없어도 200 이라 그 결과로는 충전 여부를 알 수 없다.
+        """
+        if self._billing is not None or self._blocked() is not None:
             return False
         try:
             return self._client.get("models").status_code == _HTTP_OK

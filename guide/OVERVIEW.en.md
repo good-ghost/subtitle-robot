@@ -6,6 +6,7 @@ It translates with an LLM. Before it translates, it reads the whole title and bu
 
 - **Watches folders.** It picks up new videos once copying has finished. It works alongside Sonarr, Radarr and download tools, and skips videos that already have a subtitle in the target language.
 - **Keeps timing.** The number, order and timestamps of subtitle blocks never change. SRT, ASS and VTT sources are supported.
+- **Translates external subtitles too.** Without embedded subtitles, an SRT, ASS or SAMI (.smi) file next to the video is used as the source. SAMI is also converted to `.srt` per language.
 - **Leaves videos untouched.** Video files are only read. If an external subtitle with the same name already exists, it is renamed to `*.orig.srt`, not overwritten.
 - **Web console** on port 8949, in Korean or English with light or dark themes:
   - dashboard
@@ -184,7 +185,7 @@ Provider notes:
   - The **Authentication** field appears only in the image that contains that CLI.
 - **Gemini free tier.**
   - Flash models allow roughly 10–15 requests per minute, 250k–1M tokens per minute and about 1,500 requests per day (they differ per model and Google changes them). The default **Requests per minute** of `5` stays below that.
-  - When the daily limit is reached, the daemon recognises it and pauses the queue until the limit resets at midnight Pacific time, then continues. Linking billing raises the limits considerably.
+  - When the daily limit is reached, the daemon recognises it and pauses the queue until the limit resets at midnight Pacific time, then continues. Linking billing raises the limits considerably. On a billing problem such as depleted prepaid credits (HTTP 402) the queue pauses; top up in AI Studio, then press **Apply (restart)**.
   - Some models in the list are not available to new accounts (HTTP 404). Others can be temporarily overloaded (HTTP 503). If that happens, pick another model; `gemini-3.5-flash` worked in testing.
 - **llama-server on the same host.** If it listens only on `127.0.0.1`, the container cannot reach it through `host.docker.internal`. In that case, either run the container with `--network host` and use `http://127.0.0.1:8080/v1`, or start llama-server with `--host 0.0.0.0 --api-key <key>`.
 - **Original language (optional).** A TMDB key in **Settings → Keys** lets the daemon look up each title's original language and translate from that track. Without it, the English track is used, otherwise the first text track.
@@ -205,6 +206,7 @@ podman run …                     # the same command as before
 |---|---|
 | `<video>.ko.srt` (target language) | The video has no subtitle in the target language |
 | `<video>.en.srt`, `<video>.ja.ass`, … | Text subtitle tracks extracted from the video (`[media] extract_langs`) |
+| `<video>.<lang>.srt` (from SAMI) | A SAMI (.smi) file is next to the video (one per language class, Korean included) |
 | `<video>.en.orig.srt` | An existing external subtitle that had the same name, kept by renaming |
 
 Image-based subtitles (PGS, VobSub) are not extracted. Daemon messages, verdict reasons and errors are written in Korean, even in the English console.

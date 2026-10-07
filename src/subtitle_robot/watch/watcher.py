@@ -32,7 +32,7 @@ from watchdog.observers.api import BaseObserver
 from watchdog.observers.polling import PollingObserver
 
 from subtitle_robot.config import LedgerConfig, WatchConfig
-from subtitle_robot.media.select import MediaTarget, WatchKind, classify_media, external_subtitles
+from subtitle_robot.media.select import MediaTarget, WatchKind, classify_media
 from subtitle_robot.watch.ledger import Ledger
 from subtitle_robot.watch.queue import JobPriority, JobQueue
 from subtitle_robot.watch.stability import StabilityTracker
@@ -50,7 +50,7 @@ DELETED_REASON = "파일 삭제됨"
 TICK_INTERVAL_S = 5.0
 Origin = Literal["new", "backlog"]
 # batched: 시리즈 배치 창이 끝날 때까지 큐에서 기다린다 (queue list 에 "대기 HH:MM까지")
-Outcome = Literal["queued", "batched", "known", "relocated", "has_external", "gone"]
+Outcome = Literal["queued", "batched", "known", "relocated", "gone"]
 
 
 @dataclass(frozen=True)
@@ -282,20 +282,8 @@ class MediaWatcher:
             return None
         root, kind = self.root_for(path) or (path.parent, "auto")
         target = classify_media(path, self._data_dir, kind=kind, watch_root=root)
-        if (
-            origin == "backlog"
-            and self._config.backlog_skip_if_external
-            and (external := external_subtitles(path))
-        ):
-            self._ledger.record(
-                path,
-                verdict="has_external",
-                reason=f"백로그 외부 자막 {external[0].name}",
-                identity=lookup.content_id,
-            )
-            logger.info("backlog skipped, external subtitle %s: %s", external[0].name, path)
-            report.outcomes[path] = "has_external"
-            return None
+        # 백로그의 외부 자막 건너뛰기(backlog_skip_if_external)는 워커가 영상을 검사한 뒤 정한다:
+        # 내장 텍스트 자막이 없으면 외부 자막으로 번역한다 (WI-5.004b, 2026-10-07 사용자 결정)
         admission = _Admission(path, target, origin, stat.st_size, stat.st_mtime)
         if not enqueue:
             return admission
