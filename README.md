@@ -182,10 +182,11 @@ subtitle-robot media "Movie (2020).mkv" --force         # 처리 기록·외부 
 subtitle-robot media revert "Movie (2020).mkv"          # 도구가 만든 자막 삭제, 이름 바꾼 자막 복원
 ```
 
-- **추출**: `[media] extract_langs`(기본 en·ja·ko)의 텍스트 트랙과 대상 언어·원어·영어 트랙, 소스 후보 첫 트랙을 사이드카로 뽑는다 (`Movie.en.srt`, `Movie.en.2.srt`, `Movie.en.forced.srt`, `Movie.en.sdh.srt`, `Movie.ja.ass`). 이미지 자막(PGS·VobSub)은 추출하지 않는다
+- **추출**: `[media] extract_langs`(기본 en·ja·ko)의 텍스트 트랙과 대상 언어·원어·영어 트랙, 소스 후보 첫 트랙을 사이드카로 뽑는다 (`Movie.en.srt`, `Movie.en.2.srt`, `Movie.en.forced.srt`, `Movie.en.sdh.srt`, `Movie.ja.ass`). 이미지 자막(PGS·VobSub)은 텍스트로 추출하지 않는다 (아래 OCR)
 - **번역 판정**: 대상 언어 내장 트랙, `*.<대상>.*` 외부 자막(`fr`·`fre`·`fra`·`french` 모두), 언어 표시 없는 외부 자막의 내용이 대상 언어면 번역하지 않는다 (`has_target`)
 - **외부 자막으로 번역**: 내장 텍스트 자막이 없으면(이미지 자막만 있어도) 영상 옆 외부 자막(SRT·ASS·SSA·VTT·SAMI)을 내장 트랙과 같은 순서(원어 → 영어 → 첫 후보)로 골라 번역한다. 언어는 파일 이름 표시(`Movie.en.srt`)로, 없으면 내용으로 정한다. 레거시 인코딩(CP949 등)도 읽는다. 내장 텍스트 자막이 있으면 지금처럼 내장 트랙만 쓴다
 - **SAMI(.smi)**: 언어 클래스(`KRCC`·`ENCC` 등)마다 언어를 감지해 `<영상>.<언어>.srt`로 바꿔 둔다 (한국어 포함, 미디어 서버 호환). 같은 이름의 파일이 이미 있으면 그대로 두고, 바꾼 파일은 도구 출력으로 기록돼 `media revert`로 지운다. 한국어가 든 SAMI 는 대상 언어 자막으로 본다
+- **이미지 자막 OCR (선택)**: 텍스트 자막(내장·외부)이 없고 이미지 자막만 있으면 `[media] ocr = true`일 때 Tesseract 로 읽어 번역한다. 후보는 MKV 의 PGS·VobSub 트랙과 영상 옆 `.sup`·`.idx`(+`.sub`) 파일이고, 같은 순서(원어 → 영어 → 첫 후보)로 하나만 읽는다. 읽은 결과는 `<영상>.<언어>.srt`로 남긴 뒤 번역한다. CPU 를 많이 써서 기본은 꺼져 있고, Tesseract 는 `ocr` 이미지 태그에만 있다 (아래 "이미지 태그"). 동시에 돌릴 Tesseract 수는 `ocr_workers`(0 = CPU 코어 수). 1080p 블루레이 자막 1,000장 기준 32코어에서 약 9초, 1코어에서 약 50초다. Settings 미디어 탭에서도 켠다
 - **소스 트랙**: 작품의 원어(TMDB 의 original language) 텍스트 트랙 → 없으면(원어를 모를 때 포함) **영어** 트랙 → 그것도 없으면 컨테이너 순서상 첫 텍스트 트랙이다 (대상 언어·forced·Signs/Songs 제외). 여러 언어가 든 릴리스는 첫 트랙이 아랍어 등인 경우가 있어 영어를 먼저 쓴다. 판정 사유에 고른 근거(`원어 트랙`·`영어 트랙`·`첫 트랙`)와 원어가 남는다
 - **원어 조회 (TMDB)**: TMDB 키(v3 API 키 또는 v4 읽기 토큰, Settings 키 탭)가 있으면 쓴다. 파일·폴더 이름의 `{tmdb-123}`·`{tvdb-123}`·`{imdb-tt123}`(Plex·Jellyfin 이름 규칙)을 먼저 보고, 없으면 제목·연도로 검색한다. 영화는 `제목 (연도)` 폴더(Radarr·Plex 규칙) 안이면 그 폴더 이름을, 아니면 파일 이름에서 연도·해상도·릴리스 표시 앞까지를 쓴다 (`Godzilla.vs.Kong-2021-1080p…` → Godzilla vs Kong, 2021). 결과는 `/data/tmdb-cache.json`에 두고 찾지 못한 작품은 하루 뒤 다시 묻는다. 키가 없거나 조회가 실패하면 원어를 모르는 것으로 보고 영어 트랙, 없으면 첫 텍스트 트랙을 쓴다 (`[tmdb]`)
 - **기존 외부 자막**: 같은 이름의 파일이 있으면 덮어쓰지 않고 `Movie.en.orig.srt`로 이름을 바꿔 보존한다 (`[sidecar]`)
@@ -217,22 +218,25 @@ podman exec subtitle-robot subtitle-robot queue list
 
 ### 이미지 태그
 
-모든 태그에 Python 패키지·mkvtoolnix·ffmpeg·웹 화면이 들어 있고, 구독 CLI 는 태그마다 하나만 넣는다 (CLI 실행 파일이 커서, 2026-10-04 측정). 배포하는 이미지는 `latest` 하나다. `claude`·`codex`는 이 저장소에서 직접 빌드한다 (`CONTAINER_ENGINE=docker scripts/build-images.sh claude`처럼 Docker 로도 된다).
+모든 태그에 Python 패키지·mkvtoolnix·ffmpeg·웹 화면이 들어 있고, 구독 CLI 는 태그마다 하나만 넣는다 (CLI 실행 파일이 커서, 2026-10-04 측정). 배포하는 이미지는 `latest` 하나다. `claude`·`codex`·`ocr`는 이 저장소에서 직접 빌드한다 (`CONTAINER_ENGINE=docker scripts/build-images.sh claude`처럼 Docker 로도 된다).
 
 | 태그 | Dockerfile | 쓰는 공급자 | 더 들어 있는 것 | 크기 |
 |---|---|---|---|---|
 | `latest` | `Dockerfile` | API 키(NIM·OpenAI·Claude·Gemini·OpenRouter), llama-server, Ollama | 없음 | 258MB |
 | `claude` | `Dockerfile.claude` | Claude 구독 (`[providers.claude] auth = "subscription"`) | Claude Code (Node 없음) | 507MB |
 | `codex` | `Dockerfile.codex` | ChatGPT 구독 (`[providers.openai] auth = "subscription"`) | Codex + Node | 767MB |
+| `ocr` | `Dockerfile.ocr` | `latest`와 같음 + 이미지 자막 OCR (`[media] ocr = true`) | Tesseract + 영어·일본어·한국어 데이터 | 343MB |
 
 ```bash
-scripts/build-images.sh                # 세 태그 모두
+scripts/build-images.sh                # latest·claude·codex (ocr 는 이름을 줄 때만)
 scripts/build-images.sh latest claude  # 고른 태그만
 # 직접 빌드: podman build --format docker -t subtitle-robot:latest . 다음 -f Dockerfile.claude|.codex -t subtitle-robot:<태그> .
 # CLI 버전 고정: BUILD_ARGS="--build-arg CLAUDE_CODE_VERSION=2.1.289" scripts/build-images.sh claude
+# OCR 언어 데이터 (Alpine tesseract-ocr-data-<이름>): BUILD_ARGS="--build-arg OCR_LANGS=eng,jpn,kor,fra" scripts/build-images.sh ocr
 ```
 
-- 기본 `Dockerfile`이 `latest`이고, `Dockerfile.claude`·`Dockerfile.codex`는 `latest` 위에 CLI 층만 쌓는다 (`--build-arg BASE_IMAGE=…`로 기본 이미지를 바꾼다). 스크립트는 CLI 태그를 빌드할 때 `latest`를 먼저 빌드한다
+- 기본 `Dockerfile`이 `latest`이고, `Dockerfile.claude`·`Dockerfile.codex`·`Dockerfile.ocr`는 `latest` 위에 층 하나만 쌓는다 (`--build-arg BASE_IMAGE=…`로 기본 이미지를 바꾼다). 스크립트는 이 태그를 빌드할 때 `latest`를 먼저 빌드한다
+- `ocr` 태그는 CPU 가 넉넉한 PC 용이다. 서버에서는 `latest`를 쓰고 `ocr`를 끈 채로 둔다 (`ocr`를 켜도 Tesseract 가 없으면 판정 사유에 남기고 넘어간다)
 - 공급자를 구독으로 바꾸면 그 공급자의 태그로 이미지를 바꿔 띄운다 (데이터·설정 볼륨은 그대로)
 
 - 데몬은 `PUID`/`PGID` 사용자로 돈다 (기본 1000). `/data`만 그 사용자 소유로 맞추고 미디어 볼륨은 건드리지 않는다. 미디어 폴더에 그 사용자가 쓸 수 있어야 사이드카를 만든다
@@ -344,7 +348,8 @@ WantedBy=multi-user.target
 
 - ASS 출력에서 문장 가운데의 override 태그(`{\i1}…{\i0}`)는 보존하지 못한다 (줄 앞 태그는 보존). SRT 안의 ASS override 태그도 줄 앞 것만 보존한다.
 - 원본 언어가 아닌 블록(예: 일본어 자막 속 중국어 주석)은 번역하지 않고 그대로 둔다.
-- 음성 인식, 이미지 자막 OCR은 범위 밖이다.
+- 음성 인식은 범위 밖이다.
+- 이미지 자막 OCR 은 MKV 의 PGS·VobSub 트랙과 외부 `.sup`·`.idx` 파일만 읽는다 (MP4 의 이미지 트랙·DVB 자막은 읽지 않는다). 글자 인식은 Tesseract 수준이라 장식 글꼴·기울인 글자·흐린 테두리에서 틀릴 수 있다. 읽은 `<영상>.<언어>.srt`를 고친 뒤 다시 처리하면 고친 파일로 번역한다.
 
 ## 문서
 

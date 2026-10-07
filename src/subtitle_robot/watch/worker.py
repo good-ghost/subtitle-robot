@@ -12,6 +12,7 @@ from __future__ import annotations
 import dataclasses
 import functools
 import logging
+import os
 import shutil
 import sqlite3
 import threading
@@ -38,6 +39,8 @@ from subtitle_robot.media.extract import (
     Installer,
     extract_subtitles,
 )
+from subtitle_robot.media.naming import plan_sidecar_names
+from subtitle_robot.media.ocr_source import image_candidates, ocr_source, pick_image
 from subtitle_robot.media.probe import PROBE_TIMEOUT_S, ProbeResult, probe
 from subtitle_robot.media.select import (
     FALLBACK_SOURCE_LANGUAGE,
@@ -57,6 +60,8 @@ from subtitle_robot.media.sidecar import (
     revert_sidecars,
 )
 from subtitle_robot.media.tmdb import OriginLanguage, OriginLanguageResolver
+from subtitle_robot.media.tracks import SubtitleTrack
+from subtitle_robot.ocr.tesseract import installed_languages, ocr_runner, tesseract_available
 from subtitle_robot.pipeline.report import model_display
 from subtitle_robot.pipeline.runner import RunOptions, WorkPaths, translate_file
 from subtitle_robot.run_config import base_run_options
@@ -136,6 +141,7 @@ class MediaWorker:
         self._extract_run = tool_runner(
             EXTRACT_TIMEOUT_S, low_priority=low_priority, should_stop=should_stop
         )
+        self._ocr_run = ocr_runner(low_priority=low_priority, should_stop=should_stop)
         self._roots = sorted(
             ((Path(item.path), item.kind) for item in config.watch.paths),
             key=lambda item: len(item[0].parts),
@@ -298,6 +304,12 @@ class MediaWorker:
             tool_outputs=own_now,
             external=externals,
         )
+        if decision.verdict in ("no_source", "image_only") and self._config.media.ocr:
+            user = [p for p in external_subtitles(path) if str(p).casefold() not in own_names]
+            decision = self._ocr(
+                probed, target, origin, decision, user, sidecar_dir=sidecar_dir, writer=writer
+            )
+            self._save_partial(job, writer)
         if decision.verdict != "translate" or decision.source is None:
             return self._settle(job, decision, writer.record, lookup.content_id, probed.segment_uid)
 
@@ -361,6 +373,58 @@ class MediaWorker:
             install=install,
             run=self._extract_run,
         )
+
+    def _ocr(
+        self,
+        probed: ProbeResult,
+        target: MediaTarget,
+        origin: OriginLanguage | None,
+        decision: Decision,
+        subtitles: list[Path],
+        *,
+        sidecar_dir: Path | None,
+        writer: SidecarWriter | None,
+    ) -> Decision:
+        """텍스트 자막이 없을 때 이미지 자막을 OCR 해 소스로 쓴다 (WI-5.004c).
+
+        읽은 결과는 `<영상>.<언어>.srt` 사이드카로 남긴다 (writer 가 없으면 남기지 않는다:
+        prescan 묶음의 다른 화). 읽지 못하면 원래 판정에 사유를 붙여 돌려준다.
+        """
+        candidates = image_candidates(probed, subtitles)
+        if not candidates:
+            return decision
+        if not tesseract_available():
+            return _noted(decision, "OCR 켜짐, tesseract 없음 (ocr 이미지 태그 필요)")
+        original = origin.language if origin is not None else None
+        media = self._config.media
+        candidate = pick_image(
+            candidates, original=original, target=self._language, skip_forced=media.skip_forced
+        )
+        if candidate is None:
+            return _noted(decision, "OCR 할 이미지 자막 없음 (대상 언어·forced 제외)")
+        result = ocr_source(
+            probed.path,
+            candidate,
+            self._work_dir(target),
+            original=original,
+            target=self._language,
+            installed=installed_languages(self._ocr_run),
+            extract_run=self._extract_run,
+            ocr_run=self._ocr_run,
+            workers=media.ocr_workers or os.cpu_count() or 1,
+        )
+        source = result.source
+        if source is None:
+            return _noted(decision, result.note)
+        if writer is not None and sidecar_dir is not None:
+            sidecar = _ocr_sidecar(probed.path, source.track, source.language, sidecar_dir)
+            source = dataclasses.replace(
+                source,
+                sidecar=writer.write_text(sidecar, source.translation_input.read_text("utf-8")),
+                planned=sidecar,
+            )
+        origin_note = f"원어 {original or '모름'}" + (f", {origin.source}" if origin else "")
+        return Decision("translate", source, f"{result.note} — 텍스트 자막 없음 ({origin_note})")
 
     def _save_partial(self, job: Job, writer: SidecarWriter) -> None:
         """지금까지 쓴 사이드카를 작업에 남긴다 (처리 기록 전에 중단돼도 다음에 알아보게)."""
@@ -487,6 +551,15 @@ class MediaWorker:
                 origin=origin,
                 external=functools.partial(self._staging_externals, other.path, other_target),
             )
+            if decision.verdict in ("no_source", "image_only") and self._config.media.ocr:
+                try:
+                    decision = self._ocr(
+                        probed, other_target, origin, decision, external_subtitles(other.path),
+                        sidecar_dir=None, writer=None,
+                    )  # fmt: skip
+                except MediaToolError as exc:
+                    logger.warning("prescan OCR skipped %s: %s", other.path, exc)
+                    continue
             if decision.verdict == "translate" and decision.source is not None:
                 language = decision.source.language
                 workspace = ensure_series_workspace(other_target, language, language=self._language)
@@ -590,13 +663,27 @@ def own_outputs(record: LedgerEntry | SidecarRecord | None) -> list[Path]:
 
 def _source_info(source: ExtractedTrack) -> dict[str, Any]:
     track = source.track
-    return {
+    info: dict[str, Any] = {
         "order": track.order,
         "track_id": track.track_id,
         "language": source.language,
         "codec": track.codec,
         "name": track.name,
     }
+    if track.is_image:
+        info["ocr"] = True
+    return info
+
+
+def _noted(decision: Decision, note: str) -> Decision:
+    """판정 사유에 OCR 결과를 붙인다."""
+    return dataclasses.replace(decision, reason=f"{decision.reason} — {note}")
+
+
+def _ocr_sidecar(video: Path, track: SubtitleTrack, language: str, folder: Path) -> Path:
+    """OCR 결과 사이드카 이름 (`<영상>.<언어>[.sdh][.forced].srt`)."""
+    srt_track = dataclasses.replace(track, kind="srt")
+    return plan_sidecar_names(video, [(srt_track, language)], "mkv", directory=folder)[track.order]
 
 
 def revert_media(ledger: Ledger, video: Path) -> tuple[list[Path], list[Path], list[str]]:

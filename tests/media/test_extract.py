@@ -48,7 +48,7 @@ def test_skips_image_and_other_languages(tmp_path: Path) -> None:
 
     result = extract_subtitles(probe, tmp_path / "work", run=_writing_runner(calls))
 
-    assert [s.reason for s in result.skipped] == ["이미지 자막 (OCR 범위 밖)", "언어 fr"]
+    assert [s.reason for s in result.skipped] == ["이미지 자막 (OCR 은 판정 뒤 따로)", "언어 fr"]
     assert [(e.language, e.sidecar) for e in result.extracted] == [
         ("en", tmp_path / "Movie.en.srt")
     ]

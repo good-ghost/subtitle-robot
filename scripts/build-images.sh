@@ -3,11 +3,13 @@
 #   latest: Dockerfile         — 구독 CLI 없음 (API 키·NIM·llama-server·Ollama)
 #   claude: Dockerfile.claude  — Claude Code (Claude 구독)
 #   codex:  Dockerfile.codex   — Codex (ChatGPT 구독)
+#   ocr:    Dockerfile.ocr     — 이미지 자막 OCR 용 Tesseract (성능 좋은 PC 용, 이름을 줄 때만 빌드)
 # Gemini 는 AI Studio API 키로 latest 에서 쓴다 (개인 계정 Gemini CLI 로그인 종료, WI-10.009f)
-# CLI 태그는 latest 위에 CLI 층만 쌓으므로, CLI 태그를 빌드할 때는 latest 를 먼저 빌드한다 (코드가 바뀌었으면 반영).
-# 사용: scripts/build-images.sh [latest|claude|codex ...]   (인자가 없으면 세 태그 모두)
+# CLI·ocr 태그는 latest 위에 층 하나만 쌓으므로, 이 태그를 빌드할 때는 latest 를 먼저 빌드한다 (코드가 바뀌었으면 반영).
+# 사용: scripts/build-images.sh [latest|claude|codex|ocr ...]   (인자가 없으면 latest·claude·codex)
 #   IMAGE_NAME(기본 subtitle-robot), CONTAINER_ENGINE(기본 podman)
-#   추가 빌드 인자는 BUILD_ARGS 로 넘긴다 (예: BUILD_ARGS="--build-arg CLAUDE_CODE_VERSION=2.1.289")
+#   추가 빌드 인자는 BUILD_ARGS 로 넘긴다 (예: BUILD_ARGS="--build-arg CLAUDE_CODE_VERSION=2.1.289",
+#   BUILD_ARGS="--build-arg OCR_LANGS=eng,jpn,kor,fra")
 set -euo pipefail
 cd "$(dirname "$0")/.."
 name=${IMAGE_NAME:-subtitle-robot}
@@ -15,14 +17,14 @@ engine=${CONTAINER_ENGINE:-podman}
 requested=("$@")
 [ ${#requested[@]} -eq 0 ] && requested=(latest claude codex)
 
-# latest 를 맨 앞에 한 번만 둔다 (CLI 태그가 있으면 꼭 넣는다)
+# latest 를 맨 앞에 한 번만 둔다 (CLI·ocr 태그가 있으면 꼭 넣는다)
 tags=()
 needs_base=false
 for tag in "${requested[@]}"; do
     case "$tag" in
         latest) ;;
-        claude | codex) needs_base=true ;;
-        *) echo "모르는 태그: $tag (latest|claude|codex)" >&2; exit 2 ;;
+        claude | codex | ocr) needs_base=true ;;
+        *) echo "모르는 태그: $tag (latest|claude|codex|ocr)" >&2; exit 2 ;;
     esac
 done
 for tag in "${requested[@]}"; do

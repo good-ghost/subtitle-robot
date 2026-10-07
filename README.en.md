@@ -182,10 +182,11 @@ subtitle-robot media "Movie (2020).mkv" --force         # again, even with a rec
 subtitle-robot media revert "Movie (2020).mkv"          # delete subtitles made by the tool, restore renamed ones
 ```
 
-- **Extraction**: text tracks in `[media] extract_langs` (default en, ja, ko), the target-language, original-language and English tracks, and the first source candidate are extracted as sidecars (`Movie.en.srt`, `Movie.en.2.srt`, `Movie.en.forced.srt`, `Movie.en.sdh.srt`, `Movie.ja.ass`). Image subtitles (PGS, VobSub) are not extracted.
+- **Extraction**: text tracks in `[media] extract_langs` (default en, ja, ko), the target-language, original-language and English tracks, and the first source candidate are extracted as sidecars (`Movie.en.srt`, `Movie.en.2.srt`, `Movie.en.forced.srt`, `Movie.en.sdh.srt`, `Movie.ja.ass`). Image subtitles (PGS, VobSub) are not extracted as text (see OCR below).
 - **Whether to translate**: nothing is translated if there is an embedded track in the target language, an external `*.<target>.*` subtitle (`fr`, `fre`, `fra` and `french` all count), or an external subtitle without a language tag whose content is in the target language (`has_target`).
 - **Translating from external subtitles**: without embedded text subtitles (image subtitles only counts as none), an external subtitle next to the video (SRT, ASS, SSA, VTT, SAMI) is chosen in the same order as tracks (original language → English → first candidate) and translated. The language comes from the file name tag (`Movie.en.srt`) or, failing that, the content. Legacy encodings (CP949 etc.) are read. With embedded text subtitles, only embedded tracks are used as before
 - **SAMI (.smi)**: each language class (`KRCC`, `ENCC`, …) is detected and converted to `<video>.<lang>.srt` (Korean included, for media servers). An existing file with that name is left alone; converted files are recorded as tool outputs and removed by `media revert`. A SAMI with Korean counts as a target-language subtitle
+- **OCR of image subtitles (optional)**: when there are no text subtitles (embedded or external) and only image subtitles, `[media] ocr = true` reads them with Tesseract and translates the result. Candidates are PGS and VobSub tracks in MKV and `.sup` or `.idx` (+`.sub`) files next to the video; one is chosen in the same order (original language → English → first candidate). The recognized text is saved as `<video>.<lang>.srt` and then translated. OCR is CPU heavy, so it is off by default, and Tesseract is only in the `ocr` image tag (see "Image tags"). `ocr_workers` sets the number of parallel Tesseract processes (0 = number of CPU cores). 1,000 images of 1080p Blu-ray subtitles take about 9 seconds on 32 cores and about 50 seconds on one core. It can also be turned on in the Media tab of Settings
 - **Source track**: the text track in the title's original language (TMDB original language) → if there is none (including when the original language is unknown), the **English** track → if there is none either, the first text track in container order (target language, forced and Signs/Songs tracks excluded). English comes before the first track because multi-language releases often start with, for example, an Arabic track. The verdict reason records why the track was chosen (original-language, English or first track) and the original language.
 - **Original language (TMDB)**: used when a TMDB key (v3 API key or v4 read token, Keys tab in Settings) is set. IDs in file or folder names (`{tmdb-123}`, `{tvdb-123}`, `{imdb-tt123}`, the Plex/Jellyfin naming) come first; otherwise it searches by title and year. A movie inside a `Title (Year)` folder (Radarr/Plex naming) is searched by the folder name; otherwise the file name is used up to the year, resolution or release tags (`Godzilla.vs.Kong-2021-1080p…` → Godzilla vs Kong, 2021). Results are kept in `/data/tmdb-cache.json`; titles not found are asked again after a day. Without a key, or if the lookup fails, the original language counts as unknown: the English track is used, otherwise the first text track (`[tmdb]`).
 - **Existing external subtitles**: a file with the same name is not overwritten; it is kept by renaming it to `Movie.en.orig.srt` (`[sidecar]`).
@@ -217,22 +218,25 @@ podman exec subtitle-robot subtitle-robot queue list
 
 ### Image tags
 
-Every tag contains the Python package, mkvtoolnix, ffmpeg and the web console; each subscription CLI goes into its own tag because the CLI binaries are large (measured 2026-10-04). Only the `latest` image is distributed; build `claude` and `codex` from this repository (Docker works too: `CONTAINER_ENGINE=docker scripts/build-images.sh claude`).
+Every tag contains the Python package, mkvtoolnix, ffmpeg and the web console; each subscription CLI goes into its own tag because the CLI binaries are large (measured 2026-10-04). Only the `latest` image is distributed; build `claude`, `codex` and `ocr` from this repository (Docker works too: `CONTAINER_ENGINE=docker scripts/build-images.sh claude`).
 
 | Tag | Dockerfile | Providers | Extra contents | Size |
 |---|---|---|---|---|
 | `latest` | `Dockerfile` | API keys (NIM, OpenAI, Claude, Gemini, OpenRouter), llama-server, Ollama | none | 258 MB |
 | `claude` | `Dockerfile.claude` | Claude subscription (`[providers.claude] auth = "subscription"`) | Claude Code (no Node) | 507 MB |
 | `codex` | `Dockerfile.codex` | ChatGPT subscription (`[providers.openai] auth = "subscription"`) | Codex + Node | 767 MB |
+| `ocr` | `Dockerfile.ocr` | same as `latest` + OCR of image subtitles (`[media] ocr = true`) | Tesseract + English, Japanese and Korean data | 343 MB |
 
 ```bash
-scripts/build-images.sh                # all three tags
+scripts/build-images.sh                # latest, claude, codex (ocr only when named)
 scripts/build-images.sh latest claude  # selected tags only
 # By hand: podman build --format docker -t subtitle-robot:latest . then -f Dockerfile.claude|.codex -t subtitle-robot:<tag> .
 # Pin a CLI version: BUILD_ARGS="--build-arg CLAUDE_CODE_VERSION=2.1.289" scripts/build-images.sh claude
+# OCR language data (Alpine tesseract-ocr-data-<name>): BUILD_ARGS="--build-arg OCR_LANGS=eng,jpn,kor,fra" scripts/build-images.sh ocr
 ```
 
-- `Dockerfile` builds `latest`; `Dockerfile.claude` and `Dockerfile.codex` add only the CLI layer on top of `latest` (change the base with `--build-arg BASE_IMAGE=…`). The script builds `latest` first when a CLI tag is requested.
+- `Dockerfile` builds `latest`; `Dockerfile.claude`, `Dockerfile.codex` and `Dockerfile.ocr` add a single layer on top of `latest` (change the base with `--build-arg BASE_IMAGE=…`). The script builds `latest` first when one of these tags is requested.
+- The `ocr` tag is meant for a PC with plenty of CPU. On a server, use `latest` and leave `ocr` off (with `ocr` on but no Tesseract, the verdict reason says so and processing moves on).
 - When you switch a provider to a subscription, run the image with that provider's tag (data and config volumes stay the same).
 - The daemon runs as the `PUID`/`PGID` user (default 1000). Only `/data` is chowned to that user; media volumes are not touched. That user must be able to write to media folders to create sidecars.
 - `subtitle-robot` started with `exec` also drops to the same user (so no root-owned files appear in `/data`).
@@ -343,7 +347,8 @@ WantedBy=multi-user.target
 
 - In ASS output, override tags in the middle of a line (`{\i1}…{\i0}`) are not preserved (tags at the start of a line are). In SRT, only ASS override tags at the start of a line are preserved.
 - Blocks not in the source language (for example Chinese notes in Japanese subtitles) are left untranslated.
-- Speech recognition and OCR of image subtitles are out of scope.
+- Speech recognition is out of scope.
+- OCR reads only PGS and VobSub tracks in MKV and external `.sup` and `.idx` files (image tracks in MP4 and DVB subtitles are not read). Recognition is as good as Tesseract, so decorative fonts, italics and blurred outlines can be misread. If you fix the generated `<video>.<lang>.srt` and process the video again, the fixed file is translated.
 
 ## Documents
 

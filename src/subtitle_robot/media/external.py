@@ -26,7 +26,7 @@ from subtitle_robot.media.tracks import SubtitleKind, SubtitleTrack
 
 logger = logging.getLogger(__name__)
 
-# 번역 소스로 읽을 수 있는 외부 자막 (이미지 자막 .sub·.idx·.sup 은 OCR 범위 밖)
+# 번역 소스로 읽을 수 있는 외부 자막 (이미지 자막 .sub·.idx·.sup 은 OCR, media.ocr_source)
 _KINDS: dict[str, SubtitleKind] = {".srt": "srt", ".ass": "ass", ".ssa": "ass", ".vtt": "webvtt"}
 # 외부 자막 후보의 순서: 내장 트랙 뒤에 둔다 (판정 사유·기록에서 구별)
 EXTERNAL_ORDER_BASE = 1000

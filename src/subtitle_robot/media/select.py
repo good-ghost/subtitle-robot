@@ -315,7 +315,8 @@ def decide(
                 f"{how} ({origin_note})",
             )
     if probe.tracks and all(track.is_image for track in probe.tracks):
-        return Decision("image_only", None, "이미지 자막만 있음 (OCR 범위 밖)")
+        note = "" if settings.ocr else " (OCR 꺼짐)"
+        return Decision("image_only", None, f"이미지 자막만 있음{note}")
     if not probe.tracks:
         return Decision("no_source", None, "자막 트랙 없음")
     return Decision(

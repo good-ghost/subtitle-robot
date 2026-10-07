@@ -173,6 +173,8 @@ export const TAB_FIELDS: Record<FieldTab, SettingField[]> = {
     },
     { path: 'media.skip_forced', kind: 'toggle', label: 'settings.media.skip_forced' },
     { path: 'media.target_image_counts', kind: 'toggle', label: 'settings.media.target_image_counts' },
+    { path: 'media.ocr', kind: 'toggle', label: 'settings.media.ocr', hint: 'settings.media.ocrHint' },
+    { path: 'media.ocr_workers', kind: 'number', label: 'settings.media.ocr_workers', hint: 'settings.media.ocr_workersHint' },
   ],
   queue: [
     { path: 'queue.workers', kind: 'number', label: 'settings.queue.workers' },

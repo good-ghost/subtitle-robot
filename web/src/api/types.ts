@@ -181,6 +181,8 @@ export interface SettingsValues {
     output_root: string
     series_window: number
     tool_priority: 'low' | 'normal'
+    ocr: boolean
+    ocr_workers: number
   }
   sidecar: { on_conflict: 'rename' | 'skip'; rename_style: 'orig' | 'backup' }
   ledger: { hash_bytes: number; restore_missing_outputs: boolean }

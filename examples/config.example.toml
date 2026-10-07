@@ -91,6 +91,8 @@ output_format = "srt"                # 번역 사이드카: srt | ass(ASS 트랙
 output_root = "/output"              # mirror 모드에서만 사용
 series_window = 600                  # 초, 시리즈 배치 창
 tool_priority = "low"                # 검사·추출 도구: low(ionice idle·nice 19, 다운로드 등에 양보) | normal
+ocr = false                          # 텍스트 자막이 없으면 이미지 자막(PGS·VobSub)을 Tesseract 로 읽어 번역 (ocr 이미지 태그, CPU 많이 씀)
+ocr_workers = 0                      # 동시에 돌릴 Tesseract 수 (0 = CPU 코어 수)
 
 [sidecar]
 on_conflict = "rename"               # rename(기존 파일을 .orig 로 보존) | skip

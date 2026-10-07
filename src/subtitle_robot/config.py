@@ -228,6 +228,11 @@ class MediaConfig(_Strict):
     # (다운로드 등 다른 작업에 디스크를 양보한다)
     tool_priority: Literal["low", "normal"] = "low"
     series_window: int = Field(default=600, ge=0)
+    # 이미지 자막(PGS·VobSub)만 있으면 Tesseract 로 읽어 번역한다 (WI-5.004c). CPU 를 많이 써서
+    # 기본은 끈다. `ocr` 이미지 태그(또는 tesseract 설치)가 있어야 한다
+    ocr: bool = False
+    # 동시에 돌릴 Tesseract 프로세스 수. 0 이면 CPU 코어 수
+    ocr_workers: int = Field(default=0, ge=0)
 
     @model_validator(mode="after")
     def _warn_ignored(self) -> MediaConfig:

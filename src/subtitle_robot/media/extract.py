@@ -182,7 +182,7 @@ def _skip_reason(
     track: SubtitleTrack, langs: Sequence[str], *, any_language: bool = False
 ) -> str | None:
     if track.is_image:
-        return "이미지 자막 (OCR 범위 밖)"
+        return "이미지 자막 (OCR 은 판정 뒤 따로)"
     if not track.is_text:
         return f"다루지 않는 코덱 {track.codec}"
     language = track.effective_language

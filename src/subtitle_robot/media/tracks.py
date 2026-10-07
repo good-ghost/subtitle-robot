@@ -90,7 +90,7 @@ class SubtitleTrack:
 
     @property
     def is_image(self) -> bool:
-        """이미지 자막 (추출·번역 안 함, OCR 범위 밖)."""
+        """이미지 자막 (텍스트로 추출하지 않는다. OCR 은 `media.ocr_source`, WI-5.004c)."""
         return self.kind == "image"
 
     @property

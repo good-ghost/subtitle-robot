@@ -52,7 +52,7 @@ EDITABLE: dict[str, tuple[str, ...]] = {
     ),
     "media": (
         "extract_langs", "skip_forced", "target_image_counts", "output_mode", "output_format",
-        "output_root", "series_window", "tool_priority",
+        "output_root", "series_window", "tool_priority", "ocr", "ocr_workers",
     ),
     "sidecar": ("on_conflict", "rename_style"),
     "ledger": ("hash_bytes", "restore_missing_outputs"),
