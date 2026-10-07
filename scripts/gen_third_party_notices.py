@@ -5,14 +5,17 @@
 - 웹 번들: `npm ls --omit=dev` 의 패키지(web/ 와 vue-smartview 원본 체크아웃)와
   node_modules 의 라이선스 파일
 - 이미지: `apk list --installed` 출력
-  (호스트에서 `podman run --rm --entrypoint apk <이미지> list --installed`)
+  (호스트에서 `podman run --rm --entrypoint apk <이미지> list --installed`).
+  `ocr` 이미지(0.8.5부터 배포, ocr 브랜치)의 목록을 `--ocr-apk-list`로 주면 latest 에 없는 패키지를
+  따로 싣는다
 
 vue-smartview 원본은 비공개라 공개 저장소만으로는 이 파일을 다시 만들 수 없다.
 관리자가 원본 체크아웃(`npm ci --omit=dev` 한 것)을 주어 실행한다. npm 은 출력에서 UUID 모양
 문자열을 가리므로 그런 이름이 든 경로(임시 폴더 등)에 체크아웃을 두지 않는다.
 
 사용 (개발 컨테이너, 저장소 루트):
-    uv run python scripts/gen_third_party_notices.py --smartview <원본 체크아웃> --apk-list <파일>
+    uv run python scripts/gen_third_party_notices.py --smartview <원본 체크아웃> --apk-list <파일> \
+        [--ocr-apk-list <파일>]
 """
 
 from __future__ import annotations
@@ -172,9 +175,13 @@ def _texts(components: list[Component]) -> list[str]:
 
 
 def render(
-    python: list[Component], web: list[Component], apk: list[tuple[str, str, str, str]]
+    python: list[Component],
+    web: list[Component],
+    apk: list[tuple[str, str, str, str]],
+    ocr_apk: list[tuple[str, str, str, str]] | None = None,
 ) -> str:
-    """고지 문서 본문."""
+    """고지 문서 본문. ocr_apk 는 `ocr` 이미지에만 있는 패키지다 (없으면 그 절을 싣지 않는다)."""
+    distributed = "`latest` and `ocr` images" if ocr_apk else "`latest` image"
     lines = [
         "# Third-party notices",
         "",
@@ -198,7 +205,7 @@ def render(
         "",
         "## 3. Container image",
         "",
-        "The project distributes only the `latest` image.",
+        f"The project distributes only the {distributed}.",
         "",
         "### `latest`",
         "",
@@ -213,6 +220,7 @@ def render(
         "|---|---|---|---|",
         *[f"| {n} | {v} | {lic} | {o} |" for n, v, lic, o in apk],
         "",
+        *_ocr_section(ocr_apk or []),
         "### Images you build yourself (`codex`, `claude`)",
         "",
         "These tags are not distributed. `Dockerfile.codex` and `Dockerfile.claude` install the "
@@ -231,15 +239,42 @@ def render(
     return "\n".join(lines).rstrip() + "\n"
 
 
+def _ocr_section(packages: list[tuple[str, str, str, str]]) -> list[str]:
+    """`ocr` 이미지: latest 위에 OCR 코드와 Tesseract 를 더한 것 (Dockerfile.ocr, ocr 브랜치)."""
+    if not packages:
+        return []
+    return [
+        "### `ocr`",
+        "",
+        "Everything in `latest`, the OCR code from the `ocr` branch and the Alpine packages below "
+        "(`Dockerfile.ocr`). Tesseract and its language data are licensed under the Apache License "
+        "2.0 (https://github.com/tesseract-ocr). The complete corresponding source code of the "
+        "LGPL packages (cairo, pango) is published by the Alpine Linux project as above.",
+        "",
+        "| Package | Version | License | Origin |",
+        "|---|---|---|---|",
+        *[f"| {n} | {v} | {lic} | {o} |" for n, v, lic, o in packages],
+        "",
+    ]
+
+
 def main() -> None:
     """고지 문서를 만든다."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--smartview", type=Path, required=True, help="vue-smartview 원본 체크아웃")
     parser.add_argument("--apk-list", type=Path, required=True, help="apk list --installed 출력")
+    parser.add_argument(
+        "--ocr-apk-list", type=Path, help="ocr 이미지의 apk list --installed 출력 (선택)"
+    )
     parser.add_argument("--web", type=Path, default=Path("web"))
     args = parser.parse_args()
     web = _unique(npm_components(args.web) + npm_components(args.smartview))
-    text = render(_unique(python_components()), web, apk_packages(args.apk_list))
+    apk = apk_packages(args.apk_list)
+    ocr_apk = None
+    if args.ocr_apk_list:
+        names = {name for name, *_ in apk}
+        ocr_apk = [row for row in apk_packages(args.ocr_apk_list) if row[0] not in names]
+    text = render(_unique(python_components()), web, apk, ocr_apk)
     OUTPUT.write_text(text, encoding="utf-8")
     print(f"wrote {OUTPUT} ({len(text.splitlines())} lines)")
 
