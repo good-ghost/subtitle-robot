@@ -103,7 +103,7 @@ Bundled into `web/vendor/vue-smartview/dist` and the built web console (`web/dis
 
 ## 3. Container image
 
-The project distributes only the `latest` image.
+The project distributes only the `latest` and `ocr` images.
 
 ### `latest`
 
@@ -275,6 +275,25 @@ The project distributes only the `latest` image.
 | zix-libs | 0.8.0-r0 | ISC | zix |
 | zlib | 1.3.2-r0 | Zlib | zlib |
 | zstd-libs | 1.5.7-r2 | BSD-3-Clause OR GPL-2.0-or-later | zstd |
+
+### `ocr`
+
+Everything in `latest`, the OCR code from the `ocr` branch and the Alpine packages below (`Dockerfile.ocr`). Tesseract and its language data are licensed under the Apache License 2.0 (https://github.com/tesseract-ocr). The complete corresponding source code of the LGPL packages (cairo, pango) is published by the Alpine Linux project as above.
+
+| Package | Version | License | Origin |
+|---|---|---|---|
+| cairo | 1.18.4-r1 | LGPL-2.1-or-later OR MPL-1.1 | cairo |
+| giflib | 5.2.2-r2 | MIT | giflib |
+| leptonica | 1.87.0-r0 | custom | leptonica |
+| libxft | 2.3.9-r0 | MIT | libxft |
+| libxrender | 0.9.12-r0 | MIT | libxrender |
+| pango | 1.57.1-r0 | LGPL-2.1-or-later | pango |
+| pixman | 0.46.4-r0 | MIT | pixman |
+| tesseract-ocr | 5.5.2-r0 | Apache-2.0 | tesseract-ocr |
+| tesseract-ocr-data-eng | 5.5.2-r0 | Apache-2.0 | tesseract-ocr |
+| tesseract-ocr-data-jpn | 5.5.2-r0 | Apache-2.0 | tesseract-ocr |
+| tesseract-ocr-data-kor | 5.5.2-r0 | Apache-2.0 | tesseract-ocr |
+| tiff | 4.7.1-r0 | libtiff | tiff |
 
 ### Images you build yourself (`codex`, `claude`)
 
