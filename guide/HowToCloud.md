@@ -2,7 +2,7 @@
 
 Subtitle Robot 은 API 키 대신 **개인 구독 계정**(Claude Pro/Max, ChatGPT Plus/Pro)으로 번역할 수 있다. Google Gemini 는 **AI Studio API 키**로 쓴다: 개인 Google 계정의 Gemini CLI 로그인이 2026-06-18 에 종료돼 구독 방식으로는 쓸 수 없다 ([7장](#7-google-gemini-ai-studio-api-키)). 이 문서는 세 공급자를 설정하는 순서를 처음부터 끝까지 설명한다.
 
-- 대상 버전: 0.8.2
+- 대상 버전: 0.8.3
 
 > **시험 상태**: Claude 구독은 실제 계정으로 영상 번역까지 확인했다 (2026-10-05, Claude Code 2.1.289, `claude` 이미지). 내장 도구를 모두 끈 상태에서 구조화 출력이 정상으로 나오고, `setup-token` 토큰만으로 컨테이너 안에서 로그인된다. ChatGPT(Codex) 구독은 아직 실제 계정으로 시험하지 않았다. 아래 절차는 구현과 각 CLI 공식 문서를 기준으로 썼고, 가짜 CLI 로 자동 시험했다. 확인이 필요한 항목은 [10. 아직 확인하지 않은 것](#10-아직-확인하지-않은-것)에 모았다.
 

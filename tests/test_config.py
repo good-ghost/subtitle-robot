@@ -43,7 +43,7 @@ def test_example_file_loads_with_plan_values() -> None:
 
 
 def test_defaults_without_file_select_gemini() -> None:
-    """설정 파일이 없으면 Gemini·gemini-3.5-flash·분당 5회 (WI-10.009l, 0.8.2 까지 NIM)."""
+    """설정 파일이 없으면 Gemini·gemini-3.5-flash·분당 5회 (WI-10.009l, 0.8.1 까지 NIM)."""
     config = load_config(None)
     name, gemini = config.active_provider()
 

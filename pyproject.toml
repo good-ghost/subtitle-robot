@@ -1,6 +1,6 @@
 [project]
 name = "subtitle-robot"
-version = "0.8.2"
+version = "0.8.3"
 description = "Subtitle Robot: 영어·일본어 자막(SRT·ASS·VTT·동영상 트랙)을 한국어로 번역하는 CLI·감시 데몬 (시리즈 전체 인명·고유명사 표기 일관성)"
 readme = "README.md"
 license = "MIT"

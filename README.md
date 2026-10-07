@@ -4,7 +4,7 @@
 
 **Subtitle Robot**(`subtitle-robot`)은 자막을 번역하는 Python CLI 도구이자 감시 데몬이다. 원본은 어떤 언어든 되고(영어·일본어는 전용 규칙), 대상 언어는 기본 한국어이며 설정으로 바꾼다. 번역 전에 작품 전체를 분석해 인명·고유명사 용어집을 만들고, **TV 시리즈 전체에서 같은 인물·용어를 같은 표기로** 쓰게 한다. LLM은 Google Gemini(기본), NVIDIA NIM, 로컬 llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI(ChatGPT), Anthropic Claude 중 하나를 쓴다.
 
-현재 버전은 0.8.2이다. 주요 기능:
+현재 버전은 0.8.3이다. 주요 기능:
 
 - 단일 작품과 TV 시리즈 번역: 시리즈 전체 용어집, 직전 화 요약(`story_so_far`), 반복 대사 메모리(`phrases`)
 - SRT·ASS·VTT 입력, 스타일을 보존하는 ASS 출력

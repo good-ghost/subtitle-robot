@@ -99,7 +99,7 @@ _PROVIDER_DEFAULTS: dict[str, dict[str, Any]] = {
         "timeout": CLOUD_DEFAULT_TIMEOUT_S,
     },
 }
-# 설정 파일에 [llm] provider 가 없을 때 쓰는 공급자 (0.8.2 까지 nim, 사용자 결정 2026-10-06)
+# 설정 파일에 [llm] provider 가 없을 때 쓰는 공급자 (0.8.1 까지 nim, 사용자 결정 2026-10-06)
 DEFAULT_PROVIDER: ProviderName = "gemini"
 
 
