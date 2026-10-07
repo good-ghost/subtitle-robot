@@ -127,6 +127,22 @@ def test_jobs_filter_and_finished_detail(api: WebEnv, media: Path) -> None:
     assert api.client.get("/api/jobs", params={"status": "nope"}).status_code == 422
 
 
+def test_translating_job_shows_progress(api: WebEnv, media: Path) -> None:
+    """번역 중인 작업만 진행(끝낸 블록 / 전체 블록)을 보인다 (WI-7.004c)."""
+    job = api.queue.enqueue(media / "movies" / "a.mkv")
+    api.queue.claim(job.id)
+    api.queue.advance(job.id, "translating")
+
+    def progress() -> object:
+        return api.client.get("/api/jobs").json()[0]["progress"]
+
+    assert progress() is None  # 분석 중 (아직 배치 전)
+    api.queue.update_detail(job.id, {"progress": {"done": 2222, "total": 3333}})
+    assert progress() == {"done": 2222, "total": 3333}
+    api.queue.complete(job.id, "done", {**api.queue.get(job.id).detail})
+    assert progress() is None  # 끝난 작업은 보이지 않는다
+
+
 def test_retry_and_clear_failed(api: WebEnv, media: Path) -> None:
     first = _failed_job(api, media / "movies" / "a.mkv")
     _failed_job(api, media / "movies" / "b.mkv")

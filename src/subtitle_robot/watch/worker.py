@@ -9,9 +9,11 @@
 
 from __future__ import annotations
 
+import dataclasses
 import functools
 import logging
 import shutil
+import sqlite3
 import threading
 from dataclasses import dataclass
 from pathlib import Path
@@ -71,6 +73,8 @@ MOVIE_OUTPUT_PREFIX = "out"
 EXTRACT_DIR = "extract"
 # 작업 detail 의 진행 중 사이드카 기록 키
 PARTIAL_KEY = "partial_sidecars"
+# 작업 detail 의 번역 진행 키 ({"done": 끝낸 블록, "total": 전체 블록}, WI-7.004c)
+PROGRESS_KEY = "progress"
 REVERTED_REASON = "media revert 로 되돌림 (다시 처리하려면 ledger forget)"
 
 
@@ -298,6 +302,8 @@ class MediaWorker:
             return self._settle(job, decision, writer.record, lookup.content_id, probed.segment_uid)
 
         self._queue.advance(job.id, "translating")
+        # 이전 시도의 진행은 지운다 (분석 중에는 숫자 없이 "번역 중")
+        self._queue.update_detail(job.id, {PROGRESS_KEY: None})
         source = decision.source
         text, provider, model = self._translate(job, target, source)
         stem = f"{path.stem}.{self._language}"
@@ -386,11 +392,14 @@ class MediaWorker:
     ) -> tuple[str, str | None, str | None]:
         """번역 결과 텍스트(입력이 ASS 면 ASS, 아니면 SRT)와 공급자·모델."""
         language = source.language
-        options = base_run_options(
-            self._config,
-            src=language,
-            resume="redo",
-            extra_params={"media_source": _source_info(source)},
+        options = dataclasses.replace(
+            base_run_options(
+                self._config,
+                src=language,
+                resume="redo",
+                extra_params={"media_source": _source_info(source)},
+            ),
+            progress=functools.partial(self._record_progress, job.id),
         )
         if target.kind == "series" and target.episode is not None:
             return self._translate_episode(job, target, target.episode, source, options)
@@ -408,6 +417,16 @@ class MediaWorker:
             report.provider,
             model_display(report),
         )
+
+    def _record_progress(self, job_id: int, done: int, total: int) -> None:
+        """번역 진행을 작업에 남긴다 (대기열 화면 "번역 중 (n/m)").
+
+        기록하지 못해도 번역은 계속한다.
+        """
+        try:
+            self._queue.update_detail(job_id, {PROGRESS_KEY: {"done": done, "total": total}})
+        except sqlite3.Error as exc:
+            logger.warning("job %s progress not recorded: %s", job_id, exc)
 
     def _translate_episode(
         self,

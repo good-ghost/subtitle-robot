@@ -1,6 +1,6 @@
 {
   "name": "subtitle-robot-web",
-  "version": "0.8.3",
+  "version": "0.8.5",
   "private": true,
   "license": "MIT",
   "description": "Subtitle Robot 감시 데몬의 웹 운영 화면 (PROJECT-PLAN §25). UI 는 vendor/vue-smartview (배포본 dist 사본)",

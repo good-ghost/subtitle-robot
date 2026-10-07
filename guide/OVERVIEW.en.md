@@ -16,7 +16,7 @@ It translates with an LLM. Before it translates, it reads the whole title and bu
   - settings (provider, model, API keys, account)
 - **LLM providers:** Google Gemini (default), NVIDIA NIM, a local llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI and Anthropic Claude. Claude and ChatGPT **subscription accounts** can be used through their official CLIs.
 
-Current version: **0.8.3**
+Current version: **0.8.5**
 
 ## Image tags
 
@@ -39,8 +39,8 @@ The image comes as a compressed archive. Load the `latest` archive:
 ```bash
 sha256sum -c SHA256SUMS                                   # optional: check the downloads
 
-podman load -i subtitle-robot-0.8.3-latest.tar.gz         # Podman
-docker load -i subtitle-robot-0.8.3-latest.tar.gz         # Docker
+podman load -i subtitle-robot-0.8.5-latest.tar.gz         # Podman
+docker load -i subtitle-robot-0.8.5-latest.tar.gz         # Docker
 # Loaded image: localhost/subtitle-robot:latest
 ```
 

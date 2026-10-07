@@ -55,6 +55,8 @@ export interface Job {
   verdict: string | null
   reason: string | null
   outputs: string[]
+  /** 번역 중일 때 끝낸 블록 / 전체 블록 (WI-7.004c) */
+  progress: { done: number; total: number } | null
   created_at: number
   updated_at: number
 }

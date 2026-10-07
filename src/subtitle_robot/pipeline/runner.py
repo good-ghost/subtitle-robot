@@ -67,6 +67,10 @@ logger = logging.getLogger(__name__)
 OutputFormat = Literal["auto", "srt", "ass"]
 
 
+# 번역 진행 (끝낸 블록, 전체 블록). 재사용·제외 블록은 처음부터 끝낸 것으로 센다 (WI-7.004c)
+ProgressCallback = Callable[[int, int], None]
+
+
 class OutputFormatError(ValueError):
     """요청한 출력 형식을 입력에서 만들 수 없다."""
 
@@ -98,6 +102,8 @@ class RunOptions:
         phrases: 반복 대사 메모리 (`<phrases>`, 시리즈만, §24.4).
         output_format: 출력 형식. auto 는 입력을 따른다 (ASS → `.ass`, 나머지 SRT, WI-6.002).
         ass_font: ASS 출력의 스타일 폰트를 바꿀 이름 (번역과 무관해 fingerprint 에 넣지 않는다).
+        progress: 배치가 끝날 때마다 (끝낸 블록, 전체 블록)을 받는 함수 (대기열 화면 진행률,
+            출력과 무관해 fingerprint 에 넣지 않는다).
     """
 
     src: SourceOption = "auto"
@@ -121,6 +127,7 @@ class RunOptions:
     ass_font: str | None = None
     story: str = ""
     phrases: tuple[PhraseHint, ...] = ()
+    progress: ProgressCallback | None = field(default=None, compare=False)
 
 
 @dataclass
@@ -279,6 +286,9 @@ def translate_file(
         max_output_tokens=options.max_output_tokens,
         max_blocks=options.max_batch_blocks,
     )
+    total = len(doc.blocks)
+    remaining = sum(len(unit.idxs) for unit in todo)
+    _report_progress(options, total - remaining, total)
     for batch in plan_batches(todo_plan, doc, budget, adapter.count_tokens):
         previous = [(idx, translations[idx]) for idx in sorted(translations) if idx < batch.idxs[0]]
 
@@ -302,7 +312,9 @@ def translate_file(
                 fingerprint=fingerprint(unit.idxs),
             )
             result.translated_units += 1
+            remaining -= len(unit.idxs)
         save_checkpoint(checkpoint, paths.checkpoint)
+        _report_progress(options, total - remaining, total)
 
     blocks = assemble_output(doc, translations, plan.excluded, builder.sources)
     if resolve_output_format(source, options.output_format, Path(output_path)) == "ass":
@@ -531,6 +543,12 @@ def _resume(
         raise StaleCheckpointError(_summarize(stale_details))
     result.reused_units = len(reused)
     return todo, reused
+
+
+def _report_progress(options: RunOptions, done: int, total: int) -> None:
+    """진행을 알린다 (받는 쪽이 자기 오류를 처리한다)."""
+    if options.progress is not None:
+        options.progress(done, total)
 
 
 def _prompt_versions(pass2: str, checkpoint: Checkpoint) -> dict[str, str]:

@@ -16,7 +16,7 @@
   - 설정 (공급자, 모델, API 키, 계정)
 - **LLM 공급자**: Google Gemini(기본), NVIDIA NIM, 로컬 llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI, Anthropic Claude. Claude·ChatGPT는 공식 CLI를 통해 **구독 계정**으로도 쓸 수 있다.
 
-현재 버전: **0.8.3**
+현재 버전: **0.8.5**
 
 ## 이미지 태그
 
@@ -39,8 +39,8 @@ scripts/build-images.sh claude     # Claude 구독 (Claude Code, 507MB). ChatGPT
 ```bash
 sha256sum -c SHA256SUMS                                   # 선택: 받은 파일 확인
 
-podman load -i subtitle-robot-0.8.3-latest.tar.gz         # Podman
-docker load -i subtitle-robot-0.8.3-latest.tar.gz         # Docker
+podman load -i subtitle-robot-0.8.5-latest.tar.gz         # Podman
+docker load -i subtitle-robot-0.8.5-latest.tar.gz         # Docker
 # Loaded image: localhost/subtitle-robot:latest
 ```
 

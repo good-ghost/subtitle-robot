@@ -69,6 +69,13 @@ class StatusOut(BaseModel):
     tmdb_active: bool
 
 
+class ProgressOut(BaseModel):
+    """번역 중인 작업의 진행 (끝낸 블록 / 전체 블록, WI-7.004c)."""
+
+    done: int
+    total: int
+
+
 class JobOut(BaseModel):
     """작업 하나. 판정·사유·출력은 끝난 작업의 `detail`에서 꺼낸다."""
 
@@ -85,6 +92,7 @@ class JobOut(BaseModel):
     verdict: str | None
     reason: str | None
     outputs: list[str]
+    progress: ProgressOut | None = None
     created_at: float
     updated_at: float
 
@@ -264,9 +272,21 @@ def _job_out(job: Job) -> JobOut:
         verdict=detail.get("verdict"),
         reason=detail.get("reason"),
         outputs=[str(item) for item in outputs],
+        progress=_progress(job),
         created_at=job.created_at,
         updated_at=job.updated_at,
     )
+
+
+def _progress(job: Job) -> ProgressOut | None:
+    """번역 중일 때만 진행을 보인다 (끝난 작업의 detail 에 남은 값은 쓰지 않는다)."""
+    raw = job.detail.get("progress")
+    if job.status != "translating" or not isinstance(raw, dict):
+        return None
+    done, total = raw.get("done"), raw.get("total")
+    if not isinstance(done, int) or not isinstance(total, int) or total <= 0:
+        return None
+    return ProgressOut(done=min(done, total), total=total)
 
 
 def _ledger_out(entry: LedgerEntry) -> LedgerOut:

@@ -6,7 +6,7 @@ import { api, ApiError } from '../api/client'
 import type { DaemonStatus, Job, JobStatus } from '../api/types'
 import { usePolling } from '../composables/polling'
 import { compactTime, errorText } from '../format'
-import { canRetry } from '../jobs'
+import { canRetry, statusValue } from '../jobs'
 import { t, type MessageKey } from '../i18n'
 import { showError, showSuccess } from '../notify'
 
@@ -64,7 +64,9 @@ const filters = computed(() => [
 const headers = computed(() => [
   { title: t('queue.col.name'), key: 'name', type: 'name', subKey: 'path', maxWidth: '260px' },
   {
-    title: t('queue.col.status'), key: 'status', type: 'status', width: '110px',
+    // 번역 중이면 `번역 중 (2222/3333)` 문구가 값이 되고 statusFallback 이 번역 중 모양을 준다 (WI-7.004c)
+    title: t('queue.col.status'), key: 'status', type: 'status', width: '170px', value: statusValue,
+    statusFallback: STATUS_COLORS.translating,
     statusMap: Object.fromEntries(
       (Object.keys(STATUS_COLORS) as JobStatus[]).map((s) => [s, { ...STATUS_COLORS[s], label: t(`status.${s}`) }]),
     ),

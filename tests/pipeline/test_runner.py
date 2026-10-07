@@ -204,3 +204,36 @@ def test_report_records_the_served_model_but_resume_keeps_the_request(tmp_path: 
     assert first.report.model.startswith("sonnet")
     assert again.requests == []
     assert second.report.model == first.report.model
+
+
+def test_progress_is_reported_per_batch(tmp_path: Path) -> None:
+    """대기열 화면의 "번역 중 (n/m)" (WI-7.004c): 배치마다 끝낸 블록 / 전체 블록."""
+    source, output, work = _paths(tmp_path)
+    calls: list[tuple[int, int]] = []
+    options = RunOptions(
+        max_batch_blocks=2, progress=lambda done, total: calls.append((done, total))
+    )
+
+    translate_file(source, output, work, FakeAdapter(_responder()), options)
+
+    assert {total for _, total in calls} == {6}
+    done = [d for d, _ in calls]
+    assert done == sorted(done)
+    assert done[0] < 6
+    assert done[-1] == 6
+    assert len(calls) >= 3  # 시작 + 배치 2개 이상
+
+    calls.clear()  # 다시 실행: 모두 재사용이라 처음부터 끝
+    translate_file(source, output, work, FakeAdapter(_responder()), options)
+    assert calls == [(6, 6)]
+
+
+def test_progress_callback_is_not_part_of_the_fingerprint(tmp_path: Path) -> None:
+    """진행 함수가 달라도 설정이 바뀐 것으로 보지 않는다 (resume 그대로)."""
+    source, output, work = _paths(tmp_path)
+    translate_file(source, output, work, FakeAdapter(_responder()))
+    adapter = FakeAdapter(_responder())
+
+    translate_file(source, output, work, adapter, RunOptions(progress=lambda _d, _t: None))
+
+    assert _pass2_requests(adapter) == 0
