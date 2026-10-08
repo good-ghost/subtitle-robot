@@ -1,18 +1,19 @@
-import { A as e, D as t, Dn as n, En as r, Et as i, Fn as a, G as o, Gn as s, Hn as c, Ht as l, In as u, It as d, Ln as f, Pn as p, S as m, T as h, Tn as g, Tt as _, Vt as v, Wn as y, Zn as b, ar as x, bn as S, bt as C, c as w, cn as T, cr as E, dr as D, er as O, fn as k, g as A, gn as j, h as ee, ht as M, l as te, m as ne, mn as N, nr as P, on as re, pn as F, ur as I, vn as ie, vt as L, yn as R } from "../chunks/vuetify-DJ4bsPds.js";
-import { t as ae } from "../chunks/animation-BZ-bP6So.js";
-import { a as z, c as B, l as oe, n as V, s as se, t as ce } from "../chunks/define-BG7hCbXs.js";
-import { i as le, n as ue, r as de, t as fe } from "../chunks/scopeId-BKRO7vOB.js";
-import { t as pe } from "../chunks/hostValue-Q4jXLLiG.js";
-import { n as me, t as he } from "../chunks/ssrBoot-BMVtmVZ_.js";
-import { n as ge, t as _e } from "../chunks/density-Dh8nVFPw.js";
-import { t as ve } from "../chunks/transition-Dl3j6lCH.js";
-import { t as ye } from "../chunks/forwardRefs-BcUquh0G.js";
-import { n as be, t as H } from "../chunks/VBtn-D2PPPp70.js";
-import { i as xe, r as Se, t as Ce } from "../chunks/group-0QbvFWt3.js";
-import { r as we, t as U } from "../chunks/VSlideGroup-Ckz2iRR7.js";
+import { A as e, Bn as t, D as n, En as r, Et as i, G as a, Hn as o, Ht as s, It as c, Jn as l, Mn as u, Nn as d, S as f, Sn as p, T as m, Tn as h, Tt as g, Un as _, Vn as ee, Vt as v, Xn as y, Zn as b, _r as x, bn as S, bt as C, c as w, cr as T, dr as E, fn as D, g as O, gr as k, h as te, ht as A, jn as j, l as ne, m as re, mn as M, mr as N, or as P, rr as F, vn as I, vt as L, wn as ie, yn as R } from "../chunks/vuetify-C39-WP9g.js";
+import { t as ae } from "../chunks/animation-B_ZSS1p4.js";
+import { a as z, c as B, l as V, n as H, s as oe, t as se } from "../chunks/define-BovISfN4.js";
+import { i as ce, n as le, r as ue, t as de } from "../chunks/scopeId-3i3jaqkB.js";
+import { t as fe } from "../chunks/hostValue-CjEvr2gM.js";
+import { t as pe } from "../chunks/VDivider-CA-IOlps.js";
+import { n as me, t as he } from "../chunks/density-9WZgplEH.js";
+import { t as ge } from "../chunks/ssrBoot-SlAOwzRN.js";
+import { t as _e } from "../chunks/transition-Cv515_M1.js";
+import { t as ve } from "../chunks/forwardRefs-mn8VYMvs.js";
+import { n as ye, t as U } from "../chunks/VBtn-CV2MWNTN.js";
+import { i as be, r as xe, t as Se } from "../chunks/group-BD9eNBcR.js";
+import { r as Ce, t as W } from "../chunks/VSlideGroup-Cw8ThMHD.js";
 //#region src/runtime/tabs.ts
-function Te(e, t, n) {
-	let { current: r, commit: i } = pe("tab", t), a = k(() => {
+function we(e, t, n) {
+	let { current: r, commit: i } = fe("tab", t), a = I(() => {
 		let t = (Array.isArray(e()) ? e() : []).filter((e) => !e.disabled);
 		return t.some((e) => e.value === r.value) ? r.value : t[0]?.value ?? "";
 	});
@@ -26,7 +27,7 @@ function Te(e, t, n) {
 }
 //#endregion
 //#region node_modules/vuetify/lib/components/VTabs/shared.js
-var W = Symbol.for("vuetify:v-tabs"), G = e({
+var G = Symbol.for("vuetify:v-tabs"), K = e({
 	fixed: Boolean,
 	sliderColor: String,
 	sliderTransition: String,
@@ -37,7 +38,7 @@ var W = Symbol.for("vuetify:v-tabs"), G = e({
 		type: String,
 		default: "horizontal"
 	},
-	...L(be({
+	...L(ye({
 		selectedClass: "v-tab--selected",
 		variant: "text"
 	}), [
@@ -48,19 +49,19 @@ var W = Symbol.for("vuetify:v-tabs"), G = e({
 		"position",
 		"symbol"
 	])
-}, "VTab"), K = h()({
+}, "VTab"), q = m()({
 	name: "VTab",
-	props: G(),
+	props: K(),
 	setup(e, { slots: t, attrs: n }) {
-		let { textColorClasses: i, textColorStyles: a } = se(() => e.sliderColor), { backgroundColorClasses: o, backgroundColorStyles: s } = z(() => e.sliderColor), c = b(), l = b(), u = k(() => e.direction === "horizontal"), d = k(() => c.value?.group?.isSelected.value ?? !1);
-		function f(e, t) {
+		let { textColorClasses: r, textColorStyles: i } = oe(() => e.sliderColor), { backgroundColorClasses: a, backgroundColorStyles: o } = z(() => e.sliderColor), s = F(), c = F(), l = I(() => e.direction === "horizontal"), d = I(() => s.value?.group?.isSelected.value ?? !1);
+		function p(e, t) {
 			return { opacity: [0, 1] };
 		}
-		function p(t, n) {
+		function m(t, n) {
 			return e.direction === "vertical" ? { transform: ["scaleY(0)", "scaleY(1)"] } : { transform: ["scaleX(0)", "scaleX(1)"] };
 		}
-		function h(e, t) {
-			let n = t.getBoundingClientRect(), r = e.getBoundingClientRect(), i = u.value ? "x" : "y", a = u.value ? "X" : "Y", o = u.value ? "right" : "bottom", s = u.value ? "width" : "height", c = n[i] > r[i] ? n[o] - r[o] : n[i] - r[i], l = Math.sign(c) > 0 ? u.value ? "right" : "bottom" : Math.sign(c) < 0 ? u.value ? "left" : "top" : "center", d = (Math.abs(c) + (Math.sign(c) < 0 ? n[s] : r[s])) / Math.max(n[s], r[s]) || 0, f = n[s] / r[s] || 0, p = 1.5;
+		function g(e, t) {
+			let n = t.getBoundingClientRect(), r = e.getBoundingClientRect(), i = l.value ? "x" : "y", a = l.value ? "X" : "Y", o = l.value ? "right" : "bottom", s = l.value ? "width" : "height", c = n[i] > r[i] ? n[o] - r[o] : n[i] - r[i], u = Math.sign(c) > 0 ? l.value ? "right" : "bottom" : Math.sign(c) < 0 ? l.value ? "left" : "top" : "center", d = (Math.abs(c) + (Math.sign(c) < 0 ? n[s] : r[s])) / Math.max(n[s], r[s]) || 0, f = n[s] / r[s] || 0, p = 1.5;
 			return {
 				transform: [
 					`translate${a}(${c}px) scale${a}(${f})`,
@@ -71,18 +72,18 @@ var W = Symbol.for("vuetify:v-tabs"), G = e({
 					,
 					,
 					,
-				].fill(l)
+				].fill(u)
 			};
 		}
-		function g({ value: t }) {
+		function _({ value: t }) {
 			if (t) {
-				let t = c.value?.$el.parentElement?.querySelector(".v-tab--selected .v-tab__slider"), n = l.value;
+				let t = s.value?.$el.parentElement?.querySelector(".v-tab--selected .v-tab__slider"), n = c.value;
 				if (!t || !n) return;
 				let r = getComputedStyle(t).backgroundColor, i = {
-					fade: f,
-					grow: p,
-					shift: h
-				}[e.sliderTransition ?? "shift"] ?? h, a = Number(e.sliderTransitionDuration) || ({
+					fade: p,
+					grow: m,
+					shift: g
+				}[e.sliderTransition ?? "shift"] ?? g, a = Number(e.sliderTransitionDuration) || ({
 					fade: 400,
 					grow: 350,
 					shift: 225
@@ -92,48 +93,48 @@ var W = Symbol.for("vuetify:v-tabs"), G = e({
 					...i(n, t)
 				}, {
 					duration: a,
-					easing: m
+					easing: f
 				});
 			}
 		}
 		return B(() => {
-			let u = H.filterProps(e);
-			return R(H, r({
-				symbol: W,
-				ref: c,
+			let l = U.filterProps(e);
+			return h(U, u({
+				symbol: G,
+				ref: s,
 				class: [
 					"v-tab",
 					e.class,
-					d.value && e.inset ? o.value : []
+					d.value && e.inset ? a.value : []
 				],
 				style: [
 					e.style,
-					d.value && e.inset ? s.value : [],
+					d.value && e.inset ? o.value : [],
 					{ backgroundColor: d.value && e.inset ? "transparent !important" : void 0 }
 				],
 				tabindex: d.value ? 0 : -1,
 				role: "tab",
 				"aria-selected": String(d.value),
 				active: !1
-			}, u, n, {
+			}, l, n, {
 				block: e.fixed,
 				maxWidth: e.fixed ? 300 : void 0,
-				"onGroup:selected": g
+				"onGroup:selected": _
 			}), {
 				...t,
-				default: () => F(T, null, [t.default?.() ?? e.text, !e.hideSlider && F("div", {
-					ref: l,
-					class: E(["v-tab__slider", e.inset ? o.value : i.value]),
-					style: I([a.value, e.inset ? s.value : i.value])
+				default: () => R(M, null, [t.default?.() ?? e.text, !e.hideSlider && R("div", {
+					ref: c,
+					class: N(["v-tab__slider", e.inset ? a.value : r.value]),
+					style: k([i.value, e.inset ? o.value : r.value])
 				}, null)])
 			});
-		}), ye({}, c);
+		}), ve({}, s);
 	}
-}), Ee = (e, t) => {
+}), Te = (e, t) => {
 	let { touchstartX: n, touchendX: r, touchstartY: i, touchendY: a } = e, o = .5;
 	e.offsetX = r - n, e.offsetY = a - i, !t.x && Math.abs(e.offsetY) < o * Math.abs(e.offsetX) && (e.left && r < n - 16 && e.left(e), e.right && r > n + 16 && e.right(e)), !t.y && Math.abs(e.offsetX) < o * Math.abs(e.offsetY) && (e.up && a < i - 16 && e.up(e), e.down && a > i + 16 && e.down(e));
 };
-function De(e) {
+function Ee(e) {
 	let t = [];
 	for (let n = e instanceof Element ? e : null; n; n = n.parentElement) t.push([
 		n,
@@ -145,28 +146,28 @@ function De(e) {
 		y: t.some(([e, , t]) => e.scrollTop !== t)
 	});
 }
-function Oe(e, t) {
+function De(e, t) {
 	let n = e.changedTouches[0];
 	t.touchstartX = n.clientX, t.touchstartY = n.clientY, t.start?.({
 		originalEvent: e,
 		...t
 	});
 }
-function ke(e, t, n) {
+function Oe(e, t, n) {
 	let r = e.changedTouches[0];
 	t.touchendX = r.clientX, t.touchendY = r.clientY, t.end?.({
 		originalEvent: e,
 		...t
-	}), Ee(t, n);
+	}), Te(t, n);
 }
-function Ae(e, t) {
+function ke(e, t) {
 	let n = e.changedTouches[0];
 	t.touchmoveX = n.clientX, t.touchmoveY = n.clientY, t.move?.({
 		originalEvent: e,
 		...t
 	});
 }
-function je(e = {}) {
+function Ae(e = {}) {
 	let t = {
 		touchstartX: 0,
 		touchstartY: 0,
@@ -189,39 +190,39 @@ function je(e = {}) {
 	});
 	return {
 		touchstart: (e) => {
-			n = De(e.target), Oe(e, t);
+			n = Ee(e.target), De(e, t);
 		},
-		touchend: (e) => ke(e, t, n()),
-		touchmove: (e) => Ae(e, t)
+		touchend: (e) => Oe(e, t, n()),
+		touchmove: (e) => ke(e, t)
 	};
 }
-function q(e, t) {
+function J(e, t) {
 	let n = t.value, r = n?.parent ? e.parentElement : e, i = n?.options ?? { passive: !0 }, a = t.instance?.$.uid;
 	if (!n || !r || a === void 0) return;
-	let o = je(t.value);
-	r._touchHandlers = r._touchHandlers ?? Object.create(null), r._touchHandlers[a] = o, M(o).forEach((e) => {
+	let o = Ae(t.value);
+	r._touchHandlers = r._touchHandlers ?? Object.create(null), r._touchHandlers[a] = o, A(o).forEach((e) => {
 		r.addEventListener(e, o[e], i);
 	});
 }
-function J(e, t) {
+function Y(e, t) {
 	let n = t.value?.parent ? e.parentElement : e, r = t.instance?.$.uid;
 	if (!n?._touchHandlers || r === void 0) return;
 	let i = n._touchHandlers[r];
-	i && (M(i).forEach((e) => {
+	i && (A(i).forEach((e) => {
 		n.removeEventListener(e, i[e]);
-	}), delete n._touchHandlers[r], M(n._touchHandlers).length || delete n._touchHandlers);
+	}), delete n._touchHandlers[r], A(n._touchHandlers).length || delete n._touchHandlers);
 }
-function Me(e, t) {
-	t.value !== t.oldValue && (J(e, {
+function je(e, t) {
+	t.value !== t.oldValue && (Y(e, {
 		...t,
 		value: t.oldValue
-	}), q(e, t));
+	}), J(e, t));
 }
-var Y = {
-	mounted: q,
-	unmounted: J,
-	updated: Me
-}, X = Symbol.for("vuetify:v-window"), Z = Symbol.for("vuetify:v-window-group"), Q = e({
+var X = {
+	mounted: J,
+	unmounted: Y,
+	updated: je
+}, Z = Symbol.for("vuetify:v-window"), Q = Symbol.for("vuetify:v-window-group"), $ = e({
 	continuous: Boolean,
 	nextIcon: {
 		type: [
@@ -244,7 +245,7 @@ var Y = {
 	reverse: Boolean,
 	showArrows: {
 		type: [Boolean, String],
-		validator: (e) => d(e) || e === "hover"
+		validator: (e) => c(e) || e === "hover"
 	},
 	verticalArrows: [Boolean, String],
 	touch: {
@@ -267,136 +268,136 @@ var Y = {
 	},
 	crossfade: Boolean,
 	transitionDuration: Number,
-	...oe(),
 	...V(),
+	...H(),
 	...w()
-}, "VWindow"), $ = h()({
+}, "VWindow"), Me = m()({
 	name: "VWindow",
-	directives: { vTouch: Y },
-	props: Q(),
+	directives: { vTouch: X },
+	props: $(),
 	emits: { "update:modelValue": (e) => !0 },
 	setup(e, { slots: t }) {
-		let { themeClasses: r } = te(e), { isRtl: l } = ee(), { t: u } = ne(), d = Se(e, Z), f = b(), p = k(() => l.value ? !e.reverse : e.reverse), m = O(!1), h = k(() => e.crossfade ? "v-window-crossfade-transition" : `v-window-${e.direction === "vertical" ? "y" : "x"}${(p.value ? !m.value : m.value) ? "-reverse" : ""}-transition`), g = O(0), v = b(void 0), y = k(() => d.items.value.findIndex((e) => d.selected.value.includes(e.id)));
-		c(y, (e, t) => {
-			let r, i = {
+		let { themeClasses: n } = ne(e), { isRtl: r } = te(), { t: o } = re(), s = xe(e, Q), c = F(), u = I(() => r.value ? !e.reverse : e.reverse), f = P(!1), p = I(() => e.crossfade ? "v-window-crossfade-transition" : `v-window-${e.direction === "vertical" ? "y" : "x"}${(u.value ? !f.value : f.value) ? "-reverse" : ""}-transition`), m = P(0), _ = F(void 0), v = I(() => s.items.value.findIndex((e) => s.selected.value.includes(e.id)));
+		l(v, (e, t) => {
+			let n, r = {
 				left: 0,
 				top: 0
 			};
-			_ && t >= 0 && (r = le(f.value), i.left = r?.scrollLeft, i.top = r?.scrollTop);
-			let a = d.items.value.length, o = a - 1;
-			a <= 2 ? m.value = e < t : e === o && t === 0 ? m.value = !1 : e === 0 && t === o ? m.value = !0 : m.value = e < t, n(() => {
-				_ && r && (r.scrollTop !== i.top && r.scrollTo({
-					...i,
+			g && t >= 0 && (n = ce(c.value), r.left = n?.scrollLeft, r.top = n?.scrollTop);
+			let i = s.items.value.length, a = i - 1;
+			i <= 2 ? f.value = e < t : e === a && t === 0 ? f.value = !1 : e === 0 && t === a ? f.value = !0 : f.value = e < t, d(() => {
+				g && n && (n.scrollTop !== r.top && n.scrollTo({
+					...r,
 					behavior: "instant"
 				}), requestAnimationFrame(() => {
-					r && r.scrollTop !== i.top && r.scrollTo({
-						...i,
+					n && n.scrollTop !== r.top && n.scrollTo({
+						...r,
 						behavior: "instant"
 					});
 				}));
 			});
-		}, { flush: "sync" }), a(X, {
-			transition: h,
-			isReversed: m,
-			transitionCount: g,
-			transitionHeight: v,
-			rootRef: f
+		}, { flush: "sync" }), ee(Z, {
+			transition: p,
+			isReversed: f,
+			transitionCount: m,
+			transitionHeight: _,
+			rootRef: c
 		});
-		let x = P(() => e.continuous || y.value !== 0), S = P(() => e.continuous || y.value !== d.items.value.length - 1);
+		let y = T(() => e.continuous || v.value !== 0), x = T(() => e.continuous || v.value !== s.items.value.length - 1);
+		function S() {
+			y.value && s.prev();
+		}
 		function C() {
-			x.value && d.prev();
+			x.value && s.next();
 		}
-		function w() {
-			S.value && d.next();
-		}
-		let T = k(() => {
-			let n = [], r = {
-				icon: l.value ? e.nextIcon : e.prevIcon,
-				class: `v-window__${p.value ? "right" : "left"}`,
-				onClick: d.prev,
-				"aria-label": u("$vuetify.carousel.prev")
+		let w = I(() => {
+			let n = [], i = {
+				icon: r.value ? e.nextIcon : e.prevIcon,
+				class: `v-window__${u.value ? "right" : "left"}`,
+				onClick: s.prev,
+				"aria-label": o("$vuetify.carousel.prev")
 			};
-			n.push(x.value ? t.prev ? t.prev({ props: r }) : R(H, r, null) : F("div", null, null));
-			let i = {
-				icon: l.value ? e.prevIcon : e.nextIcon,
-				class: `v-window__${p.value ? "left" : "right"}`,
-				onClick: d.next,
-				"aria-label": u("$vuetify.carousel.next")
+			n.push(y.value ? t.prev ? t.prev({ props: i }) : h(U, i, null) : R("div", null, null));
+			let a = {
+				icon: r.value ? e.prevIcon : e.nextIcon,
+				class: `v-window__${u.value ? "left" : "right"}`,
+				onClick: s.next,
+				"aria-label": o("$vuetify.carousel.next")
 			};
-			return n.push(S.value ? t.next ? t.next({ props: i }) : R(H, i, null) : F("div", null, null)), n;
-		}), D = k(() => e.touch === !1 ? e.touch : {
+			return n.push(x.value ? t.next ? t.next({ props: a }) : h(U, a, null) : R("div", null, null)), n;
+		}), E = I(() => e.touch === !1 ? e.touch : {
 			left: () => {
-				p.value ? C() : w();
+				u.value ? S() : C();
 			},
 			right: () => {
-				p.value ? w() : C();
+				u.value ? C() : S();
 			},
 			start: ({ originalEvent: e }) => {
 				e.stopPropagation();
 			},
 			...e.touch === !0 ? {} : e.touch
 		});
-		function A(t) {
-			(e.direction === "horizontal" && t.key === "ArrowLeft" || e.direction === "vertical" && t.key === "ArrowUp") && (t.preventDefault(), C(), n(() => {
-				x.value ? j(0) : j(1);
-			})), (e.direction === "horizontal" && t.key === "ArrowRight" || e.direction === "vertical" && t.key === "ArrowDown") && (t.preventDefault(), w(), n(() => {
-				S.value ? j(1) : j(0);
+		function D(t) {
+			(e.direction === "horizontal" && t.key === "ArrowLeft" || e.direction === "vertical" && t.key === "ArrowUp") && (t.preventDefault(), S(), d(() => {
+				y.value ? O(0) : O(1);
+			})), (e.direction === "horizontal" && t.key === "ArrowRight" || e.direction === "vertical" && t.key === "ArrowDown") && (t.preventDefault(), C(), d(() => {
+				x.value ? O(1) : O(0);
 			}));
 		}
-		function j(e) {
-			let t = T.value[e];
+		function O(e) {
+			let t = w.value[e];
 			t && (Array.isArray(t) ? t[0] : t).el?.focus();
 		}
-		return B(() => s(R(e.tag, {
-			ref: f,
-			class: E([
+		return B(() => b(h(e.tag, {
+			ref: c,
+			class: N([
 				"v-window",
 				{
 					"v-window--show-arrows-on-hover": e.showArrows === "hover",
 					"v-window--vertical-arrows": !!e.verticalArrows,
 					"v-window--crossfade": !!e.crossfade
 				},
-				r.value,
+				n.value,
 				e.class
 			]),
-			style: I([e.style, { "--v-window-transition-duration": i() ? null : o(e.transitionDuration, "ms") }])
-		}, { default: () => [F("div", {
+			style: k([e.style, { "--v-window-transition-duration": i() ? null : a(e.transitionDuration, "ms") }])
+		}, { default: () => [R("div", {
 			class: "v-window__container",
-			style: { height: v.value }
-		}, [t.default?.({ group: d }), e.showArrows !== !1 && F("div", {
-			class: E([
+			style: { height: _.value }
+		}, [t.default?.({ group: s }), e.showArrows !== !1 && R("div", {
+			class: N([
 				"v-window__controls",
 				{ "v-window__controls--left": e.verticalArrows === "left" || e.verticalArrows === !0 },
 				{ "v-window__controls--right": e.verticalArrows === "right" }
 			]),
-			onKeydown: A
-		}, [T.value])]), t.additional?.({ group: d })] }), [[Y, D.value]])), { group: d };
+			onKeydown: D
+		}, [w.value])]), t.additional?.({ group: s })] }), [[X, E.value]])), { group: s };
 	}
-}), Ne = e({ ...L(Q(), [
+}), Ne = e({ ...L($(), [
 	"continuous",
 	"nextIcon",
 	"prevIcon",
 	"showArrows",
 	"touch",
 	"mandatory"
-]) }, "VTabsWindow"), Pe = h()({
+]) }, "VTabsWindow"), Pe = m()({
 	name: "VTabsWindow",
 	props: Ne(),
 	emits: { "update:modelValue": (e) => !0 },
 	setup(e, { slots: t }) {
-		let n = g(W, null), i = A(e, "modelValue"), a = k({
+		let n = j(G, null), r = O(e, "modelValue"), i = I({
 			get() {
-				return i.value != null || !n ? i.value : n.items.value.find((e) => n.selected.value.includes(e.id))?.value;
+				return r.value != null || !n ? r.value : n.items.value.find((e) => n.selected.value.includes(e.id))?.value;
 			},
 			set(e) {
-				i.value = e;
+				r.value = e;
 			}
 		});
 		return B(() => {
-			let n = $.filterProps(e);
-			return R($, r({ _as: "VTabsWindow" }, n, {
-				modelValue: a.value,
-				"onUpdate:modelValue": (e) => a.value = e,
+			let n = Me.filterProps(e);
+			return h(Me, u({ _as: "VTabsWindow" }, n, {
+				modelValue: i.value,
+				"onUpdate:modelValue": (e) => i.value = e,
 				class: ["v-tabs-window", e.class],
 				style: e.style,
 				mandatory: !1,
@@ -413,64 +414,64 @@ var Y = {
 		type: [Boolean, String],
 		default: void 0
 	},
-	...oe(),
-	...Ce(),
-	...ue()
-}, "VWindowItem"), Ie = h()({
+	...V(),
+	...Se(),
+	...le()
+}, "VWindowItem"), Ie = m()({
 	name: "VWindowItem",
-	directives: { vTouch: Y },
+	directives: { vTouch: X },
 	props: Fe(),
 	emits: { "group:selected": (e) => !0 },
 	setup(e, { slots: t }) {
-		let r = g(X), i = xe(e, Z), { isBooted: a } = he();
-		if (!r || !i) throw Error("[Vuetify] VWindowItem must be used inside VWindow");
-		let c = O(!1), u = k(() => a.value && (r.isReversed.value ? e.reverseTransition !== !1 : e.transition !== !1));
-		function d() {
-			c.value && r && (c.value = !1, r.transitionCount.value > 0 && (--r.transitionCount.value, r.transitionCount.value === 0 && (r.transitionHeight.value = void 0)));
+		let n = j(Z), r = be(e, Q), { isBooted: i } = ge();
+		if (!n || !r) throw Error("[Vuetify] VWindowItem must be used inside VWindow");
+		let o = P(!1), c = I(() => i.value && (n.isReversed.value ? e.reverseTransition !== !1 : e.transition !== !1));
+		function l() {
+			o.value && n && (o.value = !1, n.transitionCount.value > 0 && (--n.transitionCount.value, n.transitionCount.value === 0 && (n.transitionHeight.value = void 0)));
+		}
+		function u() {
+			!o.value && n && (o.value = !0, n.transitionCount.value === 0 && (n.transitionHeight.value = a(n.rootRef.value?.clientHeight)), n.transitionCount.value += 1);
 		}
 		function f() {
-			!c.value && r && (c.value = !0, r.transitionCount.value === 0 && (r.transitionHeight.value = o(r.rootRef.value?.clientHeight)), r.transitionCount.value += 1);
+			l();
 		}
-		function p() {
-			d();
-		}
-		function m(e) {
-			c.value && n(() => {
-				u.value && c.value && r && (r.transitionHeight.value = o(e.clientHeight));
+		function p(e) {
+			o.value && d(() => {
+				c.value && o.value && n && (n.transitionHeight.value = a(e.clientHeight));
 			});
 		}
-		let h = k(() => {
-			let t = r.isReversed.value ? e.reverseTransition : e.transition;
-			return u.value ? {
-				name: l(t) ? t : r.transition.value,
-				onBeforeEnter: f,
-				onAfterEnter: d,
-				onEnterCancelled: p,
-				onBeforeLeave: f,
-				onAfterLeave: d,
-				onLeaveCancelled: p,
-				onEnter: m
+		let m = I(() => {
+			let t = n.isReversed.value ? e.reverseTransition : e.transition;
+			return c.value ? {
+				name: s(t) ? t : n.transition.value,
+				onBeforeEnter: u,
+				onAfterEnter: l,
+				onEnterCancelled: f,
+				onBeforeLeave: u,
+				onAfterLeave: l,
+				onLeaveCancelled: f,
+				onEnter: p
 			} : !1;
-		}), { hasContent: _ } = de(e, i.isSelected);
-		return B(() => R(ve, {
-			transition: h.value,
-			disabled: !a.value
-		}, { default: () => [s(F("div", {
-			class: E([
+		}), { hasContent: g } = ue(e, r.isSelected);
+		return B(() => h(_e, {
+			transition: m.value,
+			disabled: !i.value
+		}, { default: () => [b(R("div", {
+			class: N([
 				"v-window-item",
-				i.selectedClass.value,
+				r.selectedClass.value,
 				e.class
 			]),
-			style: I(e.style)
-		}, [_.value && t.default?.()]), [[re, i.isSelected.value]])] })), { groupItem: i };
+			style: k(e.style)
+		}, [g.value && t.default?.()]), [[D, r.isSelected.value]])] })), { groupItem: r };
 	}
-}), Le = e({ ...Fe() }, "VTabsWindowItem"), Re = h()({
+}), Le = e({ ...Fe() }, "VTabsWindowItem"), Re = m()({
 	name: "VTabsWindowItem",
 	props: Le(),
 	setup(e, { slots: t }) {
 		return B(() => {
 			let n = Ie.filterProps(e);
-			return R(Ie, r({ _as: "VTabsWindowItem" }, n, {
+			return h(Ie, u({ _as: "VTabsWindowItem" }, n, {
 				class: ["v-tabs-window-item", e.class],
 				style: e.style
 			}), t);
@@ -508,38 +509,38 @@ var Be = e({
 	insetPadding: [String, Number],
 	insetRadius: [String, Number],
 	sliderColor: String,
-	...C(G(), [
+	...C(K(), [
 		"spaced",
 		"sliderTransition",
 		"sliderTransitionDuration"
 	]),
-	...we({
+	...Ce({
 		mandatory: "force",
 		selectedClass: "v-tab-item--selected"
 	}),
-	..._e(),
-	...V()
-}, "VTabs"), Ve = h()({
+	...he(),
+	...H()
+}, "VTabs"), Ve = m()({
 	name: "VTabs",
 	props: Be(),
 	emits: { "update:modelValue": (e) => !0 },
-	setup(e, { attrs: n, slots: i }) {
-		let a = A(e, "modelValue"), s = k(() => ze(e.items)), { densityClasses: c } = ge(e), { backgroundColorClasses: l, backgroundColorStyles: u } = z(() => e.bgColor), { scopeId: d } = fe();
-		return t({ VTab: {
-			color: P(e, "color"),
-			direction: P(e, "direction"),
-			stacked: P(e, "stacked"),
-			fixed: P(e, "fixedTabs"),
-			inset: P(e, "inset"),
-			sliderColor: P(e, "sliderColor"),
-			sliderTransition: P(e, "sliderTransition"),
-			sliderTransitionDuration: P(e, "sliderTransitionDuration"),
-			hideSlider: P(e, "hideSlider")
+	setup(e, { attrs: t, slots: r }) {
+		let i = O(e, "modelValue"), o = I(() => ze(e.items)), { densityClasses: s } = me(e), { backgroundColorClasses: c, backgroundColorStyles: l } = z(() => e.bgColor), { scopeId: d } = de();
+		return n({ VTab: {
+			color: T(e, "color"),
+			direction: T(e, "direction"),
+			stacked: T(e, "stacked"),
+			fixed: T(e, "fixedTabs"),
+			inset: T(e, "inset"),
+			sliderColor: T(e, "sliderColor"),
+			sliderTransition: T(e, "sliderTransition"),
+			sliderTransitionDuration: T(e, "sliderTransitionDuration"),
+			hideSlider: T(e, "hideSlider")
 		} }), B(() => {
-			let t = U.filterProps(e), f = !!(i.window || e.items.length > 0);
-			return F(T, null, [R(U, r(t, {
-				modelValue: a.value,
-				"onUpdate:modelValue": (e) => a.value = e,
+			let n = W.filterProps(e), f = !!(r.window || e.items.length > 0);
+			return R(M, null, [h(W, u(n, {
+				modelValue: i.value,
+				"onUpdate:modelValue": (e) => i.value = e,
 				class: [
 					"v-tabs",
 					`v-tabs--${e.direction}`,
@@ -550,37 +551,37 @@ var Be = e({
 						"v-tabs--inset": e.inset,
 						"v-tabs--stacked": e.stacked
 					},
+					s.value,
 					c.value,
-					l.value,
 					e.class
 				],
 				style: [
 					{
-						"--v-tabs-height": o(e.height),
-						"--v-tabs-inset-padding": e.inset ? o(e.insetPadding) : void 0,
-						"--v-tabs-inset-radius": e.inset ? o(e.insetRadius) : void 0
+						"--v-tabs-height": a(e.height),
+						"--v-tabs-inset-padding": e.inset ? a(e.insetPadding) : void 0,
+						"--v-tabs-inset-radius": e.inset ? a(e.insetRadius) : void 0
 					},
-					u.value,
+					l.value,
 					e.style
 				],
 				role: "tablist",
-				symbol: W
-			}, d, n), {
-				default: i.default ?? (() => s.value.map((t) => i.tab?.({ item: t }) ?? R(K, r(t, {
+				symbol: G
+			}, d, t), {
+				default: r.default ?? (() => o.value.map((t) => r.tab?.({ item: t }) ?? h(q, u(t, {
 					key: t.text,
 					value: t.value,
 					spaced: e.spaced
-				}), { default: i[`tab.${t.value}`] ? () => i[`tab.${t.value}`]?.({ item: t }) : void 0 }))),
-				prev: i.prev,
-				next: i.next
-			}), f && R(Pe, r({
-				modelValue: a.value,
-				"onUpdate:modelValue": (e) => a.value = e,
+				}), { default: r[`tab.${t.value}`] ? () => r[`tab.${t.value}`]?.({ item: t }) : void 0 }))),
+				prev: r.prev,
+				next: r.next
+			}), f && h(Pe, u({
+				modelValue: i.value,
+				"onUpdate:modelValue": (e) => i.value = e,
 				key: "tabs-window"
-			}, d), { default: () => [s.value.map((e) => i.item?.({ item: e }) ?? R(Re, { value: e.value }, { default: () => i[`item.${e.value}`]?.({ item: e }) })), i.window?.()] })]);
+			}, d), { default: () => [o.value.map((e) => r.item?.({ item: e }) ?? h(Re, { value: e.value }, { default: () => r[`item.${e.value}`]?.({ item: e }) })), r.window?.()] })]);
 		}), {};
 	}
-}), He = /* @__PURE__ */ S({
+}), He = /* @__PURE__ */ r({
 	__name: "TabsView",
 	props: {
 		tabs: {},
@@ -588,23 +589,23 @@ var Be = e({
 		inset: { type: Boolean }
 	},
 	emits: ["select"],
-	setup(e, { emit: t }) {
-		let n = t;
-		return (t, r) => (p(), N(x(Ve), {
+	setup(e, { emit: n }) {
+		let r = n;
+		return (n, i) => (t(), S(E(Ve), {
 			"model-value": e.current,
 			color: "primary",
-			class: E({ "px-2": e.inset }),
+			class: N({ "px-2": e.inset }),
 			"data-part": "tabs",
-			"onUpdate:modelValue": r[0] ||= (e) => n("select", e)
+			"onUpdate:modelValue": i[0] ||= (e) => r("select", e)
 		}, {
-			default: y(() => [(p(!0), j(T, null, u(e.tabs, (e) => (p(), N(x(K), {
+			default: y(() => [(t(!0), p(M, null, o(e.tabs, (e) => (t(), S(E(q), {
 				key: e.value,
 				value: e.value,
 				disabled: e.disabled,
 				"prepend-icon": e.icon || void 0,
 				"data-tab": e.value
 			}, {
-				default: y(() => [ie(D(e.label), 1)]),
+				default: y(() => [ie(x(e.label), 1)]),
 				_: 2
 			}, 1032, [
 				"value",
@@ -624,7 +625,7 @@ var Be = e({
 };
 //#endregion
 //#region src/entries/smartview-tabs.ts
-ce("smartview-tabs", /* @__PURE__ */ S({
+se("smartview-tabs", /* @__PURE__ */ r({
 	__name: "SmartviewTabs.ce",
 	props: {
 		tabs: {
@@ -637,21 +638,21 @@ ce("smartview-tabs", /* @__PURE__ */ S({
 		}
 	},
 	emits: ["tab-change"],
-	setup(e, { emit: t }) {
-		let n = e, r = t, i = k(() => Array.isArray(n.tabs) ? n.tabs : []), { current: a, select: o } = Te(() => i.value, () => n.tab, (e) => r("tab-change", e));
-		return (e, t) => (p(), j("div", Ue, [
-			R(He, {
-				tabs: i.value,
-				current: x(a),
+	setup(e, { emit: n }) {
+		let r = e, i = n, a = I(() => Array.isArray(r.tabs) ? r.tabs : []), { current: s, select: c } = we(() => a.value, () => r.tab, (e) => i("tab-change", e));
+		return (e, n) => (t(), p("div", Ue, [
+			h(He, {
+				tabs: a.value,
+				current: E(s),
 				inset: !1,
-				onSelect: x(o)
+				onSelect: E(c)
 			}, null, 8, [
 				"tabs",
 				"current",
 				"onSelect"
 			]),
-			R(x(me)),
-			F("div", We, [(p(!0), j(T, null, u([`tab-${x(a)}`], (t) => f(e.$slots, t, {}, () => [f(e.$slots, "default")], void 0, t)), 128))])
+			h(E(pe)),
+			R("div", We, [(t(!0), p(M, null, o([`tab-${E(s)}`], (t) => _(e.$slots, t, {}, () => [_(e.$slots, "default")], void 0, t)), 128))])
 		]));
 	}
 }));

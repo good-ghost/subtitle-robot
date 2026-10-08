@@ -4,7 +4,7 @@ English | [한국어](README.md)
 
 **Subtitle Robot** (`subtitle-robot`) is a Python CLI and watch daemon that translates subtitles. The source can be any language (English and Japanese have dedicated rules); the target language is Korean by default and can be changed in the settings. Before translating, it analyses the whole title to build a glossary of names and proper nouns, so that **the same character or term is written the same way across a whole TV series**. The LLM is one of Google Gemini (default), NVIDIA NIM, a local llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI (ChatGPT) or Anthropic Claude.
 
-The current version is 0.8.5. Main features:
+The current version is 0.8.6. Main features:
 
 - Single titles and TV series: a series-wide glossary, previous-episode summaries (`story_so_far`) and repeated-line memory (`phrases`)
 - SRT, ASS and VTT input, style-preserving ASS output
@@ -257,7 +257,7 @@ The watch daemon (`watch`) also serves a web console (default port 8949, `[web] 
 | Menu | Contents |
 |---|---|
 | Dashboard | Daemon (heartbeat) and provider status, counts of queued, failed and recorded jobs, target language, whether the original-language lookup is used, watch paths |
-| Queue List | Queued, running and failed jobs (a translating job shows `Translating (done blocks/total blocks)`); retry and clear failed; **Register video** (a file or folder inside a watch path) |
+| Queue List | Queued, running and failed jobs (a translating job shows `Translating (done blocks/total blocks)`); retry and clear failed; **Register video** (browse from a watch path down to a file or folder) |
 | Completed List | Processing records (verdict, reason, output files), details, process again (forget the record) |
 | Logs | Daemon log (`/data/logs/daemon.log`, 5 MB × 3 rotated), level filter, auto refresh |
 | Settings | Edit and save `config.toml` (comments kept); settings of the chosen provider among seven, pick from the **model list**, **authentication** (API key or subscription) and subscription sign-in; **Translation** tab: target language (searchable), TMDB on/off; **Web** tab: time zone (searchable); **Keys** tab (provider and TMDB keys, only the last 4 characters shown); **Account** tab (change user name and password); **Apply** (restart the daemon) |

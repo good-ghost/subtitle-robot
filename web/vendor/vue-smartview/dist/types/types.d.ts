@@ -190,6 +190,12 @@ export interface SmartviewModalEvents {
 }
 /** 스낵바 위치 (Vuetify location 값 중 화면 가장자리 위치) */
 export type SnackbarLocation = 'top' | 'bottom' | 'top left' | 'top right' | 'top center' | 'bottom left' | 'bottom right' | 'bottom center';
+export interface SmartviewToastProps {
+    /** 화면 위치. 기본 'top right' (원본과 같음) */
+    location?: SnackbarLocation;
+    overlayTarget?: OverlayTarget;
+}
+export type SmartviewToastEvents = Record<never, never>;
 export type StatCardAccent = 'blue' | 'cyan' | 'green' | 'red' | 'orange';
 export interface SmartviewStatCardProps {
     label?: string;
@@ -295,9 +301,9 @@ export interface SmartviewDataTableProps {
     emptyActionHref?: string;
     /** 행 액션 툴팁·페이지당 행 수 메뉴를 여는 위치 ('body' 기본: 공용 오버레이 호스트, 'self': 요소 안) */
     overlayTarget?: OverlayTarget;
-    /** 카드 틀(그림자·모서리) 없이 표만 그린다. 다른 카드 안에 둘 때 (smartview-related-list) */
+    /** 카드 틀(그림자·모서리) 없이 표만 그린다. 다른 카드 안에 둘 때 (다른 요소) */
     flat?: boolean;
-    /** 아래 줄(페이지당 행·페이지 단추)을 숨긴다. 모든 행을 한 번에 보이거나 호스트가 페이지를 따로 다룰 때 (smartview-object-browser) */
+    /** 아래 줄(페이지당 행·페이지 단추)을 숨긴다. 모든 행을 한 번에 보이거나 호스트가 페이지를 따로 다룰 때 (다른 요소) */
     hideFooter?: boolean;
 }
 export interface SmartviewDataTableEvents {
@@ -542,7 +548,7 @@ export interface SmartviewBreadcrumb {
     href?: string;
 }
 export interface SmartviewAppShellProps {
-    /** 드로어 메뉴 (프로퍼티, <smartview-vertical-navigation> items) */
+    /** 드로어 메뉴 (프로퍼티, <다른 요소> items) */
     items?: SmartviewNavItem[];
     /** 드로어 하단 추가 메뉴 (프로퍼티) */
     footerItems?: SmartviewNavFooterItem[];
@@ -553,7 +559,7 @@ export interface SmartviewAppShellProps {
     current?: string;
     /** 드로어 접힘. 프로퍼티는 현재 값 */
     rail?: boolean;
-    /** 브레드크럼 (프로퍼티, <smartview-global-header> breadcrumbs) */
+    /** 브레드크럼 (프로퍼티, <다른 요소> breadcrumbs) */
     breadcrumbs?: SmartviewBreadcrumb[];
     /** 서버 연결 상태. 비우면 칩을 숨긴다 */
     status?: '' | SmartviewDotState;
@@ -628,23 +634,6 @@ export interface SmartviewStateNoticeEvents {
     action: [payload: {
         href: string;
     }];
-}
-/** 진행 단계 상태: 통과·막힘(지금 손댈 곳)·판단 불가·켜 두었지만 앞이 막힘·해당 없음 */
-export type ChannelStageState = 'done' | 'blocked' | 'pending' | 'waiting' | 'skipped';
-/** 매핑할 필드 (원본 필드 API 의 name·type) */
-export interface SmartviewMappingField {
-    name: string;
-    /** 데이터 타입 문자열 (varchar(255), int, timestamp, picklist …). 타입 칩과 호환 판정에 쓴다 */
-    type?: string;
-}
-/** 매핑 한 건. formula 가 문자열이면 수식 매핑(원본 transform_type 'formula'), 없으면 그대로 옮긴다 */
-export interface SmartviewFieldMapping {
-    source: string;
-    target: string;
-    /** 키 필드 (Upsert / Delete+Insert / Incremental) */
-    isKey?: boolean;
-    /** 수식 (원본 transform_expr). 소스 필드를 이름으로 참조한다 */
-    formula?: string;
 }
 export interface SmartviewTabsProps {
     /** 탭 목록 (프로퍼티) */
@@ -765,6 +754,11 @@ export interface ComboboxOption {
     group?: string;
     /** 항목 앞 아이콘 (MDI 이름) */
     icon?: string;
+    /**
+     * 이 항목을 골라도 목록을 닫지 않는다. 호스트가 change 를 받아 항목을 바꿔 다음 단계를 고르게 할 때
+     * (예: 폴더를 고르면 그 폴더 내용으로). keepOpen 이 아닌 항목을 고르면 닫는다 (WI-6.017b)
+     */
+    keepOpen?: boolean;
 }
 export interface SmartviewComboboxProps extends SmartviewInputCommonProps {
     /** 고른 항목의 value. 프로퍼티는 현재 값 */

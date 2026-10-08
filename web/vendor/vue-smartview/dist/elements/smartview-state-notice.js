@@ -1,8 +1,8 @@
-import { Pn as e, Wn as t, ar as n, bn as r, cr as i, dr as a, fn as o, gn as s, hn as c, in as l, mn as u, pn as d, vn as f, yn as p } from "../chunks/vuetify-DJ4bsPds.js";
-import { t as m } from "../chunks/define-BG7hCbXs.js";
+import { Bn as e, En as t, Sn as n, Tn as r, Xn as i, _r as a, bn as o, dr as s, mr as c, un as l, vn as u, wn as d, xn as f, yn as p } from "../chunks/vuetify-C39-WP9g.js";
+import { t as m } from "../chunks/define-BovISfN4.js";
 import { t as h } from "../chunks/cancelableLink-DUAoXNUy.js";
-import { t as g } from "../chunks/VBtn-D2PPPp70.js";
-import { t as _ } from "../chunks/VAlert-9bM3hcdc.js";
+import { t as g } from "../chunks/VBtn-CV2MWNTN.js";
+import { t as _ } from "../chunks/VAlert-rN_W5d_m.js";
 //#region src/elements/SmartviewStateNotice.ce.vue?vue&type=script&setup=true&lang.ts
 var v = { class: "smartview-root" }, y = { class: "text-body-medium" }, b = {
 	key: 0,
@@ -11,7 +11,7 @@ var v = { class: "smartview-root" }, y = { class: "text-body-medium" }, b = {
 };
 //#endregion
 //#region src/entries/smartview-state-notice.ts
-m("smartview-state-notice", /* @__PURE__ */ r({
+m("smartview-state-notice", /* @__PURE__ */ t({
 	__name: "SmartviewStateNotice.ce",
 	props: {
 		type: {
@@ -44,48 +44,48 @@ m("smartview-state-notice", /* @__PURE__ */ r({
 		}
 	},
 	emits: ["action"],
-	setup(r) {
+	setup(t) {
 		let m = {
 			info: "mdi-information-outline",
 			warning: "mdi-puzzle-outline",
 			error: "mdi-alert-circle-outline"
-		}, x = r, S = l(), C = o(() => x.type === "warning" || x.type === "error" ? x.type : "info");
+		}, x = t, S = l(), C = u(() => x.type === "warning" || x.type === "error" ? x.type : "info");
 		function w(e) {
 			h(S, "action", x.actionHref, e);
 		}
-		return (o, l) => (e(), s("div", v, [p(n(_), {
+		return (l, u) => (e(), n("div", v, [r(s(_), {
 			type: C.value,
 			variant: "tonal",
 			rounded: "xl",
-			icon: r.icon || m[C.value],
+			icon: t.icon || m[C.value],
 			"data-part": "notice"
 		}, {
-			default: t(() => [d("div", y, [
-				r.heading ? (e(), s("p", b, a(r.heading), 1)) : c("", !0),
-				r.text ? (e(), s("p", {
+			default: i(() => [p("div", y, [
+				t.heading ? (e(), n("p", b, a(t.heading), 1)) : f("", !0),
+				t.text ? (e(), n("p", {
 					key: 1,
-					class: i(["ma-0", { "mb-2": r.actionText }]),
+					class: c(["ma-0", { "mb-2": t.actionText }]),
 					"data-part": "text"
-				}, a(r.text), 3)) : c("", !0),
-				r.actionText ? (e(), u(n(g), {
+				}, a(t.text), 3)) : f("", !0),
+				t.actionText ? (e(), o(s(g), {
 					key: 2,
-					href: r.actionHref || void 0,
+					href: t.actionHref || void 0,
 					size: "small",
 					variant: "tonal",
 					color: C.value,
 					rounded: "lg",
 					class: "text-none",
-					"prepend-icon": r.actionIcon,
+					"prepend-icon": t.actionIcon,
 					"data-part": "action",
 					onClick: w
 				}, {
-					default: t(() => [f(a(r.actionText), 1)]),
+					default: i(() => [d(a(t.actionText), 1)]),
 					_: 1
 				}, 8, [
 					"href",
 					"color",
 					"prepend-icon"
-				])) : c("", !0)
+				])) : f("", !0)
 			])]),
 			_: 1
 		}, 8, ["type", "icon"])]));

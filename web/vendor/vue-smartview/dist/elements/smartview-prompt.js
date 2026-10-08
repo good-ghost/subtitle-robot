@@ -1,24 +1,28 @@
-import { Ln as e, Pn as t, Wn as n, ar as r, bn as i, dr as a, en as o, gn as s, hn as c, mn as l, pn as u, vn as d, yn as f } from "../chunks/vuetify-DJ4bsPds.js";
-import { t as p } from "../chunks/define-BG7hCbXs.js";
-import { a as m } from "../chunks/density-Dh8nVFPw.js";
-import { t as h } from "../chunks/VAvatar-B5evLdR9.js";
-import { t as g } from "../chunks/VBtn-D2PPPp70.js";
-import { t as _ } from "../chunks/_plugin-vue_export-helper-B3ysoDQm.js";
-import { i as v, n as y, r as b, t as x } from "../chunks/VCard-CIgInzZL.js";
-import { t as S } from "../chunks/VSpacer-BDzqg2jm.js";
-import { n as C, t as w } from "../chunks/dialog-DkQO-UQe.js";
-//#region src/elements/SmartviewPrompt.ce.vue?vue&type=script&setup=true&lang.ts
-var T = {
+import { Bn as e, En as t, Qt as n, Sn as r, Tn as i, Un as a, Xn as o, _r as s, bn as c, dr as l, en as u, on as d, wn as f, xn as p, yn as m } from "../chunks/vuetify-C39-WP9g.js";
+import { t as h } from "../chunks/define-BovISfN4.js";
+import { t as g } from "../chunks/VDivider-CA-IOlps.js";
+import { a as _ } from "../chunks/density-9WZgplEH.js";
+import { t as v } from "../chunks/VAvatar-DdB1q11O.js";
+import { t as y } from "../chunks/VBtn-CV2MWNTN.js";
+import { t as b } from "../chunks/_plugin-vue_export-helper-B3ysoDQm.js";
+import { i as x, n as S, r as C, t as w } from "../chunks/VCard-Z58vOTy1.js";
+import { t as T } from "../chunks/VSpacer-BKsHyVbj.js";
+import { n as E, t as D } from "../chunks/dialog-DHL_I1HS.js";
+//#region src/messages/SmartviewPrompt.ts
+var O = n({
+	en: { delete: "Delete" },
+	ko: { delete: "삭제" }
+}), k = {
 	class: "text-title-large",
 	"data-part": "title"
-}, E = { "data-part": "message" }, D = { key: 0 }, O = {
+}, A = { "data-part": "message" }, j = { key: 0 }, M = {
 	key: 1,
 	class: "text-medium-emphasis text-body-medium",
 	"data-part": "warning"
-}, k = { class: "smartview-confirm-extra" };
+}, N = { class: "smartview-confirm-extra" };
 //#endregion
 //#region src/entries/smartview-prompt.ts
-p("smartview-prompt", /* @__PURE__ */ _(/* @__PURE__ */ i({
+h("smartview-prompt", /* @__PURE__ */ b(/* @__PURE__ */ t({
 	__name: "SmartviewPrompt.ce",
 	props: {
 		open: {
@@ -67,77 +71,80 @@ p("smartview-prompt", /* @__PURE__ */ _(/* @__PURE__ */ i({
 		}
 	},
 	emits: ["confirm", "cancel"],
-	setup(i, { emit: p }) {
-		let _ = i, A = p, { t: j } = o(), { attachTarget: M, contentSlotName: N, dialogId: P, onAfterLeave: F } = w({
-			open: () => _.open,
-			overlayTarget: () => _.overlayTarget
+	setup(t, { emit: n }) {
+		let h = t, b = n, { t: P } = d();
+		u(O);
+		let { attachTarget: F, contentSlotName: I, dialogId: L, onAfterLeave: R } = D({
+			open: () => h.open,
+			overlayTarget: () => h.overlayTarget
 		});
-		function I() {
-			_.loading || A("confirm");
+		function z() {
+			h.loading || b("confirm");
 		}
-		function L(e) {
-			e || A("cancel");
+		function B(e) {
+			e || b("cancel");
 		}
-		return (o, p) => (t(), l(r(C), {
-			"model-value": i.open,
+		return (n, u) => (e(), c(l(E), {
+			"model-value": t.open,
 			"max-width": "440",
-			persistent: !i.dismissible,
-			attach: r(M),
+			persistent: !t.dismissible,
+			attach: l(F),
 			"retain-focus": !1,
 			"capture-focus": !1,
-			"onUpdate:modelValue": L,
-			onAfterLeave: r(F)
+			"onUpdate:modelValue": B,
+			onAfterLeave: l(R)
 		}, {
-			default: n(() => [f(r(x), {
+			default: o(() => [i(l(w), {
 				rounded: "xl",
-				class: "pa-2",
 				"data-part": "card",
-				"data-dialog-id": r(P)
+				"data-dialog-id": l(L)
 			}, {
-				default: n(() => [
-					f(r(b), { class: "d-flex align-center ga-2 pt-4" }, {
-						default: n(() => [f(r(h), {
-							color: i.color,
+				default: o(() => [
+					i(l(C), { class: "d-flex align-center ga-2 pa-5 pb-4" }, {
+						default: o(() => [i(l(v), {
+							color: t.color,
 							variant: "tonal",
 							size: "40",
 							"data-part": "icon"
 						}, {
-							default: n(() => [f(r(m), { icon: i.icon }, null, 8, ["icon"])]),
+							default: o(() => [i(l(_), { icon: t.icon }, null, 8, ["icon"])]),
 							_: 1
-						}, 8, ["color"]), u("span", T, a(i.heading), 1)]),
+						}, 8, ["color"]), m("span", k, s(t.heading), 1)]),
 						_: 1
 					}),
-					f(r(y), { class: "text-body-large" }, {
-						default: n(() => [
-							u("span", E, a(i.message), 1),
-							i.warning ? (t(), s("br", D)) : c("", !0),
-							i.warning ? (t(), s("span", O, a(i.warning), 1)) : c("", !0),
-							u("div", k, [e(o.$slots, r(N))])
+					i(l(g), { "data-part": "header-divider" }),
+					i(l(S), { class: "pa-5 text-body-large" }, {
+						default: o(() => [
+							m("span", A, s(t.message), 1),
+							t.warning ? (e(), r("br", j)) : p("", !0),
+							t.warning ? (e(), r("span", M, s(t.warning), 1)) : p("", !0),
+							m("div", N, [a(n.$slots, l(I))])
 						]),
 						_: 3
 					}),
-					f(r(v), { class: "pa-4 pt-0" }, {
-						default: n(() => [
-							f(r(S)),
-							f(r(g), {
-								variant: "text",
+					i(l(g), { "data-part": "footer-divider" }),
+					i(l(x), { class: "pa-4" }, {
+						default: o(() => [
+							i(l(T)),
+							i(l(y), {
+								variant: "outlined",
 								rounded: "lg",
 								"data-part": "cancel",
-								onClick: p[0] ||= (e) => A("cancel")
+								onClick: u[0] ||= (e) => b("cancel")
 							}, {
-								default: n(() => [d(a(i.cancelText || r(j)("smartview.cancel")), 1)]),
+								default: o(() => [f(s(t.cancelText || l(P)("smartview.cancel")), 1)]),
 								_: 1
 							}),
-							f(r(g), {
-								color: i.color,
+							i(l(y), {
+								color: t.color,
 								variant: "flat",
 								rounded: "lg",
 								class: "font-weight-bold",
-								loading: i.loading,
+								loading: t.loading,
 								"data-part": "confirm",
-								onClick: I
+								onClick: z
 							}, {
-								default: n(() => [d(a(i.confirmText || r(j)("smartview.delete")), 1)]),
+								default: o(() => [f(s(t.confirmText || l(P)("smartview.delete")), 1)]),
 								_: 1
 							}, 8, ["color", "loading"])
 						]),

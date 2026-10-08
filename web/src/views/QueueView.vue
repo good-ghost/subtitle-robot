@@ -3,14 +3,15 @@
 import { computed, ref } from 'vue'
 
 import { api, ApiError } from '../api/client'
-import type { DaemonStatus, Job, JobStatus } from '../api/types'
+import type { BrowseResult, DaemonStatus, Job, JobStatus } from '../api/types'
+import { folderToOpen, pickerOptions, watchBase } from '../browse'
 import { usePolling } from '../composables/polling'
 import { compactTime, errorText } from '../format'
 import { canRetry, statusValue } from '../jobs'
 import { t, type MessageKey } from '../i18n'
 import { showError, showSuccess } from '../notify'
 
-const props = defineProps<{ status: DaemonStatus | null }>()
+defineProps<{ status: DaemonStatus | null }>()
 const emit = defineEmits<{ 'status-changed': [] }>()
 
 const REFRESH_MS = 5_000
@@ -137,29 +138,59 @@ async function clearFailed(): Promise<void> {
   }
 }
 
-// 동영상 등록 모달
+// 동영상 등록 모달: 감시 경로부터 폴더를 따라 내려가며 고른다 (WI-7.004d)
 const registerOpen = ref(false)
 const registering = ref(false)
 const registerPath = ref('')
 const recursive = ref(false)
 const force = ref(false)
 const pathError = ref('')
-const watchPaths = computed(() => (props.status?.watch_paths ?? []).map((p) => p.path).join(', ') || t('common.none'))
+const listing = ref<BrowseResult | null>(null)
+// 브레드크럼은 감시 경로들의 공통 상위 폴더부터 (감시 경로 목록을 처음 받을 때 정한다)
+const browseBase = ref('')
+const pickerItems = computed(() => (listing.value ? pickerOptions(listing.value, registerPath.value, browseBase.value) : []))
 
-function openRegister(): void {
+async function openFolder(path: string | null): Promise<void> {
+  try {
+    const result = await api.browse(path)
+    if (result.path === null) browseBase.value = watchBase(result.entries.map((entry) => entry.path))
+    listing.value = result
+    registerPath.value = path ?? ''
+    pathError.value = ''
+  } catch (error) {
+    pathError.value = errorText(error)
+  }
+}
+
+async function openRegister(): Promise<void> {
   pathError.value = ''
+  registerPath.value = ''
+  listing.value = null
   registerOpen.value = true
+  await openFolder(null)
+}
+
+// 폴더(상위 포함)를 고르면 그 폴더 내용으로 (목록은 열린 채), 동영상·지금 폴더를 고르면 그것을 등록할 대상으로
+async function onPick(event: Event): Promise<void> {
+  const [value] = (event as CustomEvent<[string]>).detail
+  const folder = folderToOpen(listing.value, value)
+  if (folder === null) {
+    registerPath.value = value
+    pathError.value = ''
+    return
+  }
+  await openFolder(folder || null)
 }
 
 async function register(): Promise<void> {
-  if (!registerPath.value.trim()) {
-    pathError.value = t('error.path_not_absolute')
+  if (!registerPath.value) {
+    pathError.value = t('register.required')
     return
   }
   registering.value = true
   pathError.value = ''
   try {
-    const queued = await api.registerMedia(registerPath.value.trim(), recursive.value, force.value)
+    const queued = await api.registerMedia(registerPath.value, recursive.value, force.value)
     showSuccess(t('register.done', { count: queued.length }))
     registerOpen.value = false
     registerPath.value = ''
@@ -212,10 +243,10 @@ async function register(): Promise<void> {
     :confirm-text="t('register.confirm')" :loading="registering" @confirm="register" @cancel="registerOpen = false"
   >
     <div class="form">
-      <smartview-input
-        data-testid="register-path" :label="t('register.path')" icon="mdi-folder-outline" :hint="t('register.pathHint', { paths: watchPaths })"
-        :value="registerPath" :error-message="pathError" required placeholder="/media/movies/Movie (2024)"
-        @input="registerPath = ($event as CustomEvent<[string]>).detail[0]"
+      <smartview-combobox
+        data-testid="register-path" :label="t('register.path')" icon="mdi-folder-search-outline" :hint="t('register.pathHint')"
+        :value="registerPath" :options="pickerItems" :error-message="pathError" :placeholder="t('register.placeholder')" required
+        @change="onPick"
       />
       <smartview-checkbox
         data-testid="register-recursive" :label="t('register.recursive')" :checked="recursive"

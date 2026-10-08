@@ -28,3 +28,6 @@ import 'vue-smartview/elements/smartview-stat-card'
 import 'vue-smartview/elements/smartview-state-notice'
 import 'vue-smartview/elements/smartview-tabs'
 import 'vue-smartview/elements/smartview-textarea'
+// 템플릿에 쓰지 않지만 notify()(src/notify.ts 의 스낵바 알림)가 쓴다. 없으면 부분 빌드가 notify() 를 거부한다
+// (vue-smartview WI-7.005e 부터)
+import 'vue-smartview/elements/smartview-toast'

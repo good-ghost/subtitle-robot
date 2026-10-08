@@ -1,6 +1,7 @@
 // 데몬 API 호출. 세션은 HttpOnly 쿠키라 스크립트가 토큰을 다루지 않는다 (PROJECT-PLAN §25.3).
 import type {
   AuthMode,
+  BrowseResult,
   DaemonStatus,
   DeviceLogin,
   FieldError,
@@ -110,6 +111,8 @@ export const api = {
   ledger: (verdict: Verdict | undefined, history: boolean) =>
     request<LedgerEntry[]>('GET', 'ledger', undefined, { verdict, history }),
   forget: (path: string) => request<{ count: number }>('POST', 'ledger/forget', { path }),
+  // 감시 경로 안의 폴더 내용. path 가 없으면 감시 경로 목록 (WI-7.004d)
+  browse: (path: string | null) => request<BrowseResult>('GET', 'browse', undefined, { path: path ?? undefined }),
   registerMedia: (path: string, recursive: boolean, force: boolean) =>
     request<QueuedJob[]>('POST', 'media', { path, recursive, force }),
   logs: (level: LogLevel, after: string | undefined, limit?: number) =>

@@ -1,13 +1,14 @@
-import { Ln as e, Pn as t, Wn as n, ar as r, bn as i, dr as a, gn as o, hn as s, mn as c, pn as l, vn as u, yn as d } from "../chunks/vuetify-DJ4bsPds.js";
-import { t as f } from "../chunks/define-BG7hCbXs.js";
-import { a as p } from "../chunks/density-Dh8nVFPw.js";
-import { t as m } from "../chunks/VBtn-D2PPPp70.js";
-import { t as h } from "../chunks/VChip-Dqfk0_yh.js";
-import { t as g } from "../chunks/_plugin-vue_export-helper-B3ysoDQm.js";
-import { n as _, r as v, t as y } from "../chunks/VCard-CIgInzZL.js";
-import { t as b } from "../chunks/VSpacer-BDzqg2jm.js";
+import { Bn as e, En as t, Sn as n, Tn as r, Un as i, Xn as a, _r as o, bn as s, dr as c, mn as l, wn as u, xn as d, yn as f } from "../chunks/vuetify-C39-WP9g.js";
+import { t as p } from "../chunks/define-BovISfN4.js";
+import { t as m } from "../chunks/VDivider-CA-IOlps.js";
+import { a as h } from "../chunks/density-9WZgplEH.js";
+import { t as g } from "../chunks/VBtn-CV2MWNTN.js";
+import { t as _ } from "../chunks/VChip-C-IhEdKW.js";
+import { t as v } from "../chunks/_plugin-vue_export-helper-B3ysoDQm.js";
+import { n as y, r as b, t as x } from "../chunks/VCard-Z58vOTy1.js";
+import { t as S } from "../chunks/VSpacer-BKsHyVbj.js";
 //#region src/elements/parts/CardTitleView.vue?vue&type=script&setup=true&lang.ts
-var x = ["id"], S = /* @__PURE__ */ i({
+var C = ["id"], w = /* @__PURE__ */ t({
 	__name: "CardTitleView",
 	props: {
 		heading: {},
@@ -15,24 +16,24 @@ var x = ["id"], S = /* @__PURE__ */ i({
 		count: { default: void 0 },
 		headingId: { default: "" }
 	},
-	setup(i) {
-		return (o, f) => (t(), c(r(v), {
-			class: "smartview-card__title d-flex align-center ga-2 pa-5 pb-0",
+	setup(t) {
+		return (p, g) => (e(), n(l, null, [r(c(b), {
+			class: "smartview-card__title d-flex align-center ga-2 pa-5",
 			"data-part": "title-row"
 		}, {
-			default: n(() => [
-				i.icon ? (t(), c(r(p), {
+			default: a(() => [
+				t.icon ? (e(), s(c(h), {
 					key: 0,
-					icon: i.icon,
+					icon: t.icon,
 					size: "20",
 					"data-part": "icon"
-				}, null, 8, ["icon"])) : s("", !0),
-				l("h2", {
-					id: i.headingId || void 0,
+				}, null, 8, ["icon"])) : d("", !0),
+				f("h2", {
+					id: t.headingId || void 0,
 					class: "text-title-medium font-weight-bold ma-0",
 					"data-part": "title"
-				}, a(i.heading), 9, x),
-				i.count === void 0 ? s("", !0) : (t(), c(r(h), {
+				}, o(t.heading), 9, C),
+				t.count === void 0 ? d("", !0) : (e(), s(c(_), {
 					key: 1,
 					size: "small",
 					variant: "tonal",
@@ -40,19 +41,19 @@ var x = ["id"], S = /* @__PURE__ */ i({
 					label: "",
 					"data-part": "count"
 				}, {
-					default: n(() => [u(a(i.count), 1)]),
+					default: a(() => [u(o(t.count), 1)]),
 					_: 1
 				})),
-				d(r(b)),
-				e(o.$slots, "default")
+				r(c(S)),
+				i(p.$slots, "default")
 			]),
 			_: 3
-		}));
+		}), r(c(m), { "data-part": "title-divider" })], 64));
 	}
-}), C = { class: "smartview-root" };
+}), T = { class: "smartview-root" };
 //#endregion
 //#region src/entries/smartview-card.ts
-f("smartview-card", /* @__PURE__ */ g(/* @__PURE__ */ i({
+p("smartview-card", /* @__PURE__ */ v(/* @__PURE__ */ t({
 	__name: "SmartviewCard.ce",
 	props: {
 		heading: {
@@ -85,42 +86,42 @@ f("smartview-card", /* @__PURE__ */ g(/* @__PURE__ */ i({
 		}
 	},
 	emits: ["action"],
-	setup(i, { emit: l }) {
+	setup(t, { emit: l }) {
 		let f = l;
-		return (l, p) => (t(), o("div", C, [d(r(y), {
-			variant: i.variant,
-			elevation: i.variant === "outlined" ? 0 : 2,
+		return (l, p) => (e(), n("div", T, [r(c(x), {
+			variant: t.variant,
+			elevation: t.variant === "outlined" ? 0 : 2,
 			rounded: "xl",
 			"data-part": "root"
 		}, {
-			default: n(() => [d(S, {
-				heading: i.heading,
-				icon: i.icon,
-				count: i.count
+			default: a(() => [r(w, {
+				heading: t.heading,
+				icon: t.icon,
+				count: t.count
 			}, {
-				default: n(() => [e(l.$slots, "title-append"), i.actionText ? (t(), c(r(m), {
+				default: a(() => [i(l.$slots, "title-append"), t.actionText ? (e(), s(c(g), {
 					key: 0,
 					variant: "tonal",
 					rounded: "lg",
 					size: "small",
-					"prepend-icon": i.actionIcon,
-					disabled: i.actionDisabled,
+					"prepend-icon": t.actionIcon,
+					disabled: t.actionDisabled,
 					"data-part": "action",
 					onClick: p[0] ||= (e) => f("action")
 				}, {
-					default: n(() => [u(a(i.actionText), 1)]),
+					default: a(() => [u(o(t.actionText), 1)]),
 					_: 1
-				}, 8, ["prepend-icon", "disabled"])) : s("", !0)]),
+				}, 8, ["prepend-icon", "disabled"])) : d("", !0)]),
 				_: 3
 			}, 8, [
 				"heading",
 				"icon",
 				"count"
-			]), d(r(_), {
+			]), r(c(y), {
 				class: "pa-5",
 				"data-part": "body"
 			}, {
-				default: n(() => [e(l.$slots, "default")]),
+				default: a(() => [i(l.$slots, "default")]),
 				_: 3
 			})]),
 			_: 3

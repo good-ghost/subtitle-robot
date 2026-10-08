@@ -1,8 +1,8 @@
-import { Pn as e, bn as t, fn as n, gn as r, yn as i } from "../chunks/vuetify-DJ4bsPds.js";
-import { t as a } from "../chunks/define-BG7hCbXs.js";
+import { Bn as e, En as t, Sn as n, Tn as r, vn as i } from "../chunks/vuetify-C39-WP9g.js";
+import { t as a } from "../chunks/define-BovISfN4.js";
 import { t as o } from "../chunks/_plugin-vue_export-helper-B3ysoDQm.js";
 import { r as s } from "../chunks/status-J4FIN71L.js";
-import { t as c } from "../chunks/StatusChipView-D9jwXAKX.js";
+import { t as c } from "../chunks/StatusChipView-CFTFffvZ.js";
 //#region src/elements/SmartviewBadge.ce.vue?vue&type=script&setup=true&lang.ts
 var l = { class: "smartview-root" };
 //#endregion
@@ -36,12 +36,12 @@ a("smartview-badge", /* @__PURE__ */ o(/* @__PURE__ */ t({
 		}
 	},
 	setup(t) {
-		let a = t, o = n(() => s(a.status, a.statusMap, {
+		let a = t, o = i(() => s(a.status, a.statusMap, {
 			color: a.color,
 			icon: a.icon,
 			label: a.label
 		}));
-		return (n, a) => (e(), r("span", l, [i(c, {
+		return (i, a) => (e(), n("span", l, [r(c, {
 			status: o.value,
 			size: t.size
 		}, null, 8, ["status", "size"])]));

@@ -60,6 +60,7 @@ def _failed_job(env: WebEnv, path: Path) -> Job:
         ("GET", "/api/ledger"),
         ("POST", "/api/ledger/forget"),
         ("POST", "/api/media"),
+        ("GET", "/api/browse"),
     ],
 )
 def test_api_requires_login(tmp_path: Path, method: str, url: str) -> None:
@@ -252,3 +253,87 @@ def test_register_without_watch_paths(tmp_path: Path) -> None:
     env.login()
     response = env.client.post("/api/media", json={"path": "/media/a.mkv"})
     assert (response.status_code, response.json()) == (400, {"detail": "no_watch_paths"})
+
+
+# ---------------------------------------------------------------- 폴더 목록 (WI-7.004d)
+
+
+def test_browse_lists_watch_roots_then_folders_and_videos(api: WebEnv, media: Path) -> None:
+    movies = media / "movies"
+    _video(movies / "Sea Lark (2026)" / "Sea Lark (2026).mkv")
+    _video(movies / "b.MP4")
+    _video(movies / "a.mkv")
+    (movies / "notes.txt").write_text("x")
+    (movies / ".hidden").mkdir()
+    (movies / "_UNPACK_x").mkdir()  # exclude_dirs 기본값
+    _video(movies / "clip.sample.mkv")  # exclude 기본값 *sample*
+
+    roots = api.client.get("/api/browse").json()
+    assert roots == {
+        "path": None,
+        "parent": None,
+        "entries": [
+            {"name": str(movies), "path": str(movies), "kind": "dir"},
+            {"name": str(media / "tv"), "path": str(media / "tv"), "kind": "dir"},
+        ],
+        "truncated": False,
+    }
+
+    body = api.client.get("/api/browse", params={"path": str(movies)}).json()
+    assert body["path"] == str(movies)
+    assert body["parent"] is None  # 감시 경로의 위는 감시 경로 목록
+    assert [(e["name"], e["kind"]) for e in body["entries"]] == [
+        ("Sea Lark (2026)", "dir"),
+        ("sub", "dir"),
+        ("a.mkv", "video"),
+        ("b.MP4", "video"),
+    ]
+
+    inner = api.client.get("/api/browse", params={"path": str(movies / "Sea Lark (2026)")}).json()
+    assert inner["parent"] == str(movies)
+    assert [e["path"] for e in inner["entries"]] == [str(movies / "Sea Lark (2026)" / "Sea Lark (2026).mkv")]
+
+
+@pytest.mark.parametrize(
+    ("path", "detail"),
+    [
+        ("relative/path", "path_not_absolute"),
+        ("/etc", "path_outside_watch"),
+        ("{media}/movies/../../", "path_outside_watch"),
+        ("{media}/movies/missing", "path_not_found"),
+        ("{media}/movies/a.mkv", "path_not_found"),  # 파일은 폴더가 아니다
+    ],
+)
+def test_browse_rejects(api: WebEnv, media: Path, path: str, detail: str) -> None:
+    _video(media / "movies" / "a.mkv")
+
+    response = api.client.get("/api/browse", params={"path": path.format(media=media)})
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == detail
+
+
+def test_browse_hides_symlinks_out_of_watch(api: WebEnv, media: Path, tmp_path: Path) -> None:
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (media / "movies" / "escape").symlink_to(outside)
+    (media / "movies" / "inside").symlink_to(media / "tv")
+
+    body = api.client.get("/api/browse", params={"path": str(media / "movies")}).json()
+
+    assert [e["name"] for e in body["entries"]] == ["inside", "sub"]
+    escaped = api.client.get("/api/browse", params={"path": str(media / "movies" / "escape")})
+    assert escaped.json()["detail"] == "path_outside_watch"
+
+
+def test_browse_truncates_large_folders(
+    api: WebEnv, media: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("subtitle_robot.web.api.BROWSE_LIMIT", 2)
+    for name in ("c.mkv", "a.mkv", "b.mkv"):
+        _video(media / "tv" / name)
+
+    body = api.client.get("/api/browse", params={"path": str(media / "tv")}).json()
+
+    assert [e["name"] for e in body["entries"]] == ["a.mkv", "b.mkv"]
+    assert body["truncated"] is True

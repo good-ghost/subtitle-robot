@@ -6,26 +6,31 @@ CLI(`health`, `queue`, `ledger`, `media`)와 같은 큐·기록 메서드를 부
 
 from __future__ import annotations
 
+import fnmatch
 import os
 import time
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from subtitle_robot import __version__
+from subtitle_robot.config import WatchConfig
 from subtitle_robot.media.tmdb import TMDB_SECRET
 from subtitle_robot.secret_store import SecretStore
 from subtitle_robot.watch.heartbeat import HEALTH_MAX_AGE_S, heartbeat_age
 from subtitle_robot.watch.ledger import LedgerEntry, Verdict
 from subtitle_robot.watch.queue import Job, JobStatus
 from subtitle_robot.watch.state import state_path
-from subtitle_robot.watch.watcher import collect_media_files
+from subtitle_robot.watch.watcher import collect_media_files, is_media_candidate
 from subtitle_robot.watch.worker import media_target, series_key_for
 from subtitle_robot.web.context import Context
 
 router = APIRouter(prefix="/api")
+
+# 폴더 목록 한 번에 보일 항목 상한 (큰 라이브러리 폴더에서 응답이 커지지 않게, WI-7.004d)
+BROWSE_LIMIT = 1000
 
 # 화면이 보이는 상태 순서 (queue list 와 같다)
 JOB_STATUSES: tuple[JobStatus, ...] = (
@@ -143,6 +148,26 @@ class MediaIn(BaseModel):
     force: bool = False
 
 
+class BrowseEntry(BaseModel):
+    """폴더 목록의 항목 하나: 하위 폴더 또는 등록할 수 있는 동영상."""
+
+    name: str
+    path: str
+    kind: Literal["dir", "video"]
+
+
+class BrowseOut(BaseModel):
+    """동영상 등록 화면의 폴더 목록 (WI-7.004d).
+
+    path 가 None 이면 감시 경로 목록이다. parent 는 한 단계 위 (감시 경로면 None = 감시 경로 목록).
+    """
+
+    path: str | None
+    parent: str | None
+    entries: list[BrowseEntry]
+    truncated: bool = False
+
+
 class QueuedOut(BaseModel):
     """등록한 작업."""
 
@@ -220,6 +245,66 @@ def forget(body: ForgetIn, context: Context) -> CountOut:
     if count == 0:
         raise HTTPException(status_code=404, detail="ledger_not_found")
     return CountOut(count=count)
+
+
+@router.get("/browse")
+def browse(context: Context, path: str | None = None) -> BrowseOut:
+    """감시 경로 안의 폴더 내용 (하위 폴더·동영상 후보). path 가 없으면 감시 경로 목록.
+
+    경로는 감시 경로 안이어야 하고(`..`·심볼릭 링크로 밖을 가리키면 거절, §25.4), 밖을 가리키는
+    심볼릭 링크 항목은 보이지 않는다. 숨김·exclude_dirs 폴더와 include·exclude 밖의 파일은 뺀다.
+    """
+    watch = context.config.watch
+    configured = [Path(item.path) for item in watch.paths]
+    if not configured:
+        raise HTTPException(status_code=400, detail="no_watch_paths")
+    roots = [root.resolve() for root in configured]
+    if path is None:
+        entries = [BrowseEntry(name=str(root), path=str(root), kind="dir") for root in configured]
+        return BrowseOut(path=None, parent=None, entries=entries)
+    target = Path(path)
+    if not target.is_absolute():
+        raise HTTPException(status_code=400, detail="path_not_absolute")
+    folder = Path(os.path.normpath(target))
+    resolved = folder.resolve()
+    if not any(resolved.is_relative_to(root) for root in roots):
+        raise HTTPException(status_code=400, detail="path_outside_watch")
+    if not resolved.is_dir():
+        raise HTTPException(status_code=400, detail="path_not_found")
+    entries, truncated = _folder_entries(folder, roots, watch)
+    at_root = any(resolved == root for root in roots)
+    return BrowseOut(
+        path=str(folder),
+        parent=None if at_root else str(folder.parent),
+        entries=entries,
+        truncated=truncated,
+    )
+
+
+def _folder_entries(
+    folder: Path, roots: list[Path], watch: WatchConfig
+) -> tuple[list[BrowseEntry], bool]:
+    """하위 폴더(이름순) 다음 동영상(이름순). 상한을 넘으면 잘라 낸다."""
+    excluded = [pattern.casefold() for pattern in watch.exclude_dirs]
+    folders: list[BrowseEntry] = []
+    videos: list[BrowseEntry] = []
+    with os.scandir(folder) as found:
+        for item in found:
+            if item.name.startswith("."):
+                continue
+            entry = Path(item.path)
+            if item.is_symlink() and not any(entry.resolve().is_relative_to(r) for r in roots):
+                continue
+            if item.is_dir():
+                name = item.name.casefold()
+                if not any(fnmatch.fnmatch(name, pattern) for pattern in excluded):
+                    folders.append(BrowseEntry(name=item.name, path=str(entry), kind="dir"))
+            elif item.is_file() and is_media_candidate(entry, watch):
+                videos.append(BrowseEntry(name=item.name, path=str(entry), kind="video"))
+    ordered = sorted(folders, key=lambda e: e.name.casefold()) + sorted(
+        videos, key=lambda e: e.name.casefold()
+    )
+    return ordered[:BROWSE_LIMIT], len(ordered) > BROWSE_LIMIT
 
 
 @router.post("/media")
