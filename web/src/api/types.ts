@@ -89,6 +89,14 @@ export interface LedgerEntry {
   updated_at: number
 }
 
+/** 동영상 등록 화면의 폴더 목록 (WI-7.004d). path 가 null 이면 감시 경로 목록 */
+export interface BrowseResult {
+  path: string | null
+  parent: string | null
+  entries: { name: string; path: string; kind: 'dir' | 'video' }[]
+  truncated: boolean
+}
+
 export interface QueuedJob {
   id: number
   path: string

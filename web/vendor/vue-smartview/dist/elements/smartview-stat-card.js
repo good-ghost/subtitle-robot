@@ -1,10 +1,10 @@
-import { Pn as e, Rn as t, Wn as n, ar as r, bn as i, cr as a, dr as o, fn as s, gn as c, hn as l, in as u, mn as d, pn as f, ur as p, yn as m } from "../chunks/vuetify-DJ4bsPds.js";
-import { t as h } from "../chunks/define-BG7hCbXs.js";
+import { Bn as e, En as t, Sn as n, Tn as r, Wn as i, Xn as a, _r as o, bn as s, dr as c, gr as l, mr as u, un as d, vn as f, xn as p, yn as m } from "../chunks/vuetify-C39-WP9g.js";
+import { t as h } from "../chunks/define-BovISfN4.js";
 import { n as g } from "../chunks/cancelableLink-DUAoXNUy.js";
-import { a as _ } from "../chunks/density-Dh8nVFPw.js";
-import { t as v } from "../chunks/VAvatar-B5evLdR9.js";
+import { a as _ } from "../chunks/density-9WZgplEH.js";
+import { t as v } from "../chunks/VAvatar-DdB1q11O.js";
 import { t as y } from "../chunks/_plugin-vue_export-helper-B3ysoDQm.js";
-import { t as b } from "../chunks/VCard-CIgInzZL.js";
+import { t as b } from "../chunks/VCard-Z58vOTy1.js";
 //#region src/elements/SmartviewStatCard.ce.vue?vue&type=script&setup=true&lang.ts
 var x = { class: "d-flex align-center justify-space-between position-relative" }, S = {
 	class: "text-body-medium text-medium-emphasis font-weight-medium mt-0 mb-1",
@@ -19,7 +19,7 @@ var x = { class: "d-flex align-center justify-space-between position-relative" }
 };
 //#endregion
 //#region src/entries/smartview-stat-card.ts
-h("smartview-stat-card", /* @__PURE__ */ y(/* @__PURE__ */ i({
+h("smartview-stat-card", /* @__PURE__ */ y(/* @__PURE__ */ t({
 	__name: "SmartviewStatCard.ce",
 	props: {
 		label: {
@@ -59,7 +59,7 @@ h("smartview-stat-card", /* @__PURE__ */ y(/* @__PURE__ */ i({
 			type: String
 		}
 	},
-	setup(i) {
+	setup(t) {
 		let h = {
 			decorated: {
 				avatarSize: 52,
@@ -69,39 +69,39 @@ h("smartview-stat-card", /* @__PURE__ */ y(/* @__PURE__ */ i({
 				avatarSize: 48,
 				entranceStepMs: 70
 			}
-		}, y = i, T = u(), E = s(() => h[y.variant].avatarSize), D = s(() => h[y.variant].entranceStepMs);
+		}, y = t, T = d(), E = f(() => h[y.variant].avatarSize), D = f(() => h[y.variant].entranceStepMs);
 		function O(e) {
 			y.href && g(T, "navigate", y.href, e);
 		}
-		return (s, u) => (e(), d(t(i.href ? "a" : "div"), {
-			href: i.href || void 0,
+		return (d, f) => (e(), s(i(t.href ? "a" : "div"), {
+			href: t.href || void 0,
 			class: "smartview-stat-card-link",
 			"data-part": "root",
 			onClick: O
 		}, {
-			default: n(() => [m(r(b), {
-				class: a(["stat-card pa-5", `stat-card--${i.variant}`]),
+			default: a(() => [r(c(b), {
+				class: u(["stat-card pa-5", `stat-card--${t.variant}`]),
 				rounded: "xl",
 				elevation: "0",
-				style: p({ animationDelay: `${i.index * D.value}ms` })
+				style: l({ animationDelay: `${t.index * D.value}ms` })
 			}, {
-				default: n(() => [i.variant === "decorated" ? (e(), c("div", {
+				default: a(() => [t.variant === "decorated" ? (e(), n("div", {
 					key: 0,
-					class: a(["stat-gradient", `stat-gradient--${i.accent}`]),
+					class: u(["stat-gradient", `stat-gradient--${t.accent}`]),
 					"data-part": "decoration"
-				}, null, 2)) : l("", !0), f("div", x, [f("div", null, [
-					f("p", S, o(i.label), 1),
-					f("p", C, o(i.value), 1),
-					i.caption ? (e(), c("p", w, o(i.caption), 1)) : l("", !0)
-				]), m(r(v), {
-					color: i.color,
+				}, null, 2)) : p("", !0), m("div", x, [m("div", null, [
+					m("p", S, o(t.label), 1),
+					m("p", C, o(t.value), 1),
+					t.caption ? (e(), n("p", w, o(t.caption), 1)) : p("", !0)
+				]), r(c(v), {
+					color: t.color,
 					size: E.value,
 					class: "stat-icon-avatar",
 					variant: "tonal",
 					"data-part": "icon"
 				}, {
-					default: n(() => [m(r(_), {
-						icon: i.icon,
+					default: a(() => [r(c(_), {
+						icon: t.icon,
 						size: E.value / 2
 					}, null, 8, ["icon", "size"])]),
 					_: 1

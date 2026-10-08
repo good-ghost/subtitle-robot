@@ -1,10 +1,10 @@
-import { Pn as e, ar as t, bn as n, en as r, in as i, mn as a } from "../chunks/vuetify-DJ4bsPds.js";
-import { t as o } from "../chunks/define-BG7hCbXs.js";
+import { Bn as e, En as t, bn as n, dr as r, on as i, un as a } from "../chunks/vuetify-C39-WP9g.js";
+import { t as o } from "../chunks/define-BovISfN4.js";
 import { t as s } from "../chunks/cancelableLink-DUAoXNUy.js";
-import { t as c } from "../chunks/EmptyStateView-OOc_A5tE.js";
+import { t as c } from "../chunks/EmptyStateView-CbY6x7it.js";
 //#endregion
 //#region src/entries/smartview-empty-state.ts
-o("smartview-empty-state", /* @__PURE__ */ n({
+o("smartview-empty-state", /* @__PURE__ */ t({
 	__name: "SmartviewEmptyState.ce",
 	props: {
 		icon: {
@@ -36,19 +36,19 @@ o("smartview-empty-state", /* @__PURE__ */ n({
 			type: String
 		}
 	},
-	setup(n) {
-		let o = n, { t: l } = r(), u = i();
+	setup(t) {
+		let o = t, { t: l } = i(), u = a();
 		function d(e) {
 			s(u, "action", o.actionHref, e);
 		}
-		return (r, i) => (e(), a(c, {
-			heading: n.heading || t(l)("smartview.noData"),
-			icon: n.icon,
-			hint: n.hint,
-			"action-text": n.actionText,
-			"action-icon": n.actionIcon,
-			"action-href": n.actionHref,
-			size: n.size,
+		return (i, a) => (e(), n(c, {
+			heading: t.heading || r(l)("smartview.noData"),
+			icon: t.icon,
+			hint: t.hint,
+			"action-text": t.actionText,
+			"action-icon": t.actionIcon,
+			"action-href": t.actionHref,
+			size: t.size,
 			onAction: d
 		}, null, 8, [
 			"heading",

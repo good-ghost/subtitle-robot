@@ -1,8 +1,8 @@
-import { Gn as e, Ln as t, Pn as n, Wn as r, Zn as i, ar as a, bn as o, dr as s, en as c, gn as l, hn as u, in as d, mn as f, on as p, pn as m, vn as h, yn as g } from "../chunks/vuetify-DJ4bsPds.js";
-import { t as _ } from "../chunks/define-BG7hCbXs.js";
+import { Bn as e, En as t, Sn as n, Tn as r, Un as i, Xn as a, Zn as o, _r as s, bn as c, dr as l, fn as u, on as d, rr as f, un as p, wn as m, xn as h, yn as g } from "../chunks/vuetify-C39-WP9g.js";
+import { t as _ } from "../chunks/define-BovISfN4.js";
 import { n as v } from "../chunks/cancelableLink-DUAoXNUy.js";
-import { a as y } from "../chunks/density-Dh8nVFPw.js";
-import { t as b } from "../chunks/VBtn-D2PPPp70.js";
+import { a as y } from "../chunks/density-9WZgplEH.js";
+import { t as b } from "../chunks/VBtn-CV2MWNTN.js";
 import { t as x } from "../chunks/_plugin-vue_export-helper-B3ysoDQm.js";
 //#region src/elements/SmartviewPageHeader.ce.vue?vue&type=script&setup=true&lang.ts
 var S = {
@@ -20,7 +20,7 @@ var S = {
 };
 //#endregion
 //#region src/entries/smartview-page-header.ts
-_("smartview-page-header", /* @__PURE__ */ x(/* @__PURE__ */ o({
+_("smartview-page-header", /* @__PURE__ */ x(/* @__PURE__ */ t({
 	__name: "SmartviewPageHeader.ce",
 	props: {
 		heading: {
@@ -49,40 +49,40 @@ _("smartview-page-header", /* @__PURE__ */ x(/* @__PURE__ */ o({
 		}
 	},
 	emits: ["action", "back"],
-	setup(o, { emit: _ }) {
-		let x = o, O = _, { t: k } = c(), A = d(), j = i(!1);
+	setup(t, { emit: _ }) {
+		let x = t, O = _, { t: k } = d(), A = p(), j = f(!1);
 		function M(e) {
 			e.target instanceof HTMLSlotElement && (j.value = e.target.assignedNodes().length > 0);
 		}
 		function N(e) {
 			v(A, "back", x.backHref, e);
 		}
-		return (i, c) => (n(), l("header", S, [m("div", C, [o.backHref ? (n(), f(a(b), {
+		return (d, f) => (e(), n("header", S, [g("div", C, [t.backHref ? (e(), c(l(b), {
 			key: 0,
 			icon: "",
 			variant: "text",
 			size: "small",
-			href: o.backHref,
-			"aria-label": a(k)("smartview.back"),
+			href: t.backHref,
+			"aria-label": l(k)("smartview.back"),
 			"data-part": "back",
 			onClick: N
 		}, {
-			default: r(() => [g(a(y), { icon: "mdi-arrow-left" })]),
+			default: a(() => [r(l(y), { icon: "mdi-arrow-left" })]),
 			_: 1
-		}, 8, ["href", "aria-label"])) : u("", !0), m("div", w, [m("h1", T, s(o.heading), 1), e(m("p", E, [t(i.$slots, "subtitle", { onSlotchange: M }, () => [h(s(o.subtitle), 1)])], 512), [[p, o.subtitle || j.value]])])]), m("div", D, [t(i.$slots, "actions"), o.actionText ? (n(), f(a(b), {
+		}, 8, ["href", "aria-label"])) : h("", !0), g("div", w, [g("h1", T, s(t.heading), 1), o(g("p", E, [i(d.$slots, "subtitle", { onSlotchange: M }, () => [m(s(t.subtitle), 1)])], 512), [[u, t.subtitle || j.value]])])]), g("div", D, [i(d.$slots, "actions"), t.actionText ? (e(), c(l(b), {
 			key: 0,
 			color: "primary",
 			rounded: "lg",
 			size: "large",
 			class: "font-weight-bold",
-			"prepend-icon": o.actionIcon,
-			disabled: o.actionDisabled,
+			"prepend-icon": t.actionIcon,
+			disabled: t.actionDisabled,
 			"data-part": "action",
-			onClick: c[0] ||= (e) => O("action")
+			onClick: f[0] ||= (e) => O("action")
 		}, {
-			default: r(() => [h(s(o.actionText), 1)]),
+			default: a(() => [m(s(t.actionText), 1)]),
 			_: 1
-		}, 8, ["prepend-icon", "disabled"])) : u("", !0)])]));
+		}, 8, ["prepend-icon", "disabled"])) : h("", !0)])]));
 	}
 }), [["styles", [".smartview-page-header__title,.smartview-page-header__text{min-width:0}.smartview-page-header__text h1{overflow-wrap:anywhere}"]]]));
 //#endregion

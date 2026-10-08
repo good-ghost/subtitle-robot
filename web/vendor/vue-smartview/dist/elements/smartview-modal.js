@@ -1,18 +1,19 @@
-import { Ln as e, Pn as t, Wn as n, ar as r, bn as i, dr as a, en as o, hn as s, mn as c, pn as l, vn as u, yn as d } from "../chunks/vuetify-DJ4bsPds.js";
-import { t as f } from "../chunks/define-BG7hCbXs.js";
-import { a as p } from "../chunks/density-Dh8nVFPw.js";
-import { t as m } from "../chunks/VBtn-D2PPPp70.js";
-import { i as h, n as g, r as _, t as v } from "../chunks/VCard-CIgInzZL.js";
-import { t as y } from "../chunks/VSpacer-BDzqg2jm.js";
-import { n as b, t as x } from "../chunks/dialog-DkQO-UQe.js";
+import { Bn as e, En as t, Tn as n, Un as r, Xn as i, _r as a, bn as o, dr as s, on as c, wn as l, xn as u, yn as d } from "../chunks/vuetify-C39-WP9g.js";
+import { t as f } from "../chunks/define-BovISfN4.js";
+import { t as p } from "../chunks/VDivider-CA-IOlps.js";
+import { a as m } from "../chunks/density-9WZgplEH.js";
+import { t as h } from "../chunks/VBtn-CV2MWNTN.js";
+import { i as g, n as _, r as v, t as y } from "../chunks/VCard-Z58vOTy1.js";
+import { t as b } from "../chunks/VSpacer-BKsHyVbj.js";
+import { n as x, t as S } from "../chunks/dialog-DHL_I1HS.js";
 //#region src/elements/SmartviewModal.ce.vue?vue&type=script&setup=true&lang.ts
-var S = {
+var C = {
 	class: "text-title-large ma-0",
 	"data-part": "title"
 };
 //#endregion
 //#region src/entries/smartview-modal.ts
-f("smartview-modal", /* @__PURE__ */ i({
+f("smartview-modal", /* @__PURE__ */ t({
 	__name: "SmartviewModal.ce",
 	props: {
 		open: {
@@ -81,99 +82,101 @@ f("smartview-modal", /* @__PURE__ */ i({
 		"cancel",
 		"secondary"
 	],
-	setup(i, { emit: f }) {
-		let C = i, w = f, { t: T } = o(), { attachTarget: E, contentSlotName: D, dialogId: O, onAfterLeave: k } = x({
-			open: () => C.open,
-			overlayTarget: () => C.overlayTarget
+	setup(t, { emit: f }) {
+		let w = t, T = f, { t: E } = c(), { attachTarget: D, contentSlotName: O, dialogId: k, onAfterLeave: A } = S({
+			open: () => w.open,
+			overlayTarget: () => w.overlayTarget
 		});
-		function A() {
-			C.loading || C.confirmDisabled || w("confirm");
-		}
 		function j() {
-			C.secondaryLoading || C.secondaryDisabled || w("secondary");
+			w.loading || w.confirmDisabled || T("confirm");
 		}
-		function M(e) {
-			e || w("cancel");
+		function M() {
+			w.secondaryLoading || w.secondaryDisabled || T("secondary");
 		}
-		return (o, f) => (t(), c(r(b), {
-			"model-value": i.open,
-			"max-width": i.maxWidth,
-			persistent: !i.dismissible,
+		function N(e) {
+			e || T("cancel");
+		}
+		return (c, f) => (e(), o(s(x), {
+			"model-value": t.open,
+			"max-width": t.maxWidth,
+			persistent: !t.dismissible,
 			scrollable: "",
-			attach: r(E),
+			attach: s(D),
 			"retain-focus": !1,
 			"capture-focus": !1,
-			"onUpdate:modelValue": M,
-			onAfterLeave: r(k)
+			"onUpdate:modelValue": N,
+			onAfterLeave: s(A)
 		}, {
-			default: n(() => [d(r(v), {
+			default: i(() => [n(s(y), {
 				rounded: "xl",
 				"data-part": "card",
-				"data-dialog-id": r(O)
+				"data-dialog-id": s(k)
 			}, {
-				default: n(() => [
-					d(r(_), {
-						class: "d-flex align-center ga-2 pa-5 pb-2",
+				default: i(() => [
+					n(s(v), {
+						class: "d-flex align-center ga-2 pa-5 pb-4",
 						"data-part": "title-row"
 					}, {
-						default: n(() => [i.icon ? (t(), c(r(p), {
+						default: i(() => [t.icon ? (e(), o(s(m), {
 							key: 0,
-							icon: i.icon,
-							color: i.iconColor,
+							icon: t.icon,
+							color: t.iconColor,
 							"data-part": "icon"
-						}, null, 8, ["icon", "color"])) : s("", !0), l("h2", S, a(i.heading), 1)]),
+						}, null, 8, ["icon", "color"])) : u("", !0), d("h2", C, a(t.heading), 1)]),
 						_: 1
 					}),
-					d(r(g), {
-						class: "pa-5 pt-2",
+					n(s(p), { "data-part": "header-divider" }),
+					n(s(_), {
+						class: "pa-5",
 						"data-part": "body"
 					}, {
-						default: n(() => [e(o.$slots, r(D))]),
+						default: i(() => [r(c.$slots, s(O))]),
 						_: 3
 					}),
-					d(r(h), {
-						class: "pa-4 pt-0 ga-2",
+					n(s(p), { "data-part": "footer-divider" }),
+					n(s(g), {
+						class: "pa-4 ga-2",
 						"data-part": "actions"
 					}, {
-						default: n(() => [
-							i.secondaryText ? (t(), c(r(m), {
+						default: i(() => [
+							t.secondaryText ? (e(), o(s(h), {
 								key: 0,
-								variant: "tonal",
+								variant: "outlined",
 								rounded: "lg",
-								"prepend-icon": i.secondaryIcon || void 0,
-								loading: i.secondaryLoading,
-								disabled: i.secondaryDisabled,
+								"prepend-icon": t.secondaryIcon || void 0,
+								loading: t.secondaryLoading,
+								disabled: t.secondaryDisabled,
 								"data-part": "secondary",
-								onClick: j
+								onClick: M
 							}, {
-								default: n(() => [u(a(i.secondaryText), 1)]),
+								default: i(() => [l(a(t.secondaryText), 1)]),
 								_: 1
 							}, 8, [
 								"prepend-icon",
 								"loading",
 								"disabled"
-							])) : s("", !0),
-							d(r(y)),
-							d(r(m), {
-								variant: "text",
+							])) : u("", !0),
+							n(s(b)),
+							n(s(h), {
+								variant: "outlined",
 								rounded: "lg",
 								"data-part": "cancel",
-								onClick: f[0] ||= (e) => w("cancel")
+								onClick: f[0] ||= (e) => T("cancel")
 							}, {
-								default: n(() => [u(a(i.cancelText || r(T)("smartview.cancel")), 1)]),
+								default: i(() => [l(a(t.cancelText || s(E)("smartview.cancel")), 1)]),
 								_: 1
 							}),
-							d(r(m), {
+							n(s(h), {
 								color: "primary",
 								variant: "flat",
 								rounded: "lg",
 								class: "font-weight-bold",
-								loading: i.loading,
-								disabled: i.confirmDisabled,
+								loading: t.loading,
+								disabled: t.confirmDisabled,
 								"data-part": "confirm",
-								onClick: A
+								onClick: j
 							}, {
-								default: n(() => [u(a(i.confirmText || r(T)("smartview.save")), 1)]),
+								default: i(() => [l(a(t.confirmText || s(E)("smartview.save")), 1)]),
 								_: 1
 							}, 8, ["loading", "disabled"])
 						]),

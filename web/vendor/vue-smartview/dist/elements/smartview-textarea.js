@@ -1,11 +1,11 @@
-import { A as e, Bn as t, Bt as n, Dn as r, En as i, G as a, Gn as o, Hn as s, Ht as c, Lt as l, Mn as u, Pn as d, Q as f, T as p, Un as m, V as h, W as g, Zn as _, an as ee, ar as v, bn as y, cn as b, cr as x, en as S, er as C, fn as w, g as te, gn as T, kn as ne, p as E, pn as D, rt as O, sn as k, vt as A, yn as j } from "../chunks/vuetify-DJ4bsPds.js";
-import { c as re, t as M } from "../chunks/define-BG7hCbXs.js";
-import { n as N, o as P, r as F } from "../chunks/VLabel-slD1mVUb.js";
-import { t as I } from "../chunks/hostValue-Q4jXLLiG.js";
-import { t as L } from "../chunks/intersect-B2u7q2lh.js";
-import { t as ie } from "../chunks/forwardRefs-BcUquh0G.js";
-import { n as R } from "../chunks/formField-B1NnTyqU.js";
-import { a as z, i as B, n as V, o as H, r as U, t as W } from "../chunks/autofocus-Cd4twDZF.js";
+import { A as e, Bn as t, Bt as n, En as r, Fn as i, G as a, Ht as o, Jn as s, Kn as c, Lt as l, Mn as u, Nn as d, Q as f, Qt as p, Rn as m, Sn as h, T as g, Tn as _, V as v, W as y, Yn as ee, Zn as b, dn as te, dr as x, en as S, g as C, mn as w, mr as T, on as E, or as D, p as ne, pn as O, rr as k, rt as re, vn as A, vt as j, yn as M } from "../chunks/vuetify-C39-WP9g.js";
+import { c as N, t as P } from "../chunks/define-BovISfN4.js";
+import { n as F, o as I, r as L } from "../chunks/VLabel-B80IAw5H.js";
+import { t as R } from "../chunks/hostValue-CjEvr2gM.js";
+import { t as z } from "../chunks/intersect-BDACueiR.js";
+import { t as B } from "../chunks/forwardRefs-mn8VYMvs.js";
+import { n as V } from "../chunks/formField-CJIGaqFV.js";
+import { a as H, i as U, n as W, o as ie, r as ae, t as oe } from "../chunks/autofocus-2dJozNqM.js";
 //#region node_modules/vuetify/lib/components/VTextarea/VTextarea.js
 var G = e({
 	autoGrow: Boolean,
@@ -39,12 +39,12 @@ var G = e({
 	},
 	suffix: String,
 	modelModifiers: Object,
-	...V(),
-	...A(F(), ["direction"]),
-	...z()
-}, "VTextarea"), K = p()({
+	...W(),
+	...j(L(), ["direction"]),
+	...H()
+}, "VTextarea"), K = g()({
 	name: "VTextarea",
-	directives: { vIntersect: L },
+	directives: { vIntersect: z },
 	inheritAttrs: !1,
 	props: G(),
 	emits: {
@@ -54,73 +54,73 @@ var G = e({
 		"update:modelValue": (e) => !0,
 		"update:rows": (e) => !0
 	},
-	setup(e, { attrs: t, emit: d, slots: p }) {
-		let v = te(e, "modelValue"), { isFocused: y, focus: S, blur: T } = P(e), { onIntersect: k } = W(e), A = w(() => l(e.counterValue) ? e.counterValue(v.value) : (v.value || "").toString().length), M = w(() => {
+	setup(e, { attrs: t, emit: r, slots: c }) {
+		let p = C(e, "modelValue"), { isFocused: h, focus: g, blur: x } = I(e), { onIntersect: S } = oe(e), E = A(() => l(e.counterValue) ? e.counterValue(p.value) : (p.value || "").toString().length), O = A(() => {
 			if (t.maxlength) return t.maxlength;
-			if (e.counter && (n(e.counter) || c(e.counter))) return e.counter;
-		}), F = _(), I = _(), R = C(""), z = _(), V = _(0), { platform: G } = E(), K = U(e), q = w(() => e.persistentPlaceholder || y.value || e.active);
-		function J() {
-			K.isSuppressing.value && K.update(), z.value !== O() && z.value?.focus(), y.value || S();
+			if (e.counter && (n(e.counter) || o(e.counter))) return e.counter;
+		}), j = k(), P = k(), L = D(""), R = k(), V = k(0), { platform: H } = ne(), W = ae(e), G = A(() => e.persistentPlaceholder || h.value || e.active);
+		function K() {
+			W.isSuppressing.value && W.update(), R.value !== re() && R.value?.focus(), h.value || g();
 		}
-		function ae(e) {
-			J(), d("click:control", e);
+		function q(e) {
+			K(), r("click:control", e);
 		}
-		function oe(e) {
-			d("mousedown:control", e);
+		function J(e) {
+			r("mousedown:control", e);
 		}
 		function se(t) {
-			t.stopPropagation(), J(), r(() => {
-				v.value = "", h(e["onClick:clear"], t);
+			t.stopPropagation(), K(), d(() => {
+				p.value = "", v(e["onClick:clear"], t);
 			});
 		}
 		function ce(t) {
 			let n = t.target;
 			if (!e.modelModifiers?.trim) {
-				v.value = n.value;
+				p.value = n.value;
 				return;
 			}
-			let i = n.value, a = n.selectionStart, o = n.selectionEnd;
-			v.value = i, r(() => {
+			let r = n.value, i = n.selectionStart, a = n.selectionEnd;
+			p.value = r, d(() => {
 				let e = 0;
-				i.trimStart().length === n.value.length && (e = i.length - n.value.length), a != null && (n.selectionStart = a - e), o != null && (n.selectionEnd = o - e);
+				r.trimStart().length === n.value.length && (e = r.length - n.value.length), i != null && (n.selectionStart = i - e), a != null && (n.selectionEnd = a - e);
 			});
 		}
-		let Y = _(), X = _(Number(e.rows)), Z = w(() => ["plain", "underlined"].includes(e.variant));
-		m(() => {
+		let Y = k(), X = k(Number(e.rows)), Z = A(() => ["plain", "underlined"].includes(e.variant));
+		ee(() => {
 			e.autoGrow || (X.value = Number(e.rows));
 		});
 		function Q() {
-			r(() => {
-				if (!z.value) return;
-				if (G.value.firefox) {
+			d(() => {
+				if (!R.value) return;
+				if (H.value.firefox) {
 					V.value = 12;
 					return;
 				}
-				let { offsetWidth: e, clientWidth: t } = z.value;
+				let { offsetWidth: e, clientWidth: t } = R.value;
 				V.value = Math.max(0, e - t);
-			}), e.autoGrow && r(() => {
-				if (!Y.value || !I.value) return;
-				let t = getComputedStyle(Y.value), n = getComputedStyle(I.value.$el), r = parseFloat(t.getPropertyValue("--v-field-padding-top")) + parseFloat(t.getPropertyValue("--v-input-padding-top")) + parseFloat(t.getPropertyValue("--v-field-padding-bottom")), i = Y.value.scrollHeight, o = parseFloat(t.lineHeight), s = Math.max(parseFloat(e.rows) * o + r, parseFloat(n.getPropertyValue("--v-input-control-height"))), c = e.maxHeight ? parseFloat(e.maxHeight) : parseFloat(e.maxRows) * o + r || Infinity, l = g(i ?? 0, s, c);
-				X.value = Math.floor((l - r) / o), R.value = a(l);
+			}), e.autoGrow && d(() => {
+				if (!Y.value || !P.value) return;
+				let t = getComputedStyle(Y.value), n = getComputedStyle(P.value.$el), r = parseFloat(t.getPropertyValue("--v-field-padding-top")) + parseFloat(t.getPropertyValue("--v-input-padding-top")) + parseFloat(t.getPropertyValue("--v-field-padding-bottom")), i = Y.value.scrollHeight, o = parseFloat(t.lineHeight), s = Math.max(parseFloat(e.rows) * o + r, parseFloat(n.getPropertyValue("--v-input-control-height"))), c = e.maxHeight ? parseFloat(e.maxHeight) : parseFloat(e.maxRows) * o + r || Infinity, l = y(i ?? 0, s, c);
+				X.value = Math.floor((l - r) / o), L.value = a(l);
 			});
 		}
-		u(Q), s(v, Q), s(() => e.rows, Q), s(() => e.maxHeight, Q), s(() => e.maxRows, Q), s(() => e.density, Q), s(X, (e) => {
-			d("update:rows", e);
+		m(Q), s(p, Q), s(() => e.rows, Q), s(() => e.maxHeight, Q), s(() => e.maxRows, Q), s(() => e.density, Q), s(X, (e) => {
+			r("update:rows", e);
 		});
 		let $;
 		return s(Y, (e) => {
 			e ? ($ = new ResizeObserver(Q), $.observe(Y.value)) : $?.disconnect();
-		}), ne(() => {
+		}), i(() => {
 			$?.disconnect();
-		}), re(() => {
-			let n = !!(p.counter || e.counter !== void 0 || e.counterValue != null), r = e.counter !== !1 && e.counter !== null && (e.persistentCounter || y.value), s = e.hideDetails !== !0 && !!(p.details || n), c = !!(p.details || n && r), [l, u] = f(t), { modelValue: d, ...m } = N.filterProps(e), h = {
-				...B.filterProps(e),
+		}), N(() => {
+			let n = !!(c.counter || e.counter !== void 0 || e.counterValue != null), r = e.counter !== !1 && e.counter !== null && (e.persistentCounter || h.value), i = e.hideDetails !== !0 && !!(c.details || n), o = !!(c.details || n && r), [s, l] = f(t), { modelValue: d, ...m } = F.filterProps(e), g = {
+				...U.filterProps(e),
 				"onClick:clear": se
 			};
-			return j(N, i({
-				ref: F,
-				modelValue: v.value,
-				"onUpdate:modelValue": (e) => v.value = e,
+			return _(F, u({
+				ref: j,
+				modelValue: p.value,
+				"onUpdate:modelValue": (e) => p.value = e,
 				class: [
 					"v-textarea v-text-field",
 					{
@@ -138,79 +138,82 @@ var G = e({
 					"--v-textarea-max-height": e.maxHeight ? a(e.maxHeight) : void 0,
 					"--v-textarea-scroll-bar-width": a(V.value)
 				}, e.style]
-			}, l, m, {
+			}, s, m, {
 				centerAffix: X.value === 1 && !Z.value,
-				focused: y.value,
-				detailsActive: c,
+				focused: h.value,
+				detailsActive: o,
 				indentDetails: e.indentDetails ?? !Z.value
 			}), {
-				...p,
-				default: ({ id: t, isDisabled: n, isDirty: r, isReadonly: a, isValid: s, hasDetails: c }) => j(B, i({
-					ref: I,
-					style: { "--v-textarea-control-height": R.value },
-					onClick: ae,
-					onMousedown: oe,
+				...c,
+				default: ({ id: t, isDisabled: n, isDirty: r, isReadonly: i, isValid: a, hasDetails: o }) => _(U, u({
+					ref: P,
+					style: { "--v-textarea-control-height": L.value },
+					onClick: q,
+					onMousedown: J,
 					"onClick:prependInner": e["onClick:prependInner"],
 					"onClick:appendInner": e["onClick:appendInner"]
-				}, h, {
+				}, g, {
 					id: t.value,
-					active: q.value || r.value,
+					active: G.value || r.value,
 					labelId: `${t.value}-label`,
 					centerAffix: X.value === 1 && !Z.value,
 					dirty: r.value || e.dirty,
 					disabled: n.value,
-					focused: y.value,
-					details: c.value,
-					error: s.value === !1
+					focused: h.value,
+					details: o.value,
+					error: a.value === !1
 				}), {
-					...p,
-					default: ({ props: { class: r, ...s }, controlRef: c }) => D(b, null, [
-						e.prefix && D("span", { class: "v-text-field__prefix" }, [e.prefix]),
-						o(D("textarea", i({
-							ref: (e) => z.value = c.value = e,
+					...c,
+					default: ({ props: { class: r, ...a }, controlRef: o }) => M(w, null, [
+						e.prefix && M("span", { class: "v-text-field__prefix" }, [e.prefix]),
+						b(M("textarea", u({
+							ref: (e) => R.value = o.value = e,
 							class: r,
-							value: v.value,
+							value: p.value,
 							onInput: ce,
 							autofocus: e.autofocus,
-							readonly: a.value,
+							readonly: i.value,
 							disabled: n.value,
 							placeholder: e.placeholder,
 							rows: e.rows,
-							name: K.fieldName.value,
-							autocomplete: K.fieldAutocomplete.value,
-							onFocus: J,
-							onBlur: T,
+							name: W.fieldName.value,
+							autocomplete: W.fieldAutocomplete.value,
+							onFocus: K,
+							onBlur: x,
 							"aria-labelledby": `${t.value}-label`
-						}, s, u), null), [[
-							L,
-							{ handler: k },
+						}, a, l), null), [[
+							z,
+							{ handler: S },
 							null,
 							{ once: !0 }
 						]]),
-						e.autoGrow && o(D("textarea", {
-							class: x([r, "v-textarea__sizer"]),
-							id: `${s.id}-sizer`,
-							"onUpdate:modelValue": (e) => v.value = e,
+						e.autoGrow && b(M("textarea", {
+							class: T([r, "v-textarea__sizer"]),
+							id: `${a.id}-sizer`,
+							"onUpdate:modelValue": (e) => p.value = e,
 							ref: Y,
 							readonly: !0,
 							"aria-hidden": "true"
-						}, null), [[ee, v.value]]),
-						e.suffix && D("span", { class: "v-text-field__suffix" }, [e.suffix])
+						}, null), [[te, p.value]]),
+						e.suffix && M("span", { class: "v-text-field__suffix" }, [e.suffix])
 					])
 				}),
-				details: s ? (t) => D(b, null, [p.details?.(t), n && D(b, null, [D("span", null, null), j(H, {
+				details: i ? (t) => M(w, null, [c.details?.(t), n && M(w, null, [M("span", null, null), _(ie, {
 					active: r,
-					value: A.value,
-					max: M.value,
+					value: E.value,
+					max: O.value,
 					disabled: e.disabled
-				}, p.counter)])]) : void 0
+				}, c.counter)])]) : void 0
 			});
-		}), ie({}, F, I, z);
+		}), B({}, j, P, R);
 	}
-}), q = 3;
+}), q = p({
+	en: { inputMinLength: "Enter at least {min} characters" },
+	ko: { inputMinLength: "{min}자 이상 입력하세요" }
+}), J = 3;
 //#endregion
 //#region src/entries/smartview-textarea.ts
-M("smartview-textarea", /* @__PURE__ */ y({
+P("smartview-textarea", /* @__PURE__ */ r({
 	__name: "SmartviewTextarea.ce",
 	props: {
 		value: {
@@ -226,7 +229,7 @@ M("smartview-textarea", /* @__PURE__ */ y({
 			default: !1
 		},
 		rows: {
-			default: q,
+			default: J,
 			type: Number
 		},
 		autoGrow: {
@@ -266,35 +269,37 @@ M("smartview-textarea", /* @__PURE__ */ y({
 	},
 	emits: ["input", "change"],
 	setup(e, { emit: n }) {
-		let r = e, i = n, { t: a } = S(), o = t("root"), { current: s, commit: c, reset: l } = I("value", () => r.value), u = w(() => Number.isInteger(r.rows) && r.rows > 0 ? r.rows : q), f = w(() => r.minlength !== void 0 && s.value !== "" && s.value.length < r.minlength), p = w(() => f.value ? a("smartview.inputMinLength", { min: r.minlength ?? 0 }) : ""), { formDisabled: m, touched: h } = R({
+		let r = e, i = n, { t: a } = E();
+		S(q);
+		let o = c("root"), { current: s, commit: l, reset: u } = R("value", () => r.value), d = A(() => Number.isInteger(r.rows) && r.rows > 0 ? r.rows : J), f = A(() => r.minlength !== void 0 && s.value !== "" && s.value.length < r.minlength), p = A(() => f.value ? a("smartview.inputMinLength", { min: r.minlength ?? 0 }) : ""), { formDisabled: m, touched: g } = V({
 			value: () => s.value,
 			isEmpty: () => s.value === "",
 			required: () => r.required,
 			requiredMessage: () => a("smartview.required"),
 			validationError: () => p.value,
 			anchor: () => o.value?.querySelector("textarea") ?? void 0,
-			reset: l
-		}), g = w(() => r.errorMessage ? [r.errorMessage] : h.value ? r.required && s.value === "" ? [a("smartview.required")] : p.value ? [p.value] : [] : []);
-		function _(e) {
-			c(e ?? ""), i("input", s.value);
+			reset: u
+		}), v = A(() => r.errorMessage ? [r.errorMessage] : g.value ? r.required && s.value === "" ? [a("smartview.required")] : p.value ? [p.value] : [] : []);
+		function y(e) {
+			l(e ?? ""), i("input", s.value);
 		}
-		return (t, n) => (d(), T("div", {
+		return (n, r) => (t(), h("div", {
 			ref_key: "root",
 			ref: o,
 			class: "smartview-root",
-			onInput: n[1] ||= k(() => {}, ["stop"]),
-			onChange: n[2] ||= k((e) => i("change", v(s)), ["stop"])
-		}, [j(v(K), {
-			"model-value": v(s),
+			onInput: r[1] ||= O(() => {}, ["stop"]),
+			onChange: r[2] ||= O((e) => i("change", x(s)), ["stop"])
+		}, [_(x(K), {
+			"model-value": x(s),
 			label: e.label || void 0,
 			hint: e.hint || void 0,
 			"persistent-hint": !!e.hint,
 			"hide-details": "auto",
-			"error-messages": g.value,
+			"error-messages": v.value,
 			placeholder: e.placeholder || void 0,
-			disabled: e.disabled || v(m),
+			disabled: e.disabled || x(m),
 			readonly: e.readonly,
-			rows: u.value,
+			rows: d.value,
 			"auto-grow": e.autoGrow,
 			maxlength: e.maxlength,
 			counter: e.maxlength,
@@ -305,8 +310,8 @@ M("smartview-textarea", /* @__PURE__ */ y({
 			variant: "outlined",
 			rounded: "lg",
 			"data-part": "field",
-			"onUpdate:modelValue": _,
-			onBlur: n[0] ||= (e) => h.value = !0
+			"onUpdate:modelValue": y,
+			onBlur: r[0] ||= (e) => g.value = !0
 		}, null, 8, [
 			"model-value",
 			"label",

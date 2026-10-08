@@ -1,11 +1,11 @@
-import { Bn as e, Pn as t, ar as n, bn as r, dr as i, en as a, gn as o, hn as s, mn as c, pn as l, sn as u, vn as d, yn as f, zn as p } from "../chunks/vuetify-DJ4bsPds.js";
-import { t as m } from "../chunks/define-BG7hCbXs.js";
+import { Bn as e, En as t, Gn as n, Kn as r, Sn as i, Tn as a, _r as o, bn as s, dr as c, on as l, pn as u, wn as d, xn as f, yn as p } from "../chunks/vuetify-C39-WP9g.js";
+import { t as m } from "../chunks/define-BovISfN4.js";
 import { t as h } from "../chunks/_plugin-vue_export-helper-B3ysoDQm.js";
-import { t as g } from "../chunks/checkedField-uvcxFMl5.js";
-import { t as _ } from "../chunks/VSwitch-rcpcpGXz.js";
+import { t as g } from "../chunks/checkedField-iNQyZ5dI.js";
+import { t as _ } from "../chunks/VSwitch-I8aX_dOy.js";
 //#endregion
 //#region src/elements/parts/CheckboxToggleView.vue
-var v = /* @__PURE__ */ r({
+var v = /* @__PURE__ */ t({
 	__name: "CheckboxToggleView",
 	props: {
 		checked: { type: Boolean },
@@ -30,20 +30,20 @@ var v = /* @__PURE__ */ r({
 		color: { default: "success" }
 	},
 	emits: ["change"],
-	setup(e, { emit: r }) {
-		let i = r;
-		return (r, a) => (t(), c(n(_), {
-			id: e.inputId || void 0,
-			"model-value": e.checked,
-			label: e.hideStatusText ? void 0 : e.statusText,
-			"aria-label": e.hideStatusText && !e.labelled ? e.statusText : void 0,
-			disabled: e.disabled,
-			readonly: e.readonly,
-			color: e.color,
+	setup(t, { emit: n }) {
+		let r = n;
+		return (n, i) => (e(), s(c(_), {
+			id: t.inputId || void 0,
+			"model-value": t.checked,
+			label: t.hideStatusText ? void 0 : t.statusText,
+			"aria-label": t.hideStatusText && !t.labelled ? t.statusText : void 0,
+			disabled: t.disabled,
+			readonly: t.readonly,
+			color: t.color,
 			density: "compact",
 			"hide-details": "",
 			role: "switch",
-			"onUpdate:modelValue": a[0] ||= (e) => i("change", e === !0)
+			"onUpdate:modelValue": i[0] ||= (e) => r("change", e === !0)
 		}, null, 8, [
 			"id",
 			"model-value",
@@ -70,7 +70,7 @@ var v = /* @__PURE__ */ r({
 }, C = "success";
 //#endregion
 //#region src/entries/smartview-checkbox-toggle.ts
-m("smartview-checkbox-toggle", /* @__PURE__ */ h(/* @__PURE__ */ r({
+m("smartview-checkbox-toggle", /* @__PURE__ */ h(/* @__PURE__ */ t({
 	__name: "SmartviewCheckboxToggle.ce",
 	props: {
 		checked: {
@@ -123,33 +123,33 @@ m("smartview-checkbox-toggle", /* @__PURE__ */ h(/* @__PURE__ */ r({
 		}
 	},
 	emits: ["input", "change"],
-	setup(r, { emit: c }) {
-		let m = r, h = c, { t: _ } = a(), w = `smartview-toggle-${p()}`, T = e("root"), { current: E, formDisabled: D, shownError: O, change: k } = g(m, () => T.value?.querySelector(`#${CSS.escape(w)}`) ?? void 0, (e, t) => h(e === "input" ? "input" : "change", t));
-		return (e, a) => (t(), o("div", {
+	setup(t, { emit: s }) {
+		let m = t, h = s, { t: _ } = l(), w = `smartview-toggle-${n()}`, T = r("root"), { current: E, formDisabled: D, shownError: O, change: k } = g(m, () => T.value?.querySelector(`#${CSS.escape(w)}`) ?? void 0, (e, t) => h(e === "input" ? "input" : "change", t));
+		return (n, r) => (e(), i("div", {
 			ref_key: "root",
 			ref: T,
 			class: "smartview-root",
 			"data-part": "root",
-			onInput: a[0] ||= u(() => {}, ["stop"]),
-			onChange: a[1] ||= u(() => {}, ["stop"])
-		}, [l("div", y, [r.label ? (t(), o("label", {
+			onInput: r[0] ||= u(() => {}, ["stop"]),
+			onChange: r[1] ||= u(() => {}, ["stop"])
+		}, [p("div", y, [t.label ? (e(), i("label", {
 			key: 0,
 			for: w,
 			class: "text-body-large smartview-checkbox-toggle__label",
 			"data-part": "label"
-		}, [d(i(r.label), 1), r.required ? (t(), o("span", b, " *")) : s("", !0)])) : s("", !0), f(v, {
-			checked: n(E),
-			"status-text": n(E) ? r.messageToggleActive || n(_)("smartview.enabled") : r.messageToggleInactive || n(_)("smartview.disabled"),
-			"hide-status-text": r.hideStatusText,
-			labelled: !!r.label,
+		}, [d(o(t.label), 1), t.required ? (e(), i("span", b, " *")) : f("", !0)])) : f("", !0), a(v, {
+			checked: c(E),
+			"status-text": c(E) ? t.messageToggleActive || c(_)("smartview.enabled") : t.messageToggleInactive || c(_)("smartview.disabled"),
+			"hide-status-text": t.hideStatusText,
+			labelled: !!t.label,
 			"input-id": w,
-			disabled: r.disabled || n(D),
-			readonly: r.readonly,
-			color: r.color || C,
-			"aria-required": r.required ? "true" : void 0,
+			disabled: t.disabled || c(D),
+			readonly: t.readonly,
+			color: t.color || C,
+			"aria-required": t.required ? "true" : void 0,
 			class: "flex-grow-0",
 			"data-part": "toggle",
-			onChange: n(k)
+			onChange: c(k)
 		}, null, 8, [
 			"checked",
 			"status-text",
@@ -160,7 +160,7 @@ m("smartview-checkbox-toggle", /* @__PURE__ */ h(/* @__PURE__ */ r({
 			"color",
 			"aria-required",
 			"onChange"
-		])]), n(O) ? (t(), o("p", x, i(n(O)), 1)) : r.hint ? (t(), o("p", S, i(r.hint), 1)) : s("", !0)], 544));
+		])]), c(O) ? (e(), i("p", x, o(c(O)), 1)) : t.hint ? (e(), i("p", S, o(t.hint), 1)) : f("", !0)], 544));
 	}
 }), [["styles", [".smartview-checkbox-toggle{flex-wrap:wrap;align-items:center;gap:12px;display:flex}.smartview-checkbox-toggle__label{cursor:pointer}.smartview-checkbox-toggle>.v-input:first-child{margin-inline-start:4px}"]]]), { formAssociated: !0 });
 //#endregion

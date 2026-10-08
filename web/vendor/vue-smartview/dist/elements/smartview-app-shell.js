@@ -1,21 +1,21 @@
-import { A as e, D as t, En as n, Ht as r, In as i, Ln as a, Pn as o, T as s, Wn as c, ar as l, bn as u, bt as d, cn as f, cr as p, dr as m, en as h, fn as g, gn as _, hn as v, in as ee, mn as y, nr as b, pn as x, u as S, ur as C, v as w, vn as T, yn as E } from "../chunks/vuetify-DJ4bsPds.js";
-import { a as D, c as te, i as ne, r as O, s as k } from "../chunks/settings--jlXedH0.js";
-import { a as A, n as j, t as re } from "../chunks/rounded-CXkAtXly.js";
-import { i as ie } from "../chunks/VOverlay-BI1rs3Fd.js";
-import { a as ae, c as M, l as N, n as P, s as F, t as I } from "../chunks/define-BG7hCbXs.js";
-import { o as L, t as R } from "../chunks/VList-BOnRbwg2.js";
-import { t as z } from "../chunks/SmartviewToast.ce-CeTvVUDs.js";
-import { n as B, t as V } from "../chunks/cancelableLink-DUAoXNUy.js";
-import { t as H } from "../chunks/hostValue-Q4jXLLiG.js";
-import { n as U } from "../chunks/ssrBoot-BMVtmVZ_.js";
-import { a as W, i as G, n as K, r as q, t as J } from "../chunks/density-Dh8nVFPw.js";
-import { r as oe, t as se } from "../chunks/router-BNmKTwUJ.js";
-import { t as Y } from "../chunks/VTooltip-2jm4OuLA.js";
-import { t as X } from "../chunks/VBtn-D2PPPp70.js";
-import { t as ce } from "../chunks/VChip-Dqfk0_yh.js";
-import { t as le } from "../chunks/_plugin-vue_export-helper-B3ysoDQm.js";
+import { A as e, Bn as t, D as n, En as r, Hn as i, Ht as a, Mn as o, Qt as s, Sn as c, T as l, Tn as u, Un as d, Xn as f, _r as p, bn as m, bt as h, cr as g, dr as _, en as v, gr as y, in as b, mn as x, mr as S, on as C, rn as ee, tn as w, u as te, un as ne, v as T, vn as E, wn as D, xn as O, yn as k } from "../chunks/vuetify-C39-WP9g.js";
+import { a as A, n as re, t as j } from "../chunks/rounded-1DPtyqNn.js";
+import { i as M } from "../chunks/VOverlay-DFwN_aF6.js";
+import { a as N, c as P, l as F, n as I, s as ie, t as ae } from "../chunks/define-BovISfN4.js";
+import { o as L, t as R } from "../chunks/VList-BQKDUGEW.js";
+import { t as z } from "../chunks/SmartviewToast.ce-BmO1LB3N.js";
+import { i as B, r as V } from "../chunks/settings-D7A6aKel.js";
+import { n as H, t as U } from "../chunks/cancelableLink-DUAoXNUy.js";
+import { t as W } from "../chunks/hostValue-CjEvr2gM.js";
+import { t as G } from "../chunks/VDivider-CA-IOlps.js";
+import { a as K, i as q, n as J, r as oe, t as se } from "../chunks/density-9WZgplEH.js";
+import { r as ce, t as le } from "../chunks/router-C0qlu-KG.js";
+import { t as Y } from "../chunks/VTooltip-CGIxG6WB.js";
+import { t as X } from "../chunks/VBtn-CV2MWNTN.js";
+import { t as ue } from "../chunks/VChip-C-IhEdKW.js";
+import { t as de } from "../chunks/_plugin-vue_export-helper-B3ysoDQm.js";
 //#region src/runtime/statusDot.ts
-var ue = {
+var fe = {
 	ok: "smartview.dotOk",
 	error: "smartview.dotError",
 	unknown: "smartview.dotUnknown"
@@ -23,25 +23,44 @@ var ue = {
 function Z(e) {
 	return e === "ok" || e === "error" ? e : "unknown";
 }
-function de(e) {
-	return ue[e];
+function Q(e) {
+	return fe[e];
 }
 //#endregion
-//#region src/elements/parts/NavDrawerView.vue?vue&type=script&setup=true&lang.ts
-var fe = ["aria-label"], pe = {
+//#region src/messages/NavDrawerView.ts
+var pe = s({
+	en: {
+		navigation: "Navigation",
+		navVersion: "Admin console v{v}",
+		navLightMode: "Light mode",
+		navDarkMode: "Dark mode",
+		navCollapse: "Collapse menu",
+		navExpand: "Expand menu",
+		navLocaleSwitch: "{from} → {to}"
+	},
+	ko: {
+		navigation: "탐색",
+		navVersion: "관리 콘솔 v{v}",
+		navLightMode: "라이트 모드",
+		navDarkMode: "다크 모드",
+		navCollapse: "메뉴 접기",
+		navExpand: "메뉴 펼치기",
+		navLocaleSwitch: "{from} → {to}"
+	}
+}), me = ["aria-label"], he = {
 	class: "d-flex align-center pa-4",
 	"data-part": "brand"
-}, me = {
+}, ge = {
 	key: 0,
 	class: "smartview-nav__brand-text"
-}, he = {
+}, _e = {
 	class: "text-title-medium font-weight-bold smartview-nav__brand-name",
 	"data-part": "brand-name"
-}, ge = {
+}, ve = {
 	key: 0,
 	class: "text-body-small text-medium-emphasis",
 	"data-part": "version"
-}, _e = /* @__PURE__ */ u({
+}, ye = /* @__PURE__ */ r({
 	__name: "NavDrawerView",
 	props: {
 		items: {},
@@ -57,85 +76,87 @@ var fe = ["aria-label"], pe = {
 		"footer",
 		"toggle-rail"
 	],
-	setup(e, { emit: t }) {
-		let n = e, r = t, { t: a, locale: s } = h(), u = S(), d = g(() => {
-			let e = k(s.value) ? s.value : "en", t = te(e), i = u.global.current.value.dark;
+	setup(e, { emit: n }) {
+		let r = e, a = n, { t: o, locale: s } = C();
+		v(pe);
+		let l = te(), d = E(() => {
+			let e = ee(s.value) ? s.value : "en", t = b(e), n = l.global.current.value.dark;
 			return [
 				{
 					key: "locale",
-					label: a("smartview.navLocaleSwitch", {
-						from: D[e],
-						to: D[t]
+					label: o("smartview.navLocaleSwitch", {
+						from: w[e],
+						to: w[t]
 					}),
 					icon: "mdi-translate",
-					run: () => O(t)
+					run: () => V(t)
 				},
 				{
 					key: "theme",
-					label: a(i ? "smartview.navLightMode" : "smartview.navDarkMode"),
-					icon: i ? "mdi-weather-sunny" : "mdi-weather-night",
-					run: () => ne(i ? "light" : "dark")
+					label: o(n ? "smartview.navLightMode" : "smartview.navDarkMode"),
+					icon: n ? "mdi-weather-sunny" : "mdi-weather-night",
+					run: () => B(n ? "light" : "dark")
 				},
 				{
 					key: "rail",
-					label: n.rail ? a("smartview.navExpand") : a("smartview.navCollapse"),
-					icon: n.rail ? "mdi-chevron-right" : "mdi-chevron-left",
-					run: () => r("toggle-rail")
+					label: r.rail ? o("smartview.navExpand") : o("smartview.navCollapse"),
+					icon: r.rail ? "mdi-chevron-right" : "mdi-chevron-left",
+					run: () => a("toggle-rail")
 				},
-				...n.footerItems.map((e) => ({
+				...r.footerItems.map((e) => ({
 					key: e.key,
 					label: e.label,
 					icon: e.icon || "mdi-circle-small",
 					color: e.color,
-					run: () => r("footer", e.key)
+					run: () => a("footer", e.key)
 				}))
 			];
 		});
-		return (t, n) => (o(), _("nav", {
-			class: p(["smartview-nav", { "smartview-nav--rail": e.rail }]),
-			"aria-label": e.brandName || l(a)("smartview.navigation"),
+		return (n, r) => (t(), c("nav", {
+			class: S(["smartview-nav", { "smartview-nav--rail": e.rail }]),
+			"aria-label": e.brandName || _(o)("smartview.navigation"),
 			"data-part": "drawer"
 		}, [
-			x("div", pe, [E(l(W), {
+			k("div", he, [u(_(K), {
 				size: e.rail ? 24 : 28,
 				color: "primary",
-				class: p(e.rail ? "" : "mr-3"),
+				class: S(e.rail ? "" : "mr-3"),
 				icon: e.brandIcon || "mdi-view-dashboard-outline"
 			}, null, 8, [
 				"size",
 				"class",
 				"icon"
-			]), e.rail ? v("", !0) : (o(), _("div", me, [x("div", he, m(e.brandName), 1), e.version ? (o(), _("div", ge, m(l(a)("smartview.navVersion", { v: e.version })), 1)) : v("", !0)]))]),
-			E(l(U)),
-			E(l(R), {
+			]), e.rail ? O("", !0) : (t(), c("div", ge, [k("div", _e, p(e.brandName), 1), e.version ? (t(), c("div", ve, p(_(o)("smartview.navVersion", { v: e.version })), 1)) : O("", !0)]))]),
+			u(_(G)),
+			u(_(R), {
 				density: "comfortable",
 				nav: "",
 				class: "smartview-nav__items",
 				"data-part": "items"
 			}, {
-				default: c(() => [(o(!0), _(f, null, i(e.items, (t) => (o(), y(l(L), {
-					key: t.key,
-					href: t.href || void 0,
-					"prepend-icon": t.icon || "mdi-circle-small",
-					title: t.label,
-					active: t.key === e.current,
-					"aria-current": t.key === e.current ? "page" : void 0,
-					"aria-label": e.rail ? t.label : void 0,
+				default: f(() => [(t(!0), c(x, null, i(e.items, (n) => (t(), m(_(L), {
+					key: n.key,
+					href: n.href || void 0,
+					"prepend-icon": n.icon || "mdi-circle-small",
+					title: n.label,
+					active: n.key === e.current,
+					"aria-current": n.key === e.current ? "page" : void 0,
+					"aria-label": e.rail ? n.label : void 0,
 					color: "primary",
 					rounded: "lg",
 					class: "my-1",
 					"data-part": "item",
-					"data-key": t.key,
-					onClick: (e) => r("navigate", t, e)
+					"data-key": n.key,
+					onClick: (e) => a("navigate", n, e)
 				}, {
-					default: c(() => [e.rail ? (o(), y(l(Y), {
+					default: f(() => [e.rail ? (t(), m(_(Y), {
 						key: 0,
 						activator: "parent",
 						location: "end"
 					}, {
-						default: c(() => [T(m(t.label), 1)]),
+						default: f(() => [D(p(n.label), 1)]),
 						_: 2
-					}, 1024)) : v("", !0)]),
+					}, 1024)) : O("", !0)]),
 					_: 2
 				}, 1032, [
 					"href",
@@ -149,31 +170,31 @@ var fe = ["aria-label"], pe = {
 				]))), 128))]),
 				_: 1
 			}),
-			E(l(U)),
-			E(l(R), {
+			u(_(G)),
+			u(_(R), {
 				density: "compact",
 				nav: "",
 				"data-part": "footer"
 			}, {
-				default: c(() => [(o(!0), _(f, null, i(d.value, (t) => (o(), y(l(L), {
-					key: t.key,
-					"prepend-icon": t.icon,
-					title: t.label,
-					"base-color": t.color || void 0,
-					"aria-label": e.rail ? t.label : void 0,
+				default: f(() => [(t(!0), c(x, null, i(d.value, (n) => (t(), m(_(L), {
+					key: n.key,
+					"prepend-icon": n.icon,
+					title: n.label,
+					"base-color": n.color || void 0,
+					"aria-label": e.rail ? n.label : void 0,
 					rounded: "lg",
 					"data-part": "footer-item",
-					"data-key": t.key,
-					onClick: t.run
+					"data-key": n.key,
+					onClick: n.run
 				}, {
-					default: c(() => [e.rail ? (o(), y(l(Y), {
+					default: f(() => [e.rail ? (t(), m(_(Y), {
 						key: 0,
 						activator: "parent",
 						location: "end"
 					}, {
-						default: c(() => [T(m(t.label), 1)]),
+						default: f(() => [D(p(n.label), 1)]),
 						_: 2
-					}, 1024)) : v("", !0)]),
+					}, 1024)) : O("", !0)]),
 					_: 2
 				}, 1032, [
 					"prepend-icon",
@@ -185,60 +206,80 @@ var fe = ["aria-label"], pe = {
 				]))), 128))]),
 				_: 1
 			})
-		], 10, fe));
+		], 10, me));
 	}
-}), ve = e({
+}), be = s({
+	en: {
+		topBarMenu: "Toggle menu",
+		topBarHelp: "Help"
+	},
+	ko: {
+		topBarMenu: "메뉴 펼치기·접기",
+		topBarHelp: "도움말"
+	}
+}), xe = s({
+	en: {
+		dotOk: "Connected",
+		dotError: "Disconnected",
+		dotUnknown: "Unknown"
+	},
+	ko: {
+		dotOk: "연결됨",
+		dotError: "연결 끊김",
+		dotUnknown: "알 수 없음"
+	}
+}), Se = e({
 	divider: [Number, String],
-	...N()
-}, "VBreadcrumbsDivider"), ye = s()({
+	...F()
+}, "VBreadcrumbsDivider"), Ce = l()({
 	name: "VBreadcrumbsDivider",
-	props: ve(),
+	props: Se(),
 	setup(e, { slots: t }) {
-		return M(() => x("li", {
+		return P(() => k("li", {
 			"aria-hidden": "true",
-			class: p(["v-breadcrumbs-divider", e.class]),
-			style: C(e.style)
+			class: S(["v-breadcrumbs-divider", e.class]),
+			style: y(e.style)
 		}, [t?.default?.() ?? e.divider])), {};
 	}
-}), be = e({
+}), we = e({
 	active: Boolean,
 	activeClass: String,
 	activeColor: String,
 	color: String,
 	disabled: Boolean,
 	title: String,
-	...N(),
-	...d(q(), ["width", "maxWidth"]),
-	...se(),
-	...P({ tag: "li" })
-}, "VBreadcrumbsItem"), Q = s()({
+	...F(),
+	...h(oe(), ["width", "maxWidth"]),
+	...le(),
+	...I({ tag: "li" })
+}, "VBreadcrumbsItem"), $ = l()({
 	name: "VBreadcrumbsItem",
-	props: be(),
-	setup(e, { slots: t, attrs: r }) {
-		let i = oe(e, r), a = g(() => e.active || i.isActive?.value), { dimensionStyles: o } = G(e), { textColorClasses: s, textColorStyles: c } = F(() => a.value ? e.activeColor : e.color);
-		return M(() => E(e.tag, {
-			class: p([
+	props: we(),
+	setup(e, { slots: t, attrs: n }) {
+		let r = ce(e, n), i = E(() => e.active || r.isActive?.value), { dimensionStyles: a } = q(e), { textColorClasses: s, textColorStyles: c } = ie(() => i.value ? e.activeColor : e.color);
+		return P(() => u(e.tag, {
+			class: S([
 				"v-breadcrumbs-item",
 				{
-					"v-breadcrumbs-item--active": a.value,
+					"v-breadcrumbs-item--active": i.value,
 					"v-breadcrumbs-item--disabled": e.disabled,
-					[`${e.activeClass}`]: a.value && e.activeClass
+					[`${e.activeClass}`]: i.value && e.activeClass
 				},
 				s.value,
 				e.class
 			]),
-			style: C([
+			style: y([
 				c.value,
-				o.value,
+				a.value,
 				e.style
 			]),
-			"aria-current": a.value ? "page" : void 0
-		}, { default: () => [i.isLink.value ? x("a", n({
+			"aria-current": i.value ? "page" : void 0
+		}, { default: () => [r.isLink.value ? k("a", o({
 			class: "v-breadcrumbs-item--link",
-			onClick: i.navigate.value
-		}, i.linkProps), [t.default?.() ?? e.title]) : t.default?.() ?? e.title] })), {};
+			onClick: r.navigate.value
+		}, r.linkProps), [t.default?.() ?? e.title]) : t.default?.() ?? e.title] })), {};
 	}
-}), xe = e({
+}), Te = e({
 	activeClass: String,
 	activeColor: String,
 	bgColor: String,
@@ -248,118 +289,123 @@ var fe = ["aria-label"], pe = {
 		type: String,
 		default: "/"
 	},
-	icon: w,
+	icon: T,
 	items: {
 		type: Array,
 		default: () => []
 	},
-	...N(),
-	...J(),
-	...re(),
-	...P({ tag: "ul" })
-}, "VBreadcrumbs"), Se = s()({
+	...F(),
+	...se(),
+	...j(),
+	...I({ tag: "ul" })
+}, "VBreadcrumbs"), Ee = l()({
 	name: "VBreadcrumbs",
-	props: xe(),
-	setup(e, { slots: i }) {
-		let { backgroundColorClasses: a, backgroundColorStyles: o } = ae(() => e.bgColor), { densityClasses: s } = K(e), { roundedClasses: c, roundedStyles: l } = j(e);
-		t({
-			VBreadcrumbsDivider: { divider: b(() => e.divider) },
+	props: Te(),
+	setup(e, { slots: t }) {
+		let { backgroundColorClasses: r, backgroundColorStyles: i } = N(() => e.bgColor), { densityClasses: s } = J(e), { roundedClasses: c, roundedStyles: l } = re(e);
+		n({
+			VBreadcrumbsDivider: { divider: g(() => e.divider) },
 			VBreadcrumbsItem: {
-				activeClass: b(() => e.activeClass),
-				activeColor: b(() => e.activeColor),
-				color: b(() => e.color),
-				disabled: b(() => e.disabled)
+				activeClass: g(() => e.activeClass),
+				activeColor: g(() => e.activeColor),
+				color: g(() => e.color),
+				disabled: g(() => e.disabled)
 			}
 		});
-		let u = g(() => e.items.map((e) => r(e) ? {
+		let d = E(() => e.items.map((e) => a(e) ? {
 			item: { title: e },
 			raw: e
 		} : {
 			item: e,
 			raw: e
 		}));
-		return M(() => {
-			let t = !!(i.prepend || e.icon);
-			return E(e.tag, {
-				class: p([
+		return P(() => {
+			let n = !!(t.prepend || e.icon);
+			return u(e.tag, {
+				class: S([
 					"v-breadcrumbs",
-					a.value,
+					r.value,
 					s.value,
 					c.value,
 					e.class
 				]),
-				style: C([
-					o.value,
+				style: y([
+					i.value,
 					l.value,
 					e.style
 				])
 			}, { default: () => [
-				t && x("li", {
+				n && k("li", {
 					key: "prepend",
 					class: "v-breadcrumbs__prepend"
-				}, [i.prepend ? E(A, {
+				}, [t.prepend ? u(A, {
 					key: "prepend-defaults",
 					disabled: !e.icon,
 					defaults: { VIcon: {
 						icon: e.icon,
 						start: !0
 					} }
-				}, i.prepend) : E(W, {
+				}, t.prepend) : u(K, {
 					key: "prepend-icon",
 					start: !0,
 					icon: e.icon
 				}, null)]),
-				u.value.map(({ item: e, raw: t }, a, o) => x(f, null, [i.item?.({
+				d.value.map(({ item: e, raw: n }, r, i) => k(x, null, [t.item?.({
 					item: e,
-					index: a
-				}) ?? E(Q, n({
-					key: a,
-					disabled: a >= o.length - 1
-				}, r(e) ? { title: e } : e), { default: i.title ? () => i.title?.({
+					index: r
+				}) ?? u($, o({
+					key: r,
+					disabled: r >= i.length - 1
+				}, a(e) ? { title: e } : e), { default: t.title ? () => t.title?.({
 					item: e,
-					index: a
-				}) : void 0 }), a < o.length - 1 && E(ye, null, { default: i.divider ? () => i.divider?.({
-					item: t,
-					index: a
+					index: r
+				}) : void 0 }), r < i.length - 1 && u(Ce, null, { default: t.divider ? () => t.divider?.({
+					item: n,
+					index: r
 				}) : void 0 })])),
-				i.default?.()
+				t.default?.()
 			] });
 		}), {};
 	}
-}), Ce = ["title"], we = /* @__PURE__ */ u({
+}), De = s({
+	en: { breadcrumb: "Breadcrumb" },
+	ko: { breadcrumb: "현재 위치" }
+}), Oe = ["title"], ke = /* @__PURE__ */ r({
 	__name: "BreadcrumbsView",
 	props: { breadcrumbs: {} },
 	emits: ["navigate"],
-	setup(e, { emit: t }) {
-		let n = e, r = t, { t: i } = h(), a = g(() => n.breadcrumbs.map((e) => ({
+	setup(e, { emit: n }) {
+		let r = e, i = n, { t: a } = C();
+		v(De);
+		let o = E(() => r.breadcrumbs.map((e) => ({
 			title: e.label,
 			href: e.href ?? ""
 		})));
 		function s(e, t) {
-			let i = n.breadcrumbs[e];
-			i?.href && e !== n.breadcrumbs.length - 1 && r("navigate", i, e, t);
+			let n = r.breadcrumbs[e];
+			n?.href && e !== r.breadcrumbs.length - 1 && i("navigate", n, e, t);
 		}
-		return (e, t) => (o(), y(l(Se), {
-			items: a.value,
+		return (e, n) => (t(), m(_(Ee), {
+			items: o.value,
 			density: "compact",
 			class: "smartview-breadcrumbs",
-			"aria-label": l(i)("smartview.breadcrumb"),
+			"aria-label": _(a)("smartview.breadcrumb"),
 			"data-part": "breadcrumbs"
 		}, {
-			divider: c(() => [E(l(W), { icon: "mdi-chevron-right" })]),
-			item: c(({ item: e, index: t }) => [E(l(Q), {
-				href: t < a.value.length - 1 && e.href ? e.href : void 0,
+			divider: f(() => [u(_(K), { icon: "mdi-chevron-right" })]),
+			item: f(({ item: e, index: t }) => [u(_($), {
+				href: t < o.value.length - 1 && e.href ? e.href : void 0,
 				disabled: !1,
-				active: t === a.value.length - 1,
-				"aria-current": t === a.value.length - 1 ? "page" : void 0,
+				active: t === o.value.length - 1,
+				"aria-current": t === o.value.length - 1 ? "page" : void 0,
 				"data-part": "crumb",
 				onClick: (e) => s(t, e)
 			}, {
-				default: c(() => [x("span", {
+				default: f(() => [k("span", {
 					class: "smartview-breadcrumbs__text",
 					title: e.title,
 					"data-part": "crumb-text"
-				}, m(e.title), 9, Ce)]),
+				}, p(e.title), 9, Oe)]),
 				_: 2
 			}, 1032, [
 				"href",
@@ -370,7 +416,7 @@ var fe = ["aria-label"], pe = {
 			_: 1
 		}, 8, ["items", "aria-label"]));
 	}
-}), Te = { "data-part": "label" }, Ee = "grey-darken-1", De = /* @__PURE__ */ u({
+}), Ae = { "data-part": "label" }, je = "grey-darken-1", Me = /* @__PURE__ */ r({
 	__name: "StatusDotView",
 	props: {
 		state: {},
@@ -386,13 +432,13 @@ var fe = ["aria-label"], pe = {
 		}
 	},
 	setup(e) {
-		let t = e, n = {
+		let n = e, r = {
 			ok: "success",
 			error: "error",
 			unknown: "grey"
-		}, r = g(() => t.state === "unknown" ? t.flat ? Ee : void 0 : n[t.state]), i = g(() => t.state === "unknown" && !t.flat ? n.unknown : void 0);
-		return (t, n) => (o(), y(l(ce), {
-			color: r.value,
+		}, i = E(() => n.state === "unknown" ? n.flat ? je : void 0 : r[n.state]), a = E(() => n.state === "unknown" && !n.flat ? r.unknown : void 0);
+		return (n, r) => (t(), m(_(ue), {
+			color: i.value,
 			variant: e.flat ? "flat" : "tonal",
 			label: !e.pill,
 			tabindex: e.hint ? 0 : void 0,
@@ -400,24 +446,24 @@ var fe = ["aria-label"], pe = {
 			"data-state": e.state,
 			"data-part": "chip"
 		}, {
-			default: c(() => [
-				E(l(W), {
+			default: f(() => [
+				u(_(K), {
 					start: "",
 					size: "12",
 					icon: "mdi-circle",
-					color: i.value
+					color: a.value
 				}, null, 8, ["color"]),
-				x("span", Te, m(e.label), 1),
-				e.hint ? (o(), y(l(Y), {
+				k("span", Ae, p(e.label), 1),
+				e.hint ? (t(), m(_(Y), {
 					key: 0,
 					activator: "parent",
 					location: "top",
 					"max-width": "320",
 					"content-props": { "data-part": "status-dot-tooltip" }
 				}, {
-					default: c(() => [T(m(e.hint), 1)]),
+					default: f(() => [D(p(e.hint), 1)]),
 					_: 1
-				})) : v("", !0)
+				})) : O("", !0)
 			]),
 			_: 1
 		}, 8, [
@@ -428,14 +474,14 @@ var fe = ["aria-label"], pe = {
 			"data-state"
 		]));
 	}
-}), $ = {
+}), Ne = {
 	class: "smartview-global-header",
 	"data-part": "top-bar"
-}, Oe = { class: "smartview-global-header__end" }, ke = {
+}, Pe = { class: "smartview-global-header__end" }, Fe = {
 	key: 0,
 	role: "status",
 	"data-part": "status"
-}, Ae = /* @__PURE__ */ u({
+}, Ie = /* @__PURE__ */ r({
 	__name: "TopBarView",
 	props: {
 		breadcrumbs: {},
@@ -449,60 +495,60 @@ var fe = ["aria-label"], pe = {
 		"help",
 		"navigate"
 	],
-	setup(e, { emit: t }) {
-		let n = t, { t: r } = h();
-		return (t, i) => (o(), _("header", $, [
-			E(l(X), {
+	setup(e, { emit: n }) {
+		let r = n, { t: i } = C();
+		return v(xe, be), (n, a) => (t(), c("header", Ne, [
+			u(_(X), {
 				icon: "mdi-menu",
 				variant: "text",
 				density: "comfortable",
-				"aria-label": l(r)("smartview.topBarMenu"),
+				"aria-label": _(i)("smartview.topBarMenu"),
 				"aria-expanded": e.menuExpanded === void 0 ? void 0 : String(e.menuExpanded),
 				"data-part": "menu",
-				onClick: i[0] ||= (e) => n("menu-toggle")
+				onClick: a[0] ||= (e) => r("menu-toggle")
 			}, null, 8, ["aria-label", "aria-expanded"]),
-			E(we, {
+			u(ke, {
 				breadcrumbs: e.breadcrumbs,
-				onNavigate: i[1] ||= (e, t, r) => n("navigate", e, t, r)
+				onNavigate: a[1] ||= (e, t, n) => r("navigate", e, t, n)
 			}, null, 8, ["breadcrumbs"]),
-			x("div", Oe, [
-				a(t.$slots, "actions"),
-				e.status ? (o(), _("span", ke, [E(De, {
-					state: l(Z)(e.status),
-					label: e.statusLabel || l(r)(l(de)(l(Z)(e.status))),
+			k("div", Pe, [
+				d(n.$slots, "actions"),
+				e.status ? (t(), c("span", Fe, [u(Me, {
+					state: _(Z)(e.status),
+					label: e.statusLabel || _(i)(_(Q)(_(Z)(e.status))),
 					pill: ""
-				}, null, 8, ["state", "label"])])) : v("", !0),
-				e.showHelp ? (o(), y(l(X), {
+				}, null, 8, ["state", "label"])])) : O("", !0),
+				e.showHelp ? (t(), m(_(X), {
 					key: 1,
 					icon: "",
 					variant: "text",
 					size: "small",
-					"aria-label": l(r)("smartview.topBarHelp"),
+					"aria-label": _(i)("smartview.topBarHelp"),
 					"data-part": "help",
-					onClick: i[2] ||= (e) => n("help")
+					onClick: a[2] ||= (e) => r("help")
 				}, {
-					default: c(() => [E(l(W), { icon: "mdi-help-circle-outline" }), E(l(Y), {
+					default: f(() => [u(_(K), { icon: "mdi-help-circle-outline" }), u(_(Y), {
 						activator: "parent",
 						location: "bottom"
 					}, {
-						default: c(() => [T(m(l(r)("smartview.topBarHelp")), 1)]),
+						default: f(() => [D(p(_(i)("smartview.topBarHelp")), 1)]),
 						_: 1
 					})]),
 					_: 1
-				}, 8, ["aria-label"])) : v("", !0)
+				}, 8, ["aria-label"])) : O("", !0)
 			])
 		]));
 	}
-}), je = {
+}), Le = {
 	class: "smartview-root smartview-shell",
 	"data-part": "shell"
-}, Me = { class: "smartview-shell__content" }, Ne = {
+}, Re = { class: "smartview-shell__content" }, ze = {
 	class: "smartview-shell__main",
 	"data-part": "main"
 };
 //#endregion
 //#region src/entries/smartview-app-shell.ts
-I("smartview-app-shell", /* @__PURE__ */ le(/* @__PURE__ */ u({
+ae("smartview-app-shell", /* @__PURE__ */ de(/* @__PURE__ */ r({
 	__name: "SmartviewAppShell.ce",
 	props: {
 		items: {
@@ -564,38 +610,38 @@ I("smartview-app-shell", /* @__PURE__ */ le(/* @__PURE__ */ u({
 		"footer-action",
 		"help"
 	],
-	setup(e, { emit: t }) {
-		let n = e, r = t, i = ee(), { overlayDefaults: s } = ie(() => n.overlayTarget), { current: u, commit: d } = H("rail", () => n.rail), f = (e) => typeof e == "object" && !!e && typeof Reflect.get(e, "key") == "string" && typeof Reflect.get(e, "label") == "string", p = g(() => Array.isArray(n.items) ? n.items.filter(f) : []), m = g(() => Array.isArray(n.footerItems) ? n.footerItems.filter(f) : []), h = g(() => (Array.isArray(n.breadcrumbs) ? n.breadcrumbs : []).filter((e) => typeof e?.label == "string")), _ = g(() => n.status ? Z(n.status) : "");
-		function v(e, t) {
-			V(i, "navigate", e.href ?? "", t, {
+	setup(e, { emit: n }) {
+		let r = e, i = n, a = ne(), { overlayDefaults: o } = M(() => r.overlayTarget), { current: s, commit: c } = W("rail", () => r.rail), l = (e) => typeof e == "object" && !!e && typeof Reflect.get(e, "key") == "string" && typeof Reflect.get(e, "label") == "string", p = E(() => Array.isArray(r.items) ? r.items.filter(l) : []), h = E(() => Array.isArray(r.footerItems) ? r.footerItems.filter(l) : []), g = E(() => (Array.isArray(r.breadcrumbs) ? r.breadcrumbs : []).filter((e) => typeof e?.label == "string")), v = E(() => r.status ? Z(r.status) : "");
+		function y(e, t) {
+			U(a, "navigate", e.href ?? "", t, {
 				source: "drawer",
 				key: e.key
 			});
 		}
 		function b(e, t, n) {
-			e.href && B(i, "navigate", e.href, n, {
+			e.href && H(a, "navigate", e.href, n, {
 				source: "breadcrumb",
 				label: e.label,
 				index: t
 			});
 		}
-		function S() {
-			let e = !u.value;
-			d(e), r("rail-change", e);
+		function x() {
+			let e = !s.value;
+			c(e), i("rail-change", e);
 		}
-		return (t, n) => (o(), y(l(A), { defaults: l(s) }, {
-			default: c(() => [x("div", je, [
-				E(_e, {
+		return (n, r) => (t(), m(_(A), { defaults: _(o) }, {
+			default: f(() => [k("div", Le, [
+				u(ye, {
 					items: p.value,
-					"footer-items": m.value,
+					"footer-items": h.value,
 					"brand-name": e.brandName,
 					"brand-icon": e.brandIcon,
 					version: e.version,
 					current: e.current,
-					rail: l(u),
-					onNavigate: v,
-					onFooter: n[0] ||= (e) => r("footer-action", { key: e }),
-					onToggleRail: S
+					rail: _(s),
+					onNavigate: y,
+					onFooter: r[0] ||= (e) => i("footer-action", { key: e }),
+					onToggleRail: x
 				}, null, 8, [
 					"items",
 					"footer-items",
@@ -605,17 +651,17 @@ I("smartview-app-shell", /* @__PURE__ */ le(/* @__PURE__ */ u({
 					"current",
 					"rail"
 				]),
-				x("div", Me, [E(Ae, {
-					breadcrumbs: h.value,
-					status: _.value,
+				k("div", Re, [u(Ie, {
+					breadcrumbs: g.value,
+					status: v.value,
 					"status-label": e.statusLabel,
 					"show-help": e.showHelp,
-					"menu-expanded": !l(u),
-					onMenuToggle: S,
-					onHelp: n[1] ||= (e) => r("help"),
+					"menu-expanded": !_(s),
+					onMenuToggle: x,
+					onHelp: r[1] ||= (e) => i("help"),
 					onNavigate: b
 				}, {
-					actions: c(() => [a(t.$slots, "actions")]),
+					actions: f(() => [d(n.$slots, "actions")]),
 					_: 3
 				}, 8, [
 					"breadcrumbs",
@@ -623,8 +669,8 @@ I("smartview-app-shell", /* @__PURE__ */ le(/* @__PURE__ */ u({
 					"status-label",
 					"show-help",
 					"menu-expanded"
-				]), x("main", Ne, [a(t.$slots, "default")])]),
-				E(z, {
+				]), k("main", ze, [d(n.$slots, "default")])]),
+				u(z, {
 					location: e.snackbarLocation,
 					"overlay-target": e.overlayTarget
 				}, null, 8, ["location", "overlay-target"])

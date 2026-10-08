@@ -1,19 +1,22 @@
-import { Bn as e, In as t, Pn as n, Wn as r, ar as i, bn as a, cn as o, dr as s, en as c, fn as l, gn as u, hn as d, mn as f, vn as p, yn as m } from "../chunks/vuetify-DJ4bsPds.js";
-import { t as h } from "../chunks/define-BG7hCbXs.js";
-import { t as g } from "../chunks/hostValue-Q4jXLLiG.js";
-import { n as _, t as v } from "../chunks/VChip-Dqfk0_yh.js";
-import { n as y } from "../chunks/status-J4FIN71L.js";
-import { n as b } from "../chunks/formField-B1NnTyqU.js";
-//#region src/elements/SmartviewCheckboxButtonGroup.ce.vue?vue&type=script&setup=true&lang.ts
-var x = {
+import { Bn as e, En as t, Hn as n, Kn as r, Qt as i, Sn as a, Tn as o, Xn as s, _r as c, bn as l, dr as u, en as d, mn as f, on as p, vn as m, wn as h, xn as g } from "../chunks/vuetify-C39-WP9g.js";
+import { t as _ } from "../chunks/define-BovISfN4.js";
+import { t as v } from "../chunks/hostValue-CjEvr2gM.js";
+import { n as y, t as b } from "../chunks/VChip-C-IhEdKW.js";
+import { n as x } from "../chunks/status-J4FIN71L.js";
+import { n as S } from "../chunks/formField-CJIGaqFV.js";
+//#region src/messages/SmartviewCheckboxButtonGroup.ts
+var C = i({
+	en: { selectAtLeastOne: "Select at least one" },
+	ko: { selectAtLeastOne: "하나 이상 고르세요" }
+}), w = {
 	key: 0,
 	class: "text-title-small font-weight-bold mt-0 mb-2",
 	"data-part": "heading"
-}, S = {
+}, T = {
 	key: 1,
 	class: "text-body-small text-medium-emphasis mt-1 mb-0",
 	"data-part": "hint"
-}, C = {
+}, E = {
 	key: 2,
 	class: "text-body-small text-error mt-1 mb-0",
 	role: "alert",
@@ -21,7 +24,7 @@ var x = {
 };
 //#endregion
 //#region src/entries/smartview-checkbox-button-group.ts
-h("smartview-checkbox-button-group", /* @__PURE__ */ a({
+_("smartview-checkbox-button-group", /* @__PURE__ */ t({
 	__name: "SmartviewCheckboxButtonGroup.ce",
 	props: {
 		options: {
@@ -58,8 +61,8 @@ h("smartview-checkbox-button-group", /* @__PURE__ */ a({
 		}
 	},
 	emits: ["input", "change"],
-	setup(a, { emit: h }) {
-		let w = [
+	setup(t, { emit: i }) {
+		let _ = [
 			{
 				value: "GET",
 				color: "info"
@@ -88,50 +91,52 @@ h("smartview-checkbox-button-group", /* @__PURE__ */ a({
 				value: "OPTIONS",
 				color: "grey"
 			}
-		], T = a, E = h, { t: D } = c(), O = e("root"), k = l(() => T.options.length || T.preset !== "http-methods" ? T.options : w);
-		function A(e) {
-			return k.value.map((e) => e.value).filter((t) => e.includes(t));
+		], D = t, O = i, { t: k } = p();
+		d(C);
+		let A = r("root"), j = m(() => D.options.length || D.preset !== "http-methods" ? D.options : _);
+		function M(e) {
+			return j.value.map((e) => e.value).filter((t) => e.includes(t));
 		}
-		let { current: j, commit: M, reset: N } = g("value", () => T.value, { normalize: A }), { formDisabled: P, touched: F } = b({
-			value: () => j.value,
-			isEmpty: () => j.value.length === 0,
-			required: () => T.required,
-			requiredMessage: () => D("smartview.selectAtLeastOne"),
-			anchor: () => O.value?.querySelector("[data-part=\"chip\"]") ?? void 0,
-			reset: N
-		}), I = l(() => T.disabled || P.value), L = l(() => T.errorMessage ? T.errorMessage : F.value && T.required && j.value.length === 0 ? D("smartview.selectAtLeastOne") : "");
-		function R(e) {
-			let t = A(Array.isArray(e) ? e : []);
-			M(t), F.value = !0, E("input", [...t]), E("change", [...t]);
+		let { current: N, commit: P, reset: F } = v("value", () => D.value, { normalize: M }), { formDisabled: I, touched: L } = S({
+			value: () => N.value,
+			isEmpty: () => N.value.length === 0,
+			required: () => D.required,
+			requiredMessage: () => k("smartview.selectAtLeastOne"),
+			anchor: () => A.value?.querySelector("[data-part=\"chip\"]") ?? void 0,
+			reset: F
+		}), R = m(() => D.disabled || I.value), z = m(() => D.errorMessage ? D.errorMessage : L.value && D.required && N.value.length === 0 ? k("smartview.selectAtLeastOne") : "");
+		function B(e) {
+			let t = M(Array.isArray(e) ? e : []);
+			P(t), L.value = !0, O("input", [...t]), O("change", [...t]);
 		}
-		return (e, c) => (n(), u("div", {
+		return (r, i) => (e(), a("div", {
 			ref_key: "root",
-			ref: O,
+			ref: A,
 			class: "smartview-root"
 		}, [
-			a.label ? (n(), u("p", x, s(a.label), 1)) : d("", !0),
-			m(i(_), {
-				"model-value": i(j),
+			t.label ? (e(), a("p", w, c(t.label), 1)) : g("", !0),
+			o(u(y), {
+				"model-value": u(N),
 				multiple: "",
 				column: "",
-				disabled: I.value,
-				"aria-label": a.label || void 0,
+				disabled: R.value,
+				"aria-label": t.label || void 0,
 				"data-part": "chips",
-				"onUpdate:modelValue": R
+				"onUpdate:modelValue": B
 			}, {
-				default: r(() => [(n(!0), u(o, null, t(k.value, (e) => (n(), f(i(v), {
-					key: e.value,
-					value: e.value,
-					color: e.color ? i(y)(e.color) : "primary",
-					disabled: I.value,
+				default: s(() => [(e(!0), a(f, null, n(j.value, (t) => (e(), l(u(b), {
+					key: t.value,
+					value: t.value,
+					color: t.color ? u(x)(t.color) : "primary",
+					disabled: R.value,
 					variant: "outlined",
 					filter: "",
 					label: "",
 					class: "font-weight-bold",
-					"data-value": e.value,
+					"data-value": t.value,
 					"data-part": "chip"
 				}, {
-					default: r(() => [p(s(e.label || e.value), 1)]),
+					default: s(() => [h(c(t.label || t.value), 1)]),
 					_: 2
 				}, 1032, [
 					"value",
@@ -145,8 +150,8 @@ h("smartview-checkbox-button-group", /* @__PURE__ */ a({
 				"disabled",
 				"aria-label"
 			]),
-			a.hint && !L.value ? (n(), u("p", S, s(a.hint), 1)) : d("", !0),
-			L.value ? (n(), u("p", C, s(L.value), 1)) : d("", !0)
+			t.hint && !z.value ? (e(), a("p", T, c(t.hint), 1)) : g("", !0),
+			z.value ? (e(), a("p", E, c(z.value), 1)) : g("", !0)
 		], 512));
 	}
 }), { formAssociated: !0 });

@@ -1,36 +1,76 @@
-import { A as e, Bn as t, Bt as n, Dn as r, E as i, En as a, H as o, Hn as s, Lt as c, Pn as l, Rn as u, T as d, Tt as f, U as p, Wn as m, Y as ee, Zn as h, _t as te, ar as g, bn as _, cn as v, cr as ne, en as y, er as b, fn as x, g as S, lt as re, m as ie, mn as C, nr as ae, pn as w, rt as oe, sn as T, ur as se, ut as ce, vn as le, vt as E, wt as ue, yn as D } from "../chunks/vuetify-DJ4bsPds.js";
-import { a as de, c as fe, d as pe, f as me, i as O, l as he, m as ge, n as k, o as _e, p as ve, r as ye, s as be, t as A, u as xe } from "../chunks/VSelect-tmFN_T5n.js";
-import { a as j } from "../chunks/rounded-CXkAtXly.js";
-import { i as M } from "../chunks/VOverlay-BI1rs3Fd.js";
-import { c as Se, s as Ce, t as N } from "../chunks/define-BG7hCbXs.js";
-import { n as P } from "../chunks/ripple-B14E6MmL.js";
-import { a as we, i as Te, o as F, t as Ee } from "../chunks/VList-BOnRbwg2.js";
-import { i as De, s as Oe } from "../chunks/VLabel-slD1mVUb.js";
-import { t as ke } from "../chunks/hostValue-Q4jXLLiG.js";
-import { n as Ae } from "../chunks/ssrBoot-BMVtmVZ_.js";
-import { a as je } from "../chunks/density-Dh8nVFPw.js";
-import { t as Me } from "../chunks/VAvatar-B5evLdR9.js";
-import { o as Ne } from "../chunks/router-BNmKTwUJ.js";
-import { t as Pe } from "../chunks/forwardRefs-BcUquh0G.js";
-import { t as Fe } from "../chunks/VChip-Dqfk0_yh.js";
-import { n as Ie } from "../chunks/formField-B1NnTyqU.js";
-import { t as Le } from "../chunks/VCheckboxBtn-BD1XFHaj.js";
-import { n as Re, t as I } from "../chunks/VTextField-uapT17Ep.js";
+import { A as e, Bn as t, Bt as n, E as r, En as i, H as a, Jn as o, Kn as s, Lt as c, Mn as l, Nn as u, Qt as d, T as f, Tn as p, Tt as m, U as h, Wn as g, Xn as _, Y as v, _t as ee, bn as y, cr as b, dr as x, en as S, g as te, gr as ne, lt as re, m as ie, mn as C, mr as ae, on as w, or as T, pn as E, rr as D, rt as oe, ut as se, vn as O, vt as k, wn as ce, wt as le, yn as A } from "../chunks/vuetify-C39-WP9g.js";
+import { a as ue, c as de, d as fe, f as pe, i as j, l as me, m as he, n as M, o as ge, p as _e, r as ve, s as ye, t as N, u as be } from "../chunks/VSelect-DuDSSQDf.js";
+import { a as P } from "../chunks/rounded-1DPtyqNn.js";
+import { i as F } from "../chunks/VOverlay-DFwN_aF6.js";
+import { c as xe, s as Se, t as I } from "../chunks/define-BovISfN4.js";
+import { n as L } from "../chunks/ripple-BBz9XQtx.js";
+import { a as Ce, i as we, o as R, t as Te } from "../chunks/VList-BQKDUGEW.js";
+import { i as Ee, s as De } from "../chunks/VLabel-B80IAw5H.js";
+import { t as z } from "../chunks/hostValue-CjEvr2gM.js";
+import { t as Oe } from "../chunks/VDivider-CA-IOlps.js";
+import { a as B } from "../chunks/density-9WZgplEH.js";
+import { t as ke } from "../chunks/VAvatar-DdB1q11O.js";
+import { o as Ae } from "../chunks/router-C0qlu-KG.js";
+import { t as je } from "../chunks/forwardRefs-mn8VYMvs.js";
+import { t as V } from "../chunks/VChip-C-IhEdKW.js";
+import { n as Me } from "../chunks/formField-CJIGaqFV.js";
+import { t as Ne } from "../chunks/VCheckboxBtn-Z27PqfdZ.js";
+import { n as Pe, t as Fe } from "../chunks/VTextField-DrXa6-zE.js";
+//#region src/runtime/combobox.ts
+var Ie = (e) => typeof e == "object" && !!e && !Array.isArray(e);
+function Le(e) {
+	if (!Array.isArray(e)) return [];
+	let t = /* @__PURE__ */ new Set();
+	return e.flatMap((e) => !Ie(e) || typeof e.label != "string" || typeof e.value != "string" || t.has(e.value) ? [] : (t.add(e.value), [{
+		label: e.label,
+		value: e.value,
+		disabled: e.disabled === !0,
+		group: typeof e.group == "string" ? e.group : "",
+		icon: typeof e.icon == "string" ? e.icon : "",
+		keepOpen: e.keepOpen === !0
+	}]));
+}
+function H(e) {
+	return {
+		title: e.label,
+		value: e.value,
+		keepOpen: e.keepOpen,
+		props: {
+			disabled: e.disabled,
+			...e.icon ? { prependIcon: e.icon } : {},
+			"data-value": e.value
+		}
+	};
+}
+function U(e) {
+	return e.some((e) => "value" in e && e.keepOpen);
+}
+function Re(e) {
+	if (!e.some((e) => e.group)) return e.map(H);
+	let t = /* @__PURE__ */ new Map();
+	for (let n of e) t.set(n.group, [...t.get(n.group) ?? [], n]);
+	let n = t.get("") ?? [];
+	return t.delete(""), [...n.map(H), ...[...t].flatMap(([e, t]) => [{
+		type: "subheader",
+		title: e
+	}, ...t.map(H)])];
+}
+//#endregion
 //#region node_modules/vuetify/lib/components/VAutocomplete/VAutocomplete.js
-var L = e({
+var W = e({
 	autoSelectFirst: { type: [Boolean, String] },
 	clearOnSelect: Boolean,
 	search: String,
 	closeOnInputClick: Boolean,
-	...O({ filterKeys: ["title"] }),
-	...k(),
-	...E(Re({
+	...j({ filterKeys: ["title"] }),
+	...M(),
+	...k(Pe({
 		modelValue: null,
 		role: "combobox"
 	}), ["validationValue", "dirty"])
-}, "VAutocomplete"), R = d()({
+}, "VAutocomplete"), G = f()({
 	name: "VAutocomplete",
-	props: L(),
+	props: W(),
 	emits: {
 		"update:focused": (e) => !0,
 		"update:search": (e) => !0,
@@ -39,20 +79,20 @@ var L = e({
 		"item:added": (e) => !0,
 		"item:removed": (e) => !0
 	},
-	setup(e, { emit: t, slots: l }) {
-		let { t: u } = ie(), { elevationClasses: d } = Ne(ae(() => e.menuElevation)), m = h(), g = h(), _ = h(), y = h(), C = h(), T = h(), E = b(!1), O = b(!0), k = b(!1), A = b(-1), M = b(null), { items: N, transformIn: ke, transformOut: Ie } = Te(e), { autofill: Re, resetAutofill: L } = xe(N, (e) => $(e)), { textColorClasses: R, textColorStyles: z } = Ce(() => m.value?.color), { InputIcon: B } = Oe(e), V = S(e, "search", ""), H = S(e, "modelValue", [], (e) => ke(e === null ? [null] : ue(e)), (t) => {
-			let n = Ie(t);
+	setup(e, { emit: t, slots: i }) {
+		let { t: s } = ie(), { elevationClasses: d } = Ae(b(() => e.menuElevation)), f = D(), g = D(), _ = D(), y = D(), x = D(), S = D(), w = T(!1), E = T(!0), k = T(!1), j = T(-1), M = T(null), { items: N, transformIn: F, transformOut: I } = we(e), { autofill: z, resetAutofill: Me } = be(N, (e) => $(e)), { textColorClasses: Pe, textColorStyles: Ie } = Se(() => f.value?.color), { InputIcon: Le } = De(e), H = te(e, "search", ""), U = te(e, "modelValue", [], (e) => F(e === null ? [null] : le(e)), (t) => {
+			let n = I(t);
 			return e.multiple ? n : n[0] ?? null;
-		}), ze = x(() => c(e.counterValue) ? e.counterValue(H.value) : n(e.counterValue) ? e.counterValue : H.value.length), U = De(e), { filteredItems: W, getMatches: Be } = de(e, N, () => M.value ?? (O.value ? "" : V.value)), G = x(() => e.hideSelected && M.value === null ? W.value.filter((e) => !H.value.some((t) => t.value === e.value)) : W.value), K = ae(() => e.closableChips && !U.isReadonly.value && !U.isDisabled.value), Ve = i("VChip"), q = x(() => !!(e.chips || l.chip)), J = x(() => q.value || !!l.selection), He = x(() => e.multiple || J.value ? "" : String(H.value.at(-1)?.props.title ?? "")), Ue = x(() => H.value.map((e) => e.props.value)), Y = x(() => G.value.find((e) => e.type === "item" && !e.props.disabled)), X = x(() => (e.autoSelectFirst === !0 || e.autoSelectFirst === "exact" && V.value === Y.value?.title) && G.value.length > 0 && !O.value && !k.value), Z = x(() => e.hideNoData && !G.value.length || U.isReadonly.value || U.isDisabled.value), { menu: Q, closeOnSelect: We } = be(e, {
+		}), Re = O(() => c(e.counterValue) ? e.counterValue(U.value) : n(e.counterValue) ? e.counterValue : U.value.length), W = Ee(e), { filteredItems: G, getMatches: ze } = ue(e, N, () => M.value ?? (E.value ? "" : H.value)), K = O(() => e.hideSelected && M.value === null ? G.value.filter((e) => !U.value.some((t) => t.value === e.value)) : G.value), Be = b(() => e.closableChips && !W.isReadonly.value && !W.isDisabled.value), Ve = r("VChip"), q = O(() => !!(e.chips || i.chip)), J = O(() => q.value || !!i.selection), He = O(() => e.multiple || J.value ? "" : String(U.value.at(-1)?.props.title ?? "")), Ue = O(() => U.value.map((e) => e.props.value)), Y = O(() => K.value.find((e) => e.type === "item" && !e.props.disabled)), X = O(() => (e.autoSelectFirst === !0 || e.autoSelectFirst === "exact" && H.value === Y.value?.title) && K.value.length > 0 && !E.value && !k.value), Z = O(() => e.hideNoData && !K.value.length || W.isReadonly.value || W.isDisabled.value), { menu: Q, closeOnSelect: We } = ye(e, {
 			vMenuRef: g,
 			menuDisabled: Z,
-			isFocused: E
-		}), { menuId: Ge, ariaExpanded: Ke, ariaControls: qe } = ye(e, Q), { listEvents: Je, onActivatorKeydown: Ye, setPendingFocus: Xe, flushPendingFocus: Ze } = fe(_, m, T, G, {
-			selectedIndex: () => O.value ? ct() : -1,
+			isFocused: w
+		}), { menuId: Ge, ariaExpanded: Ke, ariaControls: qe } = ve(e, Q), { listEvents: Je, onActivatorKeydown: Ye, setPendingFocus: Xe, flushPendingFocus: Ze } = de(_, f, S, K, {
+			selectedIndex: () => E.value ? ct() : -1,
 			headerEl: () => y.value,
 			menuContentEl: () => g.value?.contentEl,
 			noAutoScroll: () => e.noAutoScroll
-		}), Qe = he(Q, () => g.value?.contentEl, () => m.value?.controlRef), { onTabKeydown: $e } = _e({
+		}), Qe = me(Q, () => g.value?.contentEl, () => f.value?.controlRef), { onTabKeydown: $e } = ge({
 			groups: [
 				{
 					type: "element",
@@ -61,31 +101,31 @@ var L = e({
 				{
 					type: "list",
 					contentRef: _,
-					displayItemsCount: () => G.value.length
+					displayItemsCount: () => K.value.length
 				},
 				{
 					type: "element",
-					contentRef: C
+					contentRef: x
 				}
 			],
 			onLeave: () => {
-				Q.value = !1, m.value?.focus();
+				Q.value = !1, f.value?.focus();
 			}
 		});
 		function et(t) {
-			e.openOnClear && (Q.value = !0), V.value = "";
+			e.openOnClear && (Q.value = !0), H.value = "";
 		}
 		function tt() {
 			Z.value || (Q.value = !e.closeOnInputClick || !Q.value);
 		}
 		function nt(e) {
-			Z.value || E.value && (e.preventDefault(), e.stopPropagation(), Q.value = !Q.value);
+			Z.value || w.value && (e.preventDefault(), e.stopPropagation(), Q.value = !Q.value);
 		}
 		function rt(e) {
-			e.key === "Tab" && $e(e), _.value?.$el.contains(e.target) && (p(e) || e.key === "Backspace") && m.value?.focus();
+			e.key === "Tab" && $e(e), _.value?.$el.contains(e.target) && (h(e) || e.key === "Backspace") && f.value?.focus();
 		}
 		function it(e) {
-			if (!(ce(e) || U.isReadonly.value)) switch (e.key) {
+			if (!(se(e) || W.isReadonly.value)) switch (e.key) {
 				case "Escape":
 					Q.value = !1;
 					break;
@@ -105,65 +145,65 @@ var L = e({
 		}
 		function at() {
 			let e = Y.value;
-			X.value && e && (H.value.some(({ value: t }) => t === e.value) || $(e));
+			X.value && e && (U.value.some(({ value: t }) => t === e.value) || $(e));
 		}
 		function ot(t) {
-			let n = H.value.length;
+			let n = U.value.length;
 			if (["Backspace", "Delete"].includes(t.key)) {
-				if (!e.multiple && J.value && n > 0 && !V.value) {
-					$(H.value[0], !1);
+				if (!e.multiple && J.value && n > 0 && !H.value) {
+					$(U.value[0], !1);
 					return;
 				}
-				if (~A.value) {
+				if (~j.value) {
 					t.preventDefault();
-					let e = A.value;
-					$(H.value[A.value], !1), A.value = e >= n - 1 ? n - 2 : e;
-				} else t.key === "Backspace" && !V.value && (A.value = n - 1);
+					let e = j.value;
+					$(U.value[j.value], !1), j.value = e >= n - 1 ? n - 2 : e;
+				} else t.key === "Backspace" && !H.value && (j.value = n - 1);
 				return;
 			}
 			if (e.multiple) {
 				if (t.key === "ArrowLeft") {
-					if (A.value < 0 && (m.value?.selectionStart ?? 0) > 0) return;
-					let e = A.value > -1 ? A.value - 1 : n - 1;
-					if (H.value[e]) A.value = e;
+					if (j.value < 0 && (f.value?.selectionStart ?? 0) > 0) return;
+					let e = j.value > -1 ? j.value - 1 : n - 1;
+					if (U.value[e]) j.value = e;
 					else {
-						let e = V.value?.length ?? null;
-						A.value = -1, m.value?.setSelectionRange(e, e);
+						let e = H.value?.length ?? null;
+						j.value = -1, f.value?.setSelectionRange(e, e);
 					}
 				} else if (t.key === "ArrowRight") {
-					if (A.value < 0) return;
-					let e = A.value + 1;
-					H.value[e] ? A.value = e : (A.value = -1, m.value?.setSelectionRange(0, 0));
-				} else ~A.value && p(t) && (A.value = -1);
+					if (j.value < 0) return;
+					let e = j.value + 1;
+					U.value[e] ? j.value = e : (j.value = -1, f.value?.setSelectionRange(0, 0));
+				} else ~j.value && h(t) && (j.value = -1);
 			}
 		}
 		function st(e) {
-			re(e) && Re(e.target.value);
+			re(e) && z(e.target.value);
 		}
 		function ct() {
-			return G.value.findIndex((t) => H.value.some((n) => (e.valueComparator || P)(n.value, t.value)));
+			return K.value.findIndex((t) => U.value.some((n) => (e.valueComparator || L)(n.value, t.value)));
 		}
 		function lt() {
-			e.eager && T.value?.calculateVisibleItems(), Ze();
+			e.eager && S.value?.calculateVisibleItems(), Ze();
 		}
 		function ut() {
-			E.value && (g.value?.contentEl?._clickOutside?.lastMousedownWasOutside ? E.value = !1 : (O.value = !0, m.value?.focus())), M.value = null;
+			w.value && (g.value?.contentEl?._clickOutside?.lastMousedownWasOutside ? w.value = !1 : (E.value = !0, f.value?.focus())), M.value = null;
 		}
 		function dt(e) {
-			E.value = !0, setTimeout(() => {
+			w.value = !0, setTimeout(() => {
 				k.value = !0;
 			});
 		}
 		function ft(e) {
-			if (k.value = !1, !m.value?.$el.contains(e.relatedTarget)) {
+			if (k.value = !1, !f.value?.$el.contains(e.relatedTarget)) {
 				if (Qe(e)) return;
-				E.value = !1;
+				w.value = !1;
 			}
 		}
 		function pt(n) {
 			if (n == null || n === "" && !e.multiple && !J.value) {
-				for (let e of H.value) t("item:removed", e);
-				H.value = [];
+				for (let e of U.value) t("item:removed", e);
+				U.value = [];
 			}
 		}
 		let mt = 0;
@@ -172,66 +212,66 @@ var L = e({
 		}
 		function gt(e) {
 			let t = e.relatedTarget;
-			((g.value?.contentEl)?.contains(t) || !t && performance.now() - mt < 10) && (E.value = !0);
+			((g.value?.contentEl)?.contains(t) || !t && performance.now() - mt < 10) && (w.value = !0);
 		}
-		function $(n, i = !0) {
+		function $(n, r = !0) {
 			if (!n || n.props.disabled) return;
-			let a = e.valueComparator || P;
+			let i = e.valueComparator || L;
 			if (e.multiple) {
-				let r = H.value.findIndex((e) => a(e.value, n.value)), o = i ?? !~r;
-				if (~r) {
-					let e = o ? [...H.value, n] : [...H.value], [i] = e.splice(r, 1);
-					o || t("item:removed", i), H.value = e;
-				} else o && (t("item:added", n), H.value = [...H.value, n]);
-				e.clearOnSelect && (V.value = "");
+				let a = U.value.findIndex((e) => i(e.value, n.value)), o = r ?? !~a;
+				if (~a) {
+					let e = o ? [...U.value, n] : [...U.value], [r] = e.splice(a, 1);
+					o || t("item:removed", r), U.value = e;
+				} else o && (t("item:added", n), U.value = [...U.value, n]);
+				e.clearOnSelect && (H.value = "");
 			} else {
-				let e = i !== !1, o = H.value[0];
-				e ? (o && !a(o.value, n.value) ? (t("item:removed", o), t("item:added", n)) : o || t("item:added", n), H.value = [n]) : (o && t("item:removed", o), H.value = []), M.value = O.value ? "" : V.value ?? "", V.value = e && !J.value ? n.title : "", r(() => {
-					We(), O.value = !0;
+				let e = r !== !1, a = U.value[0];
+				e ? (a && !i(a.value, n.value) ? (t("item:removed", a), t("item:added", n)) : a || t("item:added", n), U.value = [n]) : (a && t("item:removed", a), U.value = []), M.value = E.value ? "" : H.value ?? "", H.value = e && !J.value ? n.title : "", u(() => {
+					We(), E.value = !0;
 				});
 			}
 		}
-		return s(E, (n, r) => {
+		return o(w, (n, r) => {
 			if (n !== r) {
-				if (n) L(), O.value = !0;
+				if (n) Me(), E.value = !0;
 				else {
-					if (!e.multiple && V.value == null) {
-						for (let e of H.value) t("item:removed", e);
-						H.value = [];
+					if (!e.multiple && H.value == null) {
+						for (let e of U.value) t("item:removed", e);
+						U.value = [];
 					}
-					Q.value = !1, !O.value && V.value && (M.value = V.value), V.value = He.value, O.value = !0, A.value = -1;
+					Q.value = !1, !E.value && H.value && (M.value = H.value), H.value = He.value, E.value = !0, j.value = -1;
 				}
 			}
-		}), s(He, (e) => {
-			E.value || (V.value = e);
-		}, { immediate: !0 }), s(V, (e) => {
-			E.value && (e && (Q.value = !0), O.value = !e, Q.value && r(() => {
-				T.value?.scrollToIndex(0), _.value?.$el?.contains(oe()) && m.value?.focus();
+		}), o(He, (e) => {
+			w.value || (H.value = e);
+		}, { immediate: !0 }), o(H, (e) => {
+			w.value && (e && (Q.value = !0), E.value = !e, Q.value && u(() => {
+				S.value?.scrollToIndex(0), _.value?.$el?.contains(oe()) && f.value?.focus();
 			}));
-		}), s(Q, (t) => {
-			if (t || Xe(null), !e.hideSelected && t && H.value.length && O.value) {
+		}), o(Q, (t) => {
+			if (t || Xe(null), !e.hideSelected && t && U.value.length && E.value) {
 				let t = ct();
-				f && !e.noAutoScroll && window.requestAnimationFrame(() => {
-					t >= 0 && T.value?.scrollToIndex(t, "center");
+				m && !e.noAutoScroll && window.requestAnimationFrame(() => {
+					t >= 0 && S.value?.scrollToIndex(t, "center");
 				});
 			}
 			t && (M.value = null);
-		}), s(N, (e, t) => {
-			Q.value || E.value && !t.length && e.length && (Q.value = !0);
-		}), Se(() => {
-			let t = !!(!e.hideNoData || G.value.length || l["prepend-item"] || l["append-item"] || l["no-data"]), n = H.value.length > 0, r = I.filterProps(e), i = {
-				search: V,
-				filteredItems: W.value
+		}), o(N, (e, t) => {
+			Q.value || w.value && !t.length && e.length && (Q.value = !0);
+		}), xe(() => {
+			let t = !!(!e.hideNoData || K.value.length || i["prepend-item"] || i["append-item"] || i["no-data"]), n = U.value.length > 0, r = Fe.filterProps(e), o = {
+				search: H,
+				filteredItems: G.value
 			};
-			return D(I, a({ ref: m }, r, {
+			return p(Fe, l({ ref: f }, r, {
 				form: e.autocomplete === "suppress" ? "" : void 0,
 				name: e.autocomplete === "suppress" ? e.name : void 0,
-				modelValue: V.value,
-				"onUpdate:modelValue": [(e) => V.value = e, pt],
-				focused: E.value,
-				"onUpdate:focused": (e) => E.value = e,
-				validationValue: H.externalValue,
-				counterValue: ze.value,
+				modelValue: H.value,
+				"onUpdate:modelValue": [(e) => H.value = e, pt],
+				focused: w.value,
+				"onUpdate:focused": (e) => w.value = e,
+				validationValue: U.externalValue,
+				counterValue: Re.value,
 				dirty: n,
 				onChange: st,
 				class: [
@@ -241,12 +281,12 @@ var L = e({
 						"v-autocomplete--active-menu": Q.value,
 						"v-autocomplete--chips": !!e.chips,
 						"v-autocomplete--selection-slot": !!J.value,
-						"v-autocomplete--selecting-index": A.value > -1
+						"v-autocomplete--selecting-index": j.value > -1
 					},
 					e.class
 				],
 				style: e.style,
-				readonly: U.isReadonly.value,
+				readonly: W.isReadonly.value,
 				placeholder: n ? void 0 : e.placeholder,
 				"onClick:clear": et,
 				"onMousedown:control": tt,
@@ -255,16 +295,16 @@ var L = e({
 				"aria-expanded": Ke.value,
 				"aria-controls": qe.value
 			}), {
-				...l,
-				default: ({ id: n }) => w(v, null, [
-					Ue.value.map((t, n) => w("input", {
+				...i,
+				default: ({ id: n }) => A(C, null, [
+					Ue.value.map((t, n) => A("input", {
 						key: n,
 						type: "hidden",
 						name: e.name,
 						value: t,
 						form: e.form
 					}, null)),
-					D(ge, a({
+					p(he, l({
 						id: Ge.value,
 						ref: g,
 						modelValue: Q.value,
@@ -284,13 +324,13 @@ var L = e({
 						"v-autocomplete__content",
 						d.value,
 						e.menuProps?.contentClass
-					] }), { default: () => [D(ve, {
+					] }), { default: () => [p(_e, {
 						onFocusin: dt,
 						onKeydown: rt,
 						onMousedown: ht
 					}, { default: () => [
-						l["menu-header"] && w("header", { ref: y }, [l["menu-header"](i)]),
-						t && D(Ee, a({
+						i["menu-header"] && A("header", { ref: y }, [i["menu-header"](o)]),
+						t && p(Te, l({
 							key: "autocomplete-list",
 							ref: _,
 							class: "v-list--navigable",
@@ -300,51 +340,51 @@ var L = e({
 							onMousedown: (e) => e.preventDefault(),
 							onFocusout: ft,
 							tabindex: "-1",
-							selectable: !!G.value.length,
+							selectable: !!K.value.length,
 							"aria-live": "polite",
 							"aria-labelledby": `${n.value}-label`,
 							"aria-multiselectable": e.multiple,
 							color: e.itemColor ?? e.color
 						}, Je, e.listProps), { default: () => [
-							l["prepend-item"]?.(),
-							!G.value.length && !e.hideNoData && (l["no-data"]?.() ?? D(F, {
+							i["prepend-item"]?.(),
+							!K.value.length && !e.hideNoData && (i["no-data"]?.() ?? p(R, {
 								key: "no-data",
-								title: u(e.noDataText)
+								title: s(e.noDataText)
 							}, null)),
-							D(me, {
-								ref: T,
+							p(pe, {
+								ref: S,
 								renderless: !0,
-								items: G.value,
+								items: K.value,
 								itemKey: "value"
 							}, { default: ({ item: t, index: n, itemRef: r }) => {
-								let i = o(t.props), s = a(t.props, {
+								let o = a(t.props), s = l(t.props, {
 									ref: r,
 									key: t.value,
 									active: X.value && t === Y.value ? !0 : void 0,
 									onClick: () => $(t, null),
 									"aria-posinset": n + 1,
-									"aria-setsize": G.value.length
+									"aria-setsize": K.value.length
 								});
-								return t.type === "divider" ? l.divider?.({
+								return t.type === "divider" ? i.divider?.({
 									props: t.raw,
 									index: n
-								}) ?? D(Ae, a(t.props, {
+								}) ?? p(Oe, l(t.props, {
 									ref: r,
 									key: `divider-${n}`
-								}), null) : t.type === "subheader" ? l.subheader?.({
+								}), null) : t.type === "subheader" ? i.subheader?.({
 									props: t.raw,
 									index: n
-								}) ?? D(we, a(t.props, {
+								}) ?? p(Ce, l(t.props, {
 									ref: r,
 									key: `subheader-${n}`
-								}), null) : l.item?.({
+								}), null) : i.item?.({
 									item: t.raw,
 									internalItem: t,
 									index: n,
 									props: s
-								}) ?? D(F, a(s, { role: "option" }), {
-									prepend: ({ isSelected: n }) => w(v, null, [
-										e.multiple && !e.hideSelected ? D(Le, {
+								}) ?? p(R, l(s, { role: "option" }), {
+									prepend: ({ isSelected: n }) => A(C, null, [
+										e.multiple && !e.hideSelected ? p(Ne, {
 											key: t.value,
 											modelValue: n,
 											ripple: !1,
@@ -352,27 +392,27 @@ var L = e({
 											"aria-hidden": !0,
 											onClick: (e) => e.preventDefault()
 										}, null) : void 0,
-										i.prependAvatar && D(Me, { image: i.prependAvatar }, null),
-										i.prependIcon && D(je, { icon: i.prependIcon }, null)
+										o.prependAvatar && p(ke, { image: o.prependAvatar }, null),
+										o.prependIcon && p(B, { icon: o.prependIcon }, null)
 									]),
-									title: () => O.value ? t.title : D(pe, {
+									title: () => E.value ? t.title : p(fe, {
 										text: t.title,
-										matches: Be(t)?.title,
+										matches: ze(t)?.title,
 										markClass: "v-autocomplete__mask",
 										matchAll: !0,
 										ignoreCase: !0
 									}, null)
 								});
 							} }),
-							l["append-item"]?.()
+							i["append-item"]?.()
 						] }),
-						l["menu-footer"] && w("footer", { ref: C }, [l["menu-footer"](i)])
+						i["menu-footer"] && A("footer", { ref: x }, [i["menu-footer"](o)])
 					] })] }),
-					H.value.map((t, n) => {
+					U.value.map((t, n) => {
 						function r(e) {
 							e.stopPropagation(), e.preventDefault(), $(t, !1);
 						}
-						let i = a(Fe.filterProps(t.props), {
+						let a = l(V.filterProps(t.props), {
 							"onClick:close": r,
 							onKeydown(e) {
 								(e.key === "Enter" || e.key === " ") && (e.preventDefault(), e.stopPropagation(), r(e));
@@ -382,99 +422,166 @@ var L = e({
 							},
 							modelValue: !0,
 							"onUpdate:modelValue": void 0
-						}), o = q.value ? !!l.chip : !!l.selection, s = o ? ee(q.value ? l.chip({
+						}), o = q.value ? !!i.chip : !!i.selection, s = o ? v(q.value ? i.chip({
 							item: t.raw,
 							internalItem: t,
 							index: n,
-							props: i
-						}) : l.selection({
+							props: a
+						}) : i.selection({
 							item: t.raw,
 							internalItem: t,
 							index: n
 						})) : void 0;
-						if (!o || s) return w("div", {
+						if (!o || s) return A("div", {
 							key: t.value,
-							class: ne(["v-autocomplete__selection", n === A.value && ["v-autocomplete__selection--selected", R.value]]),
-							style: se(n === A.value ? z.value : {})
-						}, [q.value ? l.chip ? D(j, {
+							class: ae(["v-autocomplete__selection", n === j.value && ["v-autocomplete__selection--selected", Pe.value]]),
+							style: ne(n === j.value ? Ie.value : {})
+						}, [q.value ? i.chip ? p(P, {
 							key: "chip-defaults",
 							defaults: { VChip: {
-								closable: K.value,
+								closable: Be.value,
 								size: Ve.value?.size ?? "small",
 								text: t.title
 							} }
-						}, { default: () => [s] }) : D(Fe, a({
+						}, { default: () => [s] }) : p(V, l({
 							key: "chip",
-							closable: K.value,
+							closable: Be.value,
 							size: Ve.value?.size ?? "small",
 							text: t.title,
 							disabled: t.props.disabled
-						}, i), null) : s ?? w("span", { class: "v-autocomplete__selection-text" }, [t.title, e.multiple && n < H.value.length - 1 && w("span", { class: "v-autocomplete__selection-comma" }, [le(",")])])]);
+						}, a), null) : s ?? A("span", { class: "v-autocomplete__selection-text" }, [t.title, e.multiple && n < U.value.length - 1 && A("span", { class: "v-autocomplete__selection-comma" }, [ce(",")])])]);
 					})
 				]),
-				"append-inner": (...t) => w(v, null, [
-					l["append-inner"]?.(...t),
-					e.menuIcon ? D(je, {
+				"append-inner": (...t) => A(C, null, [
+					i["append-inner"]?.(...t),
+					e.menuIcon ? p(B, {
 						class: "v-autocomplete__menu-icon",
-						color: m.value?.fieldIconColor,
+						color: f.value?.fieldIconColor,
 						icon: e.menuIcon,
 						onMousedown: nt,
-						onClick: te,
+						onClick: ee,
 						"aria-hidden": !0,
 						tabindex: "-1"
 					}, null) : void 0,
-					e.appendInnerIcon && D(B, {
+					e.appendInnerIcon && p(Le, {
 						key: "append-icon",
 						name: "appendInner",
 						color: t[0].iconColor.value
 					}, null)
 				])
 			});
-		}), Pe({
-			isFocused: E,
-			isPristine: O,
+		}), je({
+			isFocused: w,
+			isPristine: E,
 			menu: Q,
-			search: V,
-			filteredItems: W,
+			search: H,
+			filteredItems: G,
 			select: $
-		}, m);
+		}, f);
 	}
-}), z = (e) => typeof e == "object" && !!e && !Array.isArray(e);
-function B(e) {
-	if (!Array.isArray(e)) return [];
-	let t = /* @__PURE__ */ new Set();
-	return e.flatMap((e) => !z(e) || typeof e.label != "string" || typeof e.value != "string" || t.has(e.value) ? [] : (t.add(e.value), [{
-		label: e.label,
-		value: e.value,
-		disabled: e.disabled === !0,
-		group: typeof e.group == "string" ? e.group : "",
-		icon: typeof e.icon == "string" ? e.icon : ""
-	}]));
-}
-function V(e) {
-	return {
-		title: e.label,
-		value: e.value,
-		props: {
-			disabled: e.disabled,
-			...e.icon ? { prependIcon: e.icon } : {},
-			"data-value": e.value
+}), ze = d({
+	en: { comboboxNoMatch: "No matching options" },
+	ko: { comboboxNoMatch: "일치하는 항목이 없습니다" }
+}), K = /* @__PURE__ */ i({
+	__name: "ComboboxFieldView",
+	props: {
+		value: {},
+		items: {},
+		label: { default: "" },
+		hint: { default: "" },
+		hideDetails: {
+			type: Boolean,
+			default: !1
+		},
+		errorMessages: { default: () => [] },
+		placeholder: { default: "" },
+		disabled: {
+			type: Boolean,
+			default: !1
+		},
+		readonly: {
+			type: Boolean,
+			default: !1
+		},
+		clearable: {
+			type: Boolean,
+			default: !1
+		},
+		icon: { default: "" },
+		density: { default: "comfortable" },
+		searchable: {
+			type: Boolean,
+			default: !1
+		},
+		required: {
+			type: Boolean,
+			default: !1
 		}
-	};
-}
-function H(e) {
-	if (!e.some((e) => e.group)) return e.map(V);
-	let t = /* @__PURE__ */ new Map();
-	for (let n of e) t.set(n.group, [...t.get(n.group) ?? [], n]);
-	let n = t.get("") ?? [];
-	return t.delete(""), [...n.map(V), ...[...t].flatMap(([e, t]) => [{
-		type: "subheader",
-		title: e
-	}, ...t.map(V)])];
-}
+	},
+	emits: [
+		"update",
+		"blur",
+		"menu"
+	],
+	setup(e, { emit: n }) {
+		let r = e, i = n, { t: a } = w();
+		S(ze);
+		let o = { closeOnContentClick: !1 }, s = D(!1), c = O(() => U(r.items)), l = () => {
+			s.value = !1;
+		}, u = O(() => c.value ? r.items.map((e) => "value" in e && !e.keepOpen ? {
+			...e,
+			props: {
+				...e.props,
+				onClick: l
+			}
+		} : e) : r.items);
+		return (n, r) => (t(), y(g(e.searchable ? x(G) : x(N)), {
+			menu: s.value,
+			"onUpdate:menu": [r[0] ||= (e) => s.value = e, r[3] ||= (e) => i("menu", e)],
+			"model-value": e.value || null,
+			items: u.value,
+			"menu-props": c.value ? o : void 0,
+			label: e.label || void 0,
+			hint: e.hint || void 0,
+			"persistent-hint": !!e.hint,
+			"hide-details": e.hideDetails ? !0 : "auto",
+			"error-messages": e.errorMessages,
+			placeholder: e.placeholder || void 0,
+			disabled: e.disabled,
+			readonly: e.readonly,
+			clearable: e.clearable && !e.readonly,
+			"prepend-inner-icon": e.icon || void 0,
+			density: e.density,
+			"no-data-text": x(a)("smartview.comboboxNoMatch"),
+			"aria-required": e.required ? "true" : void 0,
+			variant: "outlined",
+			rounded: "lg",
+			"onUpdate:modelValue": r[1] ||= (e) => i("update", typeof e == "string" ? e : ""),
+			onBlur: r[2] ||= (e) => i("blur")
+		}, null, 40, [
+			"menu",
+			"model-value",
+			"items",
+			"menu-props",
+			"label",
+			"hint",
+			"persistent-hint",
+			"hide-details",
+			"error-messages",
+			"placeholder",
+			"disabled",
+			"readonly",
+			"clearable",
+			"prepend-inner-icon",
+			"density",
+			"no-data-text",
+			"aria-required"
+		]));
+	}
+});
 //#endregion
 //#region src/entries/smartview-combobox.ts
-N("smartview-combobox", /* @__PURE__ */ _({
+I("smartview-combobox", /* @__PURE__ */ i({
 	__name: "SmartviewCombobox.ce",
 	props: {
 		value: {
@@ -536,63 +643,57 @@ N("smartview-combobox", /* @__PURE__ */ _({
 	},
 	emits: ["input", "change"],
 	setup(e, { emit: n }) {
-		let r = e, i = n, { t: a } = y(), { overlayDefaults: o } = M(() => r.overlayTarget), s = t("root"), { current: c, commit: d, reset: f } = ke("value", () => r.value), p = x(() => H(B(r.options))), { formDisabled: ee, touched: h } = Ie({
-			value: () => c.value,
-			isEmpty: () => c.value === "",
+		let r = e, i = n, { t: a } = w(), { overlayDefaults: o } = F(() => r.overlayTarget), c = s("root"), { current: l, commit: u, reset: d } = z("value", () => r.value), f = O(() => Re(Le(r.options))), { formDisabled: m, touched: h } = Me({
+			value: () => l.value,
+			isEmpty: () => l.value === "",
 			required: () => r.required,
 			requiredMessage: () => a("smartview.required"),
-			anchor: () => s.value?.querySelector("input:not([type=\"hidden\"])") ?? void 0,
-			reset: f
-		}), te = x(() => r.errorMessage ? [r.errorMessage] : h.value && r.required && c.value === "" ? [a("smartview.required")] : []);
-		function _(e) {
-			let t = typeof e == "string" ? e : "";
-			t !== c.value && (d(t), i("input", t), i("change", t));
+			anchor: () => c.value?.querySelector("input:not([type=\"hidden\"])") ?? void 0,
+			reset: d
+		}), g = O(() => r.errorMessage ? [r.errorMessage] : h.value && r.required && l.value === "" ? [a("smartview.required")] : []);
+		function v(e) {
+			e !== l.value && (u(e), i("input", e), i("change", e));
 		}
-		return (t, n) => (l(), C(g(j), { defaults: g(o) }, {
-			default: m(() => [w("div", {
+		return (n, r) => (t(), y(x(P), { defaults: x(o) }, {
+			default: _(() => [A("div", {
 				ref_key: "root",
-				ref: s,
+				ref: c,
 				class: "smartview-root",
-				onInput: n[2] ||= T(() => {}, ["stop"]),
-				onChange: n[3] ||= T(() => {}, ["stop"])
-			}, [(l(), C(u(e.searchable ? g(R) : g(A)), {
-				"model-value": g(c) || null,
-				items: p.value,
-				label: e.label || void 0,
-				hint: e.hint || void 0,
-				"persistent-hint": !!e.hint,
-				"hide-details": "auto",
-				"error-messages": te.value,
-				placeholder: e.placeholder || void 0,
-				disabled: e.disabled || g(ee),
+				onInput: r[2] ||= E(() => {}, ["stop"]),
+				onChange: r[3] ||= E(() => {}, ["stop"])
+			}, [p(K, {
+				value: x(l),
+				items: f.value,
+				label: e.label,
+				hint: e.hint,
+				"error-messages": g.value,
+				placeholder: e.placeholder,
+				disabled: e.disabled || x(m),
 				readonly: e.readonly,
-				clearable: e.clearable && !e.readonly,
-				"prepend-inner-icon": e.icon || void 0,
+				clearable: e.clearable,
+				icon: e.icon,
 				density: e.density,
-				"no-data-text": g(a)("smartview.comboboxNoMatch"),
-				"aria-required": e.required ? "true" : void 0,
-				variant: "outlined",
-				rounded: "lg",
+				searchable: e.searchable,
+				required: e.required,
 				"data-part": "field",
-				"onUpdate:modelValue": _,
-				onBlur: n[0] ||= (e) => h.value = !0,
-				"onUpdate:menu": n[1] ||= (e) => !e && (h.value = !0)
-			}, null, 40, [
-				"model-value",
+				onUpdate: v,
+				onBlur: r[0] ||= (e) => h.value = !0,
+				onMenu: r[1] ||= (e) => !e && (h.value = !0)
+			}, null, 8, [
+				"value",
 				"items",
 				"label",
 				"hint",
-				"persistent-hint",
 				"error-messages",
 				"placeholder",
 				"disabled",
 				"readonly",
 				"clearable",
-				"prepend-inner-icon",
+				"icon",
 				"density",
-				"no-data-text",
-				"aria-required"
-			]))], 544)]),
+				"searchable",
+				"required"
+			])], 544)]),
 			_: 1
 		}, 8, ["defaults"]));
 	}

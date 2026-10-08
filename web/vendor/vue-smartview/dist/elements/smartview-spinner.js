@@ -1,6 +1,6 @@
-import { Pn as e, ar as t, bn as n, dr as r, en as i, fn as a, gn as o, pn as s, yn as c } from "../chunks/vuetify-DJ4bsPds.js";
-import { t as l } from "../chunks/define-BG7hCbXs.js";
-import { t as u } from "../chunks/VProgressCircular-ZunkyD4q.js";
+import { Bn as e, En as t, Sn as n, Tn as r, _r as i, dr as a, on as o, vn as s, yn as c } from "../chunks/vuetify-C39-WP9g.js";
+import { t as l } from "../chunks/define-BovISfN4.js";
+import { t as u } from "../chunks/VProgressCircular-CetUt3jx.js";
 import { t as d } from "../chunks/_plugin-vue_export-helper-B3ysoDQm.js";
 //#region src/elements/SmartviewSpinner.ce.vue?vue&type=script&setup=true&lang.ts
 var f = {
@@ -13,7 +13,7 @@ var f = {
 };
 //#endregion
 //#region src/entries/smartview-spinner.ts
-l("smartview-spinner", /* @__PURE__ */ d(/* @__PURE__ */ n({
+l("smartview-spinner", /* @__PURE__ */ d(/* @__PURE__ */ t({
 	__name: "SmartviewSpinner.ce",
 	props: {
 		size: {
@@ -33,7 +33,7 @@ l("smartview-spinner", /* @__PURE__ */ d(/* @__PURE__ */ n({
 			type: String
 		}
 	},
-	setup(n) {
+	setup(t) {
 		let l = {
 			"xx-small": {
 				size: 16,
@@ -59,8 +59,8 @@ l("smartview-spinner", /* @__PURE__ */ d(/* @__PURE__ */ n({
 			brand: "primary",
 			base: void 0,
 			inverse: "white"
-		}, m = n, { t: h } = i(), g = a(() => Object.hasOwn(l, m.size) ? l[m.size] : l.medium), _ = a(() => Object.hasOwn(d, m.variant) ? d[m.variant] : d.brand);
-		return (i, a) => (e(), o("div", f, [c(t(u), {
+		}, m = t, { t: h } = o(), g = s(() => Object.hasOwn(l, m.size) ? l[m.size] : l.medium), _ = s(() => Object.hasOwn(d, m.variant) ? d[m.variant] : d.brand);
+		return (o, s) => (e(), n("div", f, [r(a(u), {
 			indeterminate: "",
 			size: g.value.size,
 			width: g.value.width,
@@ -71,7 +71,7 @@ l("smartview-spinner", /* @__PURE__ */ d(/* @__PURE__ */ n({
 			"size",
 			"width",
 			"color"
-		]), s("span", p, r(n.alternativeText || t(h)("smartview.spinnerLoading")), 1)]));
+		]), c("span", p, i(t.alternativeText || a(h)("smartview.spinnerLoading")), 1)]));
 	}
 }), [["styles", [":host{vertical-align:middle;display:inline-flex}:host([overlay]){z-index:1;background:rgba(var(--v-theme-surface), .75);justify-content:center;align-items:center;display:flex;position:absolute;inset:0}.smartview-spinner{display:inline-flex}.smartview-spinner__text{clip-path:inset(50%);white-space:nowrap;border:0;width:1px;height:1px;margin:-1px;padding:0;position:absolute;overflow:hidden}"]]]));
 //#endregion

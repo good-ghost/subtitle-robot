@@ -1,31 +1,36 @@
-import { Pn as e, Wn as t, ar as n, bn as r, dr as i, en as a, fn as o, gn as s, pn as c, yn as l } from "../chunks/vuetify-DJ4bsPds.js";
-import { t as u } from "../chunks/define-BG7hCbXs.js";
-import { t as d } from "../chunks/VChip-Dqfk0_yh.js";
-import { t as f } from "../chunks/_plugin-vue_export-helper-B3ysoDQm.js";
-import { i as p, t as m } from "../chunks/format-CSc3hJdu.js";
-//#region src/elements/SmartviewRefreshedAt.ce.vue?vue&type=script&setup=true&lang.ts
-var h = { class: "smartview-root" }, g = ["datetime"], _ = "--:--:--";
+import { Bn as e, En as t, Qt as n, Sn as r, Tn as i, Xn as a, _r as o, dr as s, en as c, on as l, vn as u, yn as d } from "../chunks/vuetify-C39-WP9g.js";
+import { t as f } from "../chunks/define-BovISfN4.js";
+import { t as p } from "../chunks/VChip-C-IhEdKW.js";
+import { t as m } from "../chunks/_plugin-vue_export-helper-B3ysoDQm.js";
+import { i as h, t as g } from "../chunks/format-CSc3hJdu.js";
+//#region src/messages/SmartviewRefreshedAt.ts
+var _ = n({
+	en: { refreshedAt: "{time} updated" },
+	ko: { refreshedAt: "{time} 갱신" }
+}), v = { class: "smartview-root" }, y = ["datetime"], b = "--:--:--";
 //#endregion
 //#region src/entries/smartview-refreshed-at.ts
-u("smartview-refreshed-at", /* @__PURE__ */ f(/* @__PURE__ */ r({
+f("smartview-refreshed-at", /* @__PURE__ */ m(/* @__PURE__ */ t({
 	__name: "SmartviewRefreshedAt.ce",
 	props: { time: {
 		default: "",
 		type: String
 	} },
-	setup(r) {
-		let u = r, { t: f } = a(), v = o(() => m(u.time)), y = o(() => p(u.time)?.toISOString());
-		return (r, a) => (e(), s("span", h, [l(n(d), {
+	setup(t) {
+		let n = t, { t: f } = l();
+		c(_);
+		let m = u(() => g(n.time)), x = u(() => h(n.time)?.toISOString());
+		return (t, n) => (e(), r("span", v, [i(s(p), {
 			variant: "tonal",
 			color: "primary",
 			size: "small",
 			"prepend-icon": "mdi-refresh",
 			"data-part": "chip"
 		}, {
-			default: t(() => [c("time", {
-				datetime: y.value,
+			default: a(() => [d("time", {
+				datetime: x.value,
 				"data-part": "time"
-			}, i(n(f)("smartview.refreshedAt", { time: v.value || _ })), 9, g)]),
+			}, o(s(f)("smartview.refreshedAt", { time: m.value || b })), 9, y)]),
 			_: 1
 		})]));
 	}
