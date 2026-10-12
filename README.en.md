@@ -4,12 +4,12 @@ English | [한국어](README.md)
 
 **Subtitle Robot** (`subtitle-robot`) is a Python CLI and watch daemon that translates subtitles. The source can be any language (English and Japanese have dedicated rules); the target language is Korean by default and can be changed in the settings. Before translating, it analyses the whole title to build a glossary of names and proper nouns, so that **the same character or term is written the same way across a whole TV series**. The LLM is one of Google Gemini (default), NVIDIA NIM, a local llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI (ChatGPT) or Anthropic Claude.
 
-The current version is 0.8.6. Main features:
+The current version is 0.9.0. Main features:
 
 - Single titles and TV series: a series-wide glossary, previous-episode summaries (`story_so_far`) and repeated-line memory (`phrases`)
 - SRT, ASS and VTT input, style-preserving ASS output
 - Subtitle-track extraction from videos (MKV, MP4) and automatic translation, a watch daemon for media folders and container operation
-- Web console: dashboard, queue, completed list, logs, settings (provider, keys, admin account)
+- Web console: dashboard, queue (register videos by browsing folders, translation progress), completed list (subtitle review, archive, delete), archived list, logs, settings (provider, keys, admin account)
 - Automatic source-language detection, configurable target language, source-track choice by the title's original language (TMDB)
 - Seven LLM providers, plus Claude and ChatGPT subscription accounts (through the official CLIs)
 
@@ -187,6 +187,7 @@ subtitle-robot media revert "Movie (2020).mkv"          # delete subtitles made 
 - **Translating from external subtitles**: without embedded text subtitles (image subtitles only counts as none), an external subtitle next to the video (SRT, ASS, SSA, VTT, SAMI) is chosen in the same order as tracks (original language → English → first candidate) and translated. The language comes from the file name tag (`Movie.en.srt`) or, failing that, the content. Legacy encodings (CP949 etc.) are read. With embedded text subtitles, only embedded tracks are used as before
 - **SAMI (.smi)**: each language class (`KRCC`, `ENCC`, …) is detected and converted to `<video>.<lang>.srt` (Korean included, for media servers). An existing file with that name is left alone; converted files are recorded as tool outputs and removed by `media revert`. A SAMI with Korean counts as a target-language subtitle
 - **OCR of image subtitles (optional)**: when there are no text subtitles (embedded or external) and only image subtitles, `[media] ocr = true` reads them with Tesseract and translates the result. Candidates are PGS and VobSub tracks in MKV and `.sup` or `.idx` (+`.sub`) files next to the video; one is chosen in the same order (original language → English → first candidate). The recognized text is saved as `<video>.<lang>.srt` and then translated. OCR is CPU heavy, so it is off by default, and Tesseract is only in the `ocr` image tag (see "Image tags"). `ocr_workers` sets the number of parallel Tesseract processes (0 = number of CPU cores). 1,000 images of 1080p Blu-ray subtitles take about 9 seconds on 32 cores and about 50 seconds on one core. It can also be turned on in the Media tab of Settings
+- **Target-language image subtitles are saved as SRT (with OCR on)**: when there is no target-language (e.g. Korean) text subtitle but there is a target-language image subtitle (PGS, VobSub, `.ko.sup` …), it is read and saved as `<video>.<target>.srt` instead of translating anything (verdict `has_target`). If nothing can be read, processing continues with the original verdict. Forced and Signs/Songs tracks follow `skip_forced`
 - **Source track**: the text track in the title's original language (TMDB original language) → if there is none (including when the original language is unknown), the **English** track → if there is none either, the first text track in container order (target language, forced and Signs/Songs tracks excluded). English comes before the first track because multi-language releases often start with, for example, an Arabic track. The verdict reason records why the track was chosen (original-language, English or first track) and the original language.
 - **Original language (TMDB)**: used when a TMDB key (v3 API key or v4 read token, Keys tab in Settings) is set. IDs in file or folder names (`{tmdb-123}`, `{tvdb-123}`, `{imdb-tt123}`, the Plex/Jellyfin naming) come first; otherwise it searches by title and year. A movie inside a `Title (Year)` folder (Radarr/Plex naming) is searched by the folder name; otherwise the file name is used up to the year, resolution or release tags (`Godzilla.vs.Kong-2021-1080p…` → Godzilla vs Kong, 2021). Results are kept in `/data/tmdb-cache.json`; titles not found are asked again after a day. Without a key, or if the lookup fails, the original language counts as unknown: the English track is used, otherwise the first text track (`[tmdb]`).
 - **Existing external subtitles**: a file with the same name is not overwritten; it is kept by renaming it to `Movie.en.orig.srt` (`[sidecar]`).
@@ -200,7 +201,7 @@ subtitle-robot queue list | retry [job] | clear-failed
 subtitle-robot ledger list | show <file> | forget <file> | export [file] | import <file>
 ```
 
-The data folder (state.db, workspaces, backups) is `--data` → `SUBTITLE_ROBOT_DATA` → `/data`. When a job finishes, the video's extracted tracks (`extract/`) and the movie work files (checkpoint, normalised source, translated copy) are deleted; glossaries, reports and the series records (`work/`, `out/`, `episodes/`, read again by repeated-line collection and consistency checks) are kept. Files of failed jobs are kept for diagnosis.
+The data folder (state.db, workspaces, backups, review marks in `review/`) is `--data` → `SUBTITLE_ROBOT_DATA` → `/data`. The state database (`state.db`) is upgraded automatically when the program is updated, and an older version cannot open an upgraded file (schema 3 since 0.9.0: 0.8.x cannot open a `state.db` that 0.9.0 has opened). Copy `state.db` before updating if you may need to go back. When a job finishes, the video's extracted tracks (`extract/`) and the movie work files (checkpoint, normalised source, translated copy) are deleted; glossaries, reports and the series records (`work/`, `out/`, `episodes/`, read again by repeated-line collection and consistency checks) are kept. Files of failed jobs are kept for diagnosis.
 
 ## Watch daemon and container
 
@@ -218,7 +219,7 @@ podman exec subtitle-robot subtitle-robot queue list
 
 ### Image tags
 
-Every tag contains the Python package, mkvtoolnix, ffmpeg and the web console; each subscription CLI goes into its own tag because the CLI binaries are large (measured 2026-10-04). Only the `latest` image is distributed; build `claude`, `codex` and `ocr` from this repository (Docker works too: `CONTAINER_ENGINE=docker scripts/build-images.sh claude`).
+Every tag contains the Python package, mkvtoolnix, ffmpeg and the web console; each subscription CLI goes into its own tag because the CLI binaries are large (measured 2026-10-04). The `latest` image (main branch, no OCR) and the `ocr` image (this branch: `latest` plus the OCR code and Tesseract) are distributed; `claude`, `codex` and `ocr` can be built from this repository (Docker works too: `CONTAINER_ENGINE=docker scripts/build-images.sh claude`).
 
 | Tag | Dockerfile | Providers | Extra contents | Size |
 |---|---|---|---|---|
@@ -257,8 +258,9 @@ The watch daemon (`watch`) also serves a web console (default port 8949, `[web] 
 | Menu | Contents |
 |---|---|
 | Dashboard | Daemon (heartbeat) and provider status, counts of queued, failed and recorded jobs, target language, whether the original-language lookup is used, watch paths |
-| Queue List | Queued, running and failed jobs (a translating job shows `Translating (done blocks/total blocks)`); retry and clear failed; **Register video** (browse from a watch path down to a file or folder) |
-| Completed List | Processing records (verdict, reason, output files), details, process again (forget the record) |
+| Queue List | Queued, running and failed jobs (a translating job shows `Translating (done blocks/total blocks)`); retry, clear failed, delete a job (not while it is being processed); **Register video** (browse from a watch path down to a file or folder) |
+| Completed List | Processing records (verdict, reason, output files), details, archive (to the Archived List), delete (the record only; subtitle files stay and the video is processed again on the next event or registration), **subtitle review** (source and translation side by side per block; fix the translation) |
+| Archived List | Records **archived** from the Completed List. They only leave that list: the video still counts as processed. Move back, or delete (removes the record so the video is processed again) |
 | Logs | Daemon log (`/data/logs/daemon.log`, 5 MB × 3 rotated), level filter, auto refresh |
 | Settings | Edit and save `config.toml` (comments kept); settings of the chosen provider among seven, pick from the **model list**, **authentication** (API key or subscription) and subscription sign-in; **Translation** tab: target language (searchable), TMDB on/off; **Web** tab: time zone (searchable); **Keys** tab (provider and TMDB keys, only the last 4 characters shown); **Account** tab (change user name and password); **Apply** (restart the daemon) |
 
@@ -266,6 +268,14 @@ The watch daemon (`watch`) also serves a web console (default port 8949, `[web] 
 - The console is available in Korean and English with light and dark themes, switched below the menu (stored in the browser).
 - To save from Settings, mount the config volume writable (read-only with `:ro`). Settings are read at start, so press **Apply** to restart the daemon. The daemon exits with code 4 and the container restart policy brings it back (`restart: unless-stopped` in compose, `podman run --restart=always`, Quadlet `Restart=always`). Without a restart policy it does not come back.
 - HTTPS is left to a reverse proxy (the session cookie has no `Secure` flag, so sign-in works over HTTP on a LAN).
+- **Register video** does not ask for a typed path. The list shows the watch paths; picking a folder keeps the list open and shows its subfolders and videos (files that match `[watch] include` and `exclude`). Pick a video to register it, or the current-folder item at the top to register the folder (with "Include subfolders"). Nothing outside the watch paths is listed.
+- **Subtitle review**: the review action on a translated video in the Completed List shows the source and the translated subtitle side by side per block (start, end, source, translated, review status). Click a block to fix the translation; only that block of the translated file changes (timing and numbers, and ASS styles, stay). Saving without changes only marks the block as reviewed.
+  - Reviewable files are the translated sidecar `<video>.<target>.srt` and the native ASS `<video>.<target>.ass`. A video with both (`output_format = "both"`) lists both files and they are edited separately.
+  - The source is the subtitle that was translated: the external file, or for an embedded track the source-language sidecar extracted next to the video. With the same number of blocks they are paired in order; otherwise only blocks with the same start time are paired. If no source is found, only the translation is shown.
+  - Blocks flagged `needs_review` during translation show as "Needs review" and can be filtered with the switch.
+  - An edited subtitle is treated as a user file from then on: processing the video again sees a target-language subtitle and does not overwrite it. The first translation stays in the archive in the data folder (`outputs/<id>/`). Reviewed marks are kept in `review/<record id>.json`.
+- **Archive** only changes which list shows the record. An archived video keeps its processing record, so it is not processed again. To process it again, **delete** the record from the Completed or Archived List, or register the video with "Process again even if already processed".
+- **Delete** in the Queue List removes one job from the queue (not while it is being processed; the processing record stays). A video in a watch path may be queued again by the next periodic scan.
 - Verdict reasons, job errors and log messages are Korean sentences written by the daemon, so they stay Korean in the English console.
 
 compose runs it with `ports: ["8949:8949"]` and a writable config volume. With Podman directly (rootless, as the owner of the media files):
@@ -347,6 +357,7 @@ WantedBy=multi-user.target
 
 - In ASS output, override tags in the middle of a line (`{\i1}…{\i0}`) are not preserved (tags at the start of a line are). In SRT, only ASS override tags at the start of a line are preserved.
 - Blocks not in the source language (for example Chinese notes in Japanese subtitles) are left untranslated.
+- Subtitle review edits the translated text only (it does not move timing or split and merge blocks). ASS override tags are shown as text and are not validated, so a removed or broken tag is saved as is. After the target language setting is changed, records translated into the previous target language no longer show the review action.
 - Speech recognition is out of scope.
 - OCR reads only PGS and VobSub tracks in MKV and external `.sup` and `.idx` files (image tracks in MP4 and DVB subtitles are not read). Recognition is as good as Tesseract, so decorative fonts, italics and blurred outlines can be misread. If you fix the generated `<video>.<lang>.srt` and process the video again, the fixed file is translated.
 

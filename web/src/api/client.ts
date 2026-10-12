@@ -13,6 +13,8 @@ import type {
   LoginStatus,
   ProviderName,
   QueuedJob,
+  Review,
+  ReviewRow,
   SecretState,
   SessionState,
   SettingsState,
@@ -107,10 +109,19 @@ export const api = {
   status: () => request<DaemonStatus>('GET', 'status'),
   jobs: (status?: JobStatus[]) => request<Job[]>('GET', 'jobs', undefined, { status }),
   retry: (jobId?: number) => request<{ count: number }>('POST', 'jobs/retry', { job_id: jobId ?? null }),
+  // 작업 하나를 큐에서 지운다 (처리 중이면 409, WI-7.004e)
+  deleteJob: (jobId: number) => request<{ count: number }>('POST', 'jobs/delete', { job_id: jobId }),
   clearFailed: () => request<{ count: number }>('POST', 'jobs/clear-failed'),
-  ledger: (verdict: Verdict | undefined, history: boolean) =>
-    request<LedgerEntry[]>('GET', 'ledger', undefined, { verdict, history }),
+  // shelved 면 보관 목록, 아니면 완료 목록 (WI-7.010)
+  ledger: (verdict: Verdict | undefined, history: boolean, shelved = false) =>
+    request<LedgerEntry[]>('GET', 'ledger', undefined, { verdict, history, shelved }),
+  // 기록을 보관하거나 완료 목록으로 되돌린다 (화면 목록만 바뀐다)
+  shelve: (id: number, shelved: boolean) => request<{ count: number }>('POST', 'ledger/shelve', { id, shelved }),
   forget: (path: string) => request<{ count: number }>('POST', 'ledger/forget', { path }),
+  // 자막 검수 (WI-7.009): 처리 기록의 번역 SRT 를 원본과 나란히, 블록 하나 저장
+  review: (id: number, name?: string) => request<Review>('GET', `ledger/${id}/review`, undefined, { name }),
+  saveReview: (id: number, name: string, index: number, text: string) =>
+    request<ReviewRow>('PUT', `ledger/${id}/review`, { name, index, text }),
   // 감시 경로 안의 폴더 내용. path 가 없으면 감시 경로 목록 (WI-7.004d)
   browse: (path: string | null) => request<BrowseResult>('GET', 'browse', undefined, { path: path ?? undefined }),
   registerMedia: (path: string, recursive: boolean, force: boolean) =>

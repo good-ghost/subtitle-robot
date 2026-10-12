@@ -1,7 +1,7 @@
 // 해시 라우팅 (#/queue). 데몬이 정적 파일만 내므로 서버 폴백이 필요 없다 (PROJECT-PLAN §25.4).
 import { readonly, ref } from 'vue'
 
-export const ROUTES = ['dashboard', 'queue', 'completed', 'logs', 'settings'] as const
+export const ROUTES = ['dashboard', 'queue', 'completed', 'archive', 'logs', 'settings'] as const
 export type RouteName = (typeof ROUTES)[number]
 export const DEFAULT_ROUTE: RouteName = 'dashboard'
 

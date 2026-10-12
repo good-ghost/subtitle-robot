@@ -46,6 +46,7 @@ SUBTITLE_EXTENSIONS = frozenset(
     {".srt", ".ass", ".ssa", ".vtt", ".smi", ".sami", ".sub", ".idx", ".sup"}
 )
 _TEXT_SUBTITLE_EXTENSIONS = frozenset({".srt", ".ass", ".ssa", ".vtt", ".smi", ".sami"})
+IMAGE_SUBTITLE_EXTENSIONS = SUBTITLE_EXTENSIONS - _TEXT_SUBTITLE_EXTENSIONS
 # 언어가 아닌 사이드카 이름 표시. 이것만 있으면 언어 표시가 없는 외부 자막이다
 _FLAG_TOKENS = frozenset({"forced", "sdh", "cc", "hi", "default", "orig", "full", "signs", "songs"})
 # §21.5: 일부 대사만 있는 트랙 (번역해도 불완전한 자막)
@@ -124,12 +125,15 @@ def target_evidence(
     *,
     target: str = DEFAULT_TARGET,
     image_counts: bool = True,
+    external_images: bool = True,
     tool_outputs: Collection[Path] = (),
 ) -> str | None:
     """대상 언어 자막이 이미 있다는 근거. 없으면 None (§21.5 1번, §26.6).
 
     tool_outputs 는 이 도구가 이전에 만든 파일이다 (재처리·릴리스 교체 때 이전 번역 결과를
-    외부 자막으로 보지 않는다, §21.11·§21.12).
+    외부 자막으로 보지 않는다, §21.11·§21.12). image_counts 는 내장 이미지 트랙,
+    external_images 는 외부 이미지 자막(`.sup`·`.idx`·`.sub`)을 근거로 셀지다
+    (텍스트 자막만 볼 때 둘 다 False, WI-5.004d).
     """
     own = {str(path).casefold() for path in tool_outputs}
     label = _language_label(target)
@@ -144,6 +148,8 @@ def target_evidence(
     tokens_for_target = language_tokens(target)
     for subtitle in external_subtitles(probe.path):
         if str(subtitle).casefold() in own:
+            continue
+        if not external_images and subtitle.suffix.lower() in IMAGE_SUBTITLE_EXTENSIONS:
             continue
         tokens = name_tokens(probe.path, subtitle)
         if any(token in tokens_for_target or normalize_language(token) == target

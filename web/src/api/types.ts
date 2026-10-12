@@ -83,10 +83,45 @@ export interface LedgerEntry {
   model: string | null
   outputs: string[]
   renames: { original: string; renamed: string }[]
+  /** 번역 자막 출력(SRT·ASS)이 있어 자막 검수 화면을 열 수 있다 (WI-7.009) */
+  reviewable: boolean
+  /** 보관한 기록: 완료 목록이 아니라 보관 목록에 보인다 (WI-7.010) */
+  shelved: boolean
   attempts: number
   current: boolean
   processed_at: number
   updated_at: number
+}
+
+/** 번역 리포트의 검사 결과 (검토 필요 블록의 사유) */
+export interface ReviewNote {
+  code: string
+  severity: string
+  detail: string
+}
+
+/** 검수할 블록: 원본과 번역 (WI-7.009). start·end 는 초 */
+export interface ReviewRow {
+  index: number
+  start: number | null
+  end: number | null
+  source: string
+  text: string
+  needs_review: boolean
+  notes: ReviewNote[]
+  reviewed: boolean
+}
+
+/** 처리 기록 하나의 자막 검수 화면 */
+export interface Review {
+  id: number
+  video: string
+  name: string
+  subtitles: string[]
+  source_name: string | null
+  aligned: boolean
+  edited: boolean
+  rows: ReviewRow[]
 }
 
 /** 동영상 등록 화면의 폴더 목록 (WI-7.004d). path 가 null 이면 감시 경로 목록 */

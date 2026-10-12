@@ -340,6 +340,31 @@ class JobQueue:
             cursor = conn.execute(query, params)
         return int(cursor.rowcount)
 
+    def delete(self, job_id: int) -> bool:
+        """작업 하나를 큐에서 지운다 (대기·실패·끝난 작업, 웹 대기열의 삭제, WI-7.004e).
+
+        처리 중인 작업은 워커가 쓰고 있어 지우지 않는다. 처리 기록(ledger)은 건드리지 않는다.
+
+        Returns:
+            지웠으면 True, 처리 중이라 지우지 않았으면 False.
+
+        Raises:
+            JobError: 없는 작업.
+        """
+        with self._transaction() as conn:
+            # 확인과 삭제를 한 문장으로: 그 사이에 워커가 집어 가면 지우지 않는다
+            cursor = conn.execute(
+                "DELETE FROM jobs WHERE id = ? "
+                "AND status NOT IN ('probing', 'extracting', 'translating')",
+                (job_id,),
+            )
+            if cursor.rowcount:
+                return True
+            exists = conn.execute("SELECT 1 FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        if exists is None:
+            raise JobError(f"작업 {job_id} 이 없다")
+        return False
+
     def clear_failed(self) -> int:
         """실패한 작업 기록을 지운다. 지운 개수."""
         with self._transaction() as conn:

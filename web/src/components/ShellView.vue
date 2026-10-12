@@ -1,11 +1,12 @@
 <script setup lang="ts">
-// 앱 셸: 사이드 메뉴(Dashboard·Queue List·Completed List·Logs·Settings, Q-12), 상단 바 데몬 상태
+// 앱 셸: 사이드 메뉴(Dashboard·Queue List·Completed List·Archived List·Logs·Settings, Q-12·WI-7.010), 상단 바 데몬 상태
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import { api } from '../api/client'
 import type { DaemonStatus } from '../api/types'
 import { t, type MessageKey } from '../i18n'
 import { route, routeHref, ROUTES, type RouteName } from '../router'
+import ArchiveView from '../views/ArchiveView.vue'
 import CompletedView from '../views/CompletedView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import LogsView from '../views/LogsView.vue'
@@ -21,6 +22,7 @@ const ICONS: Record<RouteName, string> = {
   dashboard: 'mdi-view-dashboard-outline',
   queue: 'mdi-tray-full',
   completed: 'mdi-check-all',
+  archive: 'mdi-archive-outline',
   logs: 'mdi-text-box-search-outline',
   settings: 'mdi-cog-outline',
 }
@@ -28,6 +30,7 @@ const VIEWS = {
   dashboard: DashboardView,
   queue: QueueView,
   completed: CompletedView,
+  archive: ArchiveView,
   logs: LogsView,
   settings: SettingsView,
 } as const

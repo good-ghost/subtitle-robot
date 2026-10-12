@@ -40,7 +40,12 @@ from subtitle_robot.media.extract import (
     extract_subtitles,
 )
 from subtitle_robot.media.naming import plan_sidecar_names
-from subtitle_robot.media.ocr_source import image_candidates, ocr_source, pick_image
+from subtitle_robot.media.ocr_source import (
+    ImageCandidate,
+    image_candidates,
+    ocr_source,
+    pick_image,
+)
 from subtitle_robot.media.probe import PROBE_TIMEOUT_S, ProbeResult, probe
 from subtitle_robot.media.select import (
     FALLBACK_SOURCE_LANGUAGE,
@@ -51,7 +56,9 @@ from subtitle_robot.media.select import (
     ensure_series_workspace,
     external_subtitles,
     first_candidate,
+    is_partial_track,
     stage_episode,
+    target_evidence,
 )
 from subtitle_robot.media.sidecar import (
     SidecarRecord,
@@ -304,12 +311,25 @@ class MediaWorker:
             tool_outputs=own_now,
             external=externals,
         )
+        user = [p for p in external_subtitles(path) if str(p).casefold() not in own_names]
+        # 대상 언어 이미지 자막이 있으면 번역보다 그것을 SRT 로 저장하는 것이 먼저다 (WI-5.004d)
+        targets = self._target_images(probed, extraction, user, own_now)
+        target_note = ""
+        if targets:
+            saved, note = self._ocr_target(
+                probed, target, targets[0], sidecar_dir=sidecar_dir, writer=writer
+            )
+            target_note = "" if saved else note
+            decision = saved or _noted(decision, note)
+            self._save_partial(job, writer)
         if decision.verdict in ("no_source", "image_only") and self._config.media.ocr:
-            user = [p for p in external_subtitles(path) if str(p).casefold() not in own_names]
             decision = self._ocr(
                 probed, target, origin, decision, user, sidecar_dir=sidecar_dir, writer=writer
             )
             self._save_partial(job, writer)
+        # 다른 언어 이미지 자막으로 번역하게 됐어도 대상 언어 자막을 못 읽은 사유를 남긴다
+        if target_note and target_note not in decision.reason:
+            decision = _noted(decision, target_note)
         if decision.verdict != "translate" or decision.source is None:
             return self._settle(job, decision, writer.record, lookup.content_id, probed.segment_uid)
 
@@ -373,6 +393,72 @@ class MediaWorker:
             install=install,
             run=self._extract_run,
         )
+
+    def _target_images(
+        self,
+        probed: ProbeResult,
+        extraction: ExtractionResult,
+        subtitles: list[Path],
+        tool_outputs: list[Path],
+    ) -> list[ImageCandidate]:
+        """SRT 로 저장할 대상 언어 이미지 자막 (WI-5.004d). 없으면 빈 목록.
+
+        OCR 이 켜져 있고 Tesseract 가 있으며, 대상 언어 텍스트 자막(내장·외부·SAMI 변환본)이
+        없을 때만.
+        일부 대사 트랙(forced·Signs/Songs)은 skip_forced 를 따른다.
+        """
+        media = self._config.media
+        if not media.ocr or not tesseract_available():
+            return []
+        text = target_evidence(
+            probed, extraction, target=self._language, image_counts=False,
+            external_images=False, tool_outputs=tool_outputs,
+        )  # fmt: skip
+        if text is not None:
+            return []
+        return [
+            item
+            for item in image_candidates(probed, subtitles)
+            if item.language == self._language
+            and not (media.skip_forced and is_partial_track(item.track))
+        ]
+
+    def _ocr_target(
+        self,
+        probed: ProbeResult,
+        target: MediaTarget,
+        candidate: ImageCandidate,
+        *,
+        sidecar_dir: Path,
+        writer: SidecarWriter,
+    ) -> tuple[Decision | None, str]:
+        """대상 언어 이미지 자막을 읽어 `<영상>.<대상>.srt`로 저장한다 (번역하지 않는다, WI-5.004d).
+
+        Returns:
+            (has_target 판정, 사유). 읽지 못하면 판정은 None 이고 사유만 (원래 판정으로 계속한다).
+        """
+        media = self._config.media
+        result = ocr_source(
+            probed.path,
+            candidate,
+            self._work_dir(target),
+            original=None,
+            target=self._language,
+            installed=installed_languages(self._ocr_run),
+            extract_run=self._extract_run,
+            ocr_run=self._ocr_run,
+            workers=media.ocr_workers or os.cpu_count() or 1,
+            keep_target=True,
+        )
+        source = result.source
+        if source is None:
+            return None, result.note
+        sidecar = _ocr_sidecar(probed.path, source.track, source.language, sidecar_dir)
+        written = writer.write_text(sidecar, source.translation_input.read_text("utf-8"))
+        if written is None:
+            return None, f"{result.note} — {sidecar.name} 를 쓰지 못함 (같은 이름의 파일)"
+        reason = f"{result.note} → {written.name} (대상 언어 이미지 자막을 SRT 로 저장, 번역 안 함)"
+        return Decision("has_target", None, reason), reason
 
     def _ocr(
         self,
@@ -542,6 +628,9 @@ class MediaWorker:
                 )
             except MediaToolError as exc:
                 logger.warning("prescan staging skipped %s: %s", other.path, exc)
+                continue
+            # 그 화는 번역하지 않고 대상 언어 이미지 자막을 SRT 로 저장한다 (WI-5.004d)
+            if self._target_images(probed, extraction, external_subtitles(other.path), []):
                 continue
             decision = decide(
                 probed,

@@ -70,3 +70,15 @@ export function fieldErrorText(error: FieldError): string {
   if (key in MESSAGES.ko) return t(key as MessageKey, error.ctx ?? {})
   return error.message
 }
+
+const MS_PER_SECOND = 1000
+const pad2 = (value: number): string => String(value).padStart(2, '0')
+
+/** 초 → 자막 시각 `00:01:02,345` (SRT 표기). 시각이 없으면 '-' */
+export function timecode(seconds: number | null | undefined): string {
+  if (seconds === null || seconds === undefined) return t('common.none')
+  const total = Math.max(0, Math.round(seconds * MS_PER_SECOND))
+  const whole = Math.floor(total / MS_PER_SECOND)
+  const ms = String(total % MS_PER_SECOND).padStart(3, '0')
+  return `${pad2(Math.floor(whole / 3600))}:${pad2(Math.floor((whole % 3600) / 60))}:${pad2(whole % 60)},${ms}`
+}

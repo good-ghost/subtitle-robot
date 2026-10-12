@@ -23,7 +23,15 @@ from subtitle_robot.watch.ledger import Ledger
 from subtitle_robot.watch.queue import JobQueue
 from subtitle_robot.secret_store import SecretStore
 from subtitle_robot.llm.logins import SubscriptionLogins
-from subtitle_robot.web import account, api, logs, secrets_api, settings, subscriptions_api
+from subtitle_robot.web import (
+    account,
+    api,
+    logs,
+    review_api,
+    secrets_api,
+    settings,
+    subscriptions_api,
+)
 from subtitle_robot.web.auth import SESSION_COOKIE, AccountError, AccountStore, SessionSigner
 from subtitle_robot.web.context import Context, WebContext, require_session
 
@@ -212,6 +220,7 @@ def api_routers() -> tuple[APIRouter, ...]:
     return (
         api.router,
         logs.router,
+        review_api.router,
         settings.router,
         account.router,
         secrets_api.router,

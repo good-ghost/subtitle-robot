@@ -175,3 +175,121 @@ def test_fixed_ocr_sidecar_is_used_when_processed_again(
     assert outcome.reason.startswith("외부 자막 Sea Lark (2026).en.srt (en)")
     assert len(env.tesseract.ocr_calls) == calls
     assert "Captain Mira" in sidecar.read_text(encoding="utf-8")  # 고친 파일은 그대로
+
+
+# ---------------------------------------------------------------- 대상 언어 이미지 자막 (WI-5.004d)
+
+KOREAN = {40: "선장님, 항구는 한 시간 뒤에 닫힙니다.", 60: "그럼 지금 바로 떠나요."}
+KO_PGS_TRACK = SubtitleTrack(
+    order=1, track_id=4, codec="S_HDMV/PGS", kind="image", language="ko", language_raw="kor",
+    name="", forced=False, default=False, hearing_impaired=False,
+)  # fmt: skip
+EN_TEXT_TRACK = SubtitleTrack(
+    order=0, track_id=2, codec="S_TEXT/UTF8", kind="srt", language="en", language_raw="eng",
+    name="", forced=False, default=True, hearing_impaired=False,
+)  # fmt: skip
+
+
+def _korean_tesseract(env: Env) -> None:
+    env.tesseract = FakeTesseract({}, by_language={"kor": KOREAN, "eng": ENGLISH})
+    env.worker._ocr_run = env.tesseract
+
+
+def test_target_image_is_saved_as_srt_instead_of_translating(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """한국어 PGS 가 있으면 영어 텍스트 트랙을 번역하지 않고 한국어 PGS 를 SRT 로 저장한다."""
+    env = Env(tmp_path, monkeypatch, ocr=True)
+    _korean_tesseract(env)
+    env.tracks = (EN_TEXT_TRACK, KO_PGS_TRACK)
+    video = env.video()
+
+    outcome = env.run(video)
+
+    assert (outcome.status, outcome.verdict) == ("done", "has_target")
+    assert outcome.reason.startswith("OCR 트랙 #1 (S_HDMV/PGS, ko) (그림 2장 → 자막 2개)")
+    assert "대상 언어 이미지 자막을 SRT 로 저장" in outcome.reason
+    assert [path.name for path in outcome.outputs] == ["Sea Lark (2026).ko.srt"]
+    korean = parse_srt((env.movies / "Sea Lark (2026).ko.srt").read_text(encoding="utf-8"))
+    assert [b.text for b in korean.blocks] == list(KOREAN.values())
+    assert env.adapter.requests == []  # 번역하지 않는다
+    assert env.extracted[0][-1].startswith("4:")
+    assert all(call[call.index("-l") + 1] == "kor" for call in env.tesseract.ocr_calls)
+
+
+def test_external_target_image_file_is_saved(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    env = Env(tmp_path, monkeypatch, ocr=True)
+    _korean_tesseract(env)
+    video = env.video()
+    (env.movies / "Sea Lark (2026).ko.sup").write_bytes(PGS)
+    (env.movies / "Sea Lark (2026).en.sup").write_bytes(PGS)
+
+    outcome = env.run(video)
+
+    assert outcome.verdict == "has_target"
+    assert outcome.reason.startswith("OCR Sea Lark (2026).ko.sup")
+    assert (env.movies / "Sea Lark (2026).ko.srt").is_file()
+    assert not (env.movies / "Sea Lark (2026).en.srt").exists()  # 영어는 읽지 않는다
+    assert env.adapter.requests == []
+
+
+def test_target_text_subtitle_wins_over_target_image(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """한국어 텍스트 자막이 이미 있으면 한국어 이미지 자막을 읽지 않는다."""
+    env = Env(tmp_path, monkeypatch, ocr=True)
+    _korean_tesseract(env)
+    env.tracks = (KO_PGS_TRACK,)
+    video = env.video()
+    (env.movies / "Sea Lark (2026).ko.srt").write_text(
+        "1\n00:00:01,000 --> 00:00:02,000\n안녕\n", encoding="utf-8"
+    )
+
+    outcome = env.run(video)
+
+    assert outcome.verdict == "has_target"
+    assert outcome.reason == "내장 한국어 트랙 #1 (S_HDMV/PGS)"
+    assert env.tesseract.ocr_calls == []
+
+
+def test_unreadable_target_image_falls_back_to_translation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """한국어 PGS 에서 글자를 못 읽으면 원래 판정으로 돌아간다.
+
+    target_image_counts 가 꺼져 있으면 영어 PGS 를 읽어 번역하고,
+    켜져 있으면(기본) 대상 언어 자막 있음.
+    """
+    env = Env(tmp_path, monkeypatch, ocr=True)
+    env.tesseract = FakeTesseract({}, by_language={"kor": {}, "eng": ENGLISH})
+    env.worker._ocr_run = env.tesseract
+    env.worker._config = env.worker._config.model_copy(
+        update={"media": MediaConfig(ocr=True, target_image_counts=False)}
+    )
+    env.tracks = (PGS_TRACK, KO_PGS_TRACK)
+
+    outcome = env.run(env.video())
+
+    assert outcome.verdict == "translated"
+    assert "OCR 트랙 #1 (S_HDMV/PGS, ko): 읽은 글자 없음 (그림 2장)" in outcome.reason
+    assert "OCR 트랙 #0 (S_HDMV/PGS, en)" in outcome.reason
+
+
+def test_unreadable_target_image_keeps_has_target_by_default(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    env = Env(tmp_path, monkeypatch, ocr=True)
+    env.tesseract = FakeTesseract({}, by_language={"kor": {}})
+    env.worker._ocr_run = env.tesseract
+    env.tracks = (EN_TEXT_TRACK, KO_PGS_TRACK)
+
+    outcome = env.run(env.video())
+
+    assert outcome.verdict == "has_target"
+    assert outcome.reason == (
+        "내장 한국어 트랙 #1 (S_HDMV/PGS) — OCR 트랙 #1 (S_HDMV/PGS, ko): 읽은 글자 없음 (그림 2장)"
+    )
+    assert outcome.outputs == ()
+    assert env.adapter.requests == []

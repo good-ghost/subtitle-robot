@@ -158,8 +158,10 @@ def ocr_source(
     extract_run: Runner,
     ocr_run: Runner,
     workers: int,
+    keep_target: bool = False,
 ) -> OcrSource:
-    """후보를 읽어 번역 소스로 만든다.
+    """후보를 읽어 번역 소스로 만든다. keep_target 이면 대상 언어 자막도 결과로 둔다
+    (대상 언어 이미지 자막을 SRT 로 저장할 때, WI-5.004d).
 
     Args:
         video: 영상.
@@ -217,7 +219,7 @@ def ocr_source(
             return OcrSource(None, f"OCR {label}: 내용 {detected}, Tesseract 언어 데이터 없음")
     if result.blocks == 0:
         return OcrSource(None, f"OCR {label}: 읽은 글자 없음 (그림 {result.images}장)")
-    if guess == target:
+    if guess == target and not keep_target:
         return OcrSource(None, f"OCR {label}: 대상 언어 자막")
     atomic_write_text(srt_path, result.srt)
     _write_stamp(srt_path, stamp, guess)
