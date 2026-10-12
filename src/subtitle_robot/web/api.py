@@ -20,12 +20,13 @@ from subtitle_robot.config import WatchConfig
 from subtitle_robot.media.tmdb import TMDB_SECRET
 from subtitle_robot.secret_store import SecretStore
 from subtitle_robot.watch.heartbeat import HEALTH_MAX_AGE_S, heartbeat_age
-from subtitle_robot.watch.ledger import LedgerEntry, Verdict
-from subtitle_robot.watch.queue import Job, JobStatus
+from subtitle_robot.watch.ledger import LedgerEntry, LedgerError, Verdict
+from subtitle_robot.watch.queue import Job, JobError, JobStatus
 from subtitle_robot.watch.state import state_path
 from subtitle_robot.watch.watcher import collect_media_files, is_media_candidate
 from subtitle_robot.watch.worker import media_target, series_key_for
 from subtitle_robot.web.context import Context
+from subtitle_robot.web.review import is_reviewable
 
 router = APIRouter(prefix="/api")
 
@@ -108,6 +109,12 @@ class RetryIn(BaseModel):
     job_id: int | None = None
 
 
+class JobIn(BaseModel):
+    """작업 하나를 가리키는 요청."""
+
+    job_id: int
+
+
 class CountOut(BaseModel):
     """바꾼 개수."""
 
@@ -128,10 +135,21 @@ class LedgerOut(BaseModel):
     model: str | None
     outputs: list[str]
     renames: list[dict[str, str]]
+    # 번역 자막 출력(SRT·ASS)이 있어 자막 검수 화면을 열 수 있다 (WI-7.009)
+    reviewable: bool = False
+    # 보관한 기록: 완료 목록이 아니라 보관 목록에 보인다 (WI-7.010)
+    shelved: bool = False
     attempts: int
     current: bool
     processed_at: float
     updated_at: float
+
+
+class ShelveIn(BaseModel):
+    """기록 보관·되돌리기 요청."""
+
+    id: int
+    shelved: bool = True
 
 
 class ForgetIn(BaseModel):
@@ -223,6 +241,18 @@ def retry(body: RetryIn, context: Context) -> CountOut:
     return CountOut(count=count)
 
 
+@router.post("/jobs/delete")
+def delete_job(body: JobIn, context: Context) -> CountOut:
+    """작업 하나를 큐에서 지운다 (처리 중인 작업은 409). 처리 기록은 그대로다 (WI-7.004e)."""
+    try:
+        deleted = context.queue.delete(body.job_id)
+    except JobError as exc:
+        raise HTTPException(status_code=404, detail="job_not_found") from exc
+    if not deleted:
+        raise HTTPException(status_code=409, detail="job_active")
+    return CountOut(count=1)
+
+
 @router.post("/jobs/clear-failed")
 def clear_failed(context: Context) -> CountOut:
     """실패한 작업 기록을 지운다 (`queue clear-failed`)."""
@@ -231,11 +261,28 @@ def clear_failed(context: Context) -> CountOut:
 
 @router.get("/ledger")
 def ledger(
-    context: Context, verdict: Verdict | None = None, history: bool = False
+    context: Context,
+    verdict: Verdict | None = None,
+    history: bool = False,
+    shelved: bool = False,
 ) -> list[LedgerOut]:
-    """처리 기록 (최근 처리한 것부터)."""
-    entries = context.ledger.entries(verdict, include_history=history)
-    return [_ledger_out(entry) for entry in reversed(entries)]
+    """처리 기록 (최근 처리한 것부터). shelved 면 보관한 기록(보관 목록), 아니면 나머지(완료 목록)."""
+    entries = context.ledger.entries(verdict, include_history=history, shelved=shelved)
+    target = context.config.translation.target_language
+    return [_ledger_out(entry, target) for entry in reversed(entries)]
+
+
+@router.post("/ledger/shelve")
+def shelve(body: ShelveIn, context: Context) -> CountOut:
+    """기록을 보관하거나 되돌린다 (WI-7.010).
+
+    화면 목록만 바뀐다: 보관한 영상도 처리한 것으로 보고, 기록을 지울 때까지 다시 처리하지 않는다.
+    """
+    try:
+        context.ledger.shelve(body.id, body.shelved)
+    except LedgerError as exc:
+        raise HTTPException(status_code=404, detail="ledger_not_found") from exc
+    return CountOut(count=1)
 
 
 @router.post("/ledger/forget")
@@ -374,7 +421,7 @@ def _progress(job: Job) -> ProgressOut | None:
     return ProgressOut(done=min(done, total), total=total)
 
 
-def _ledger_out(entry: LedgerEntry) -> LedgerOut:
+def _ledger_out(entry: LedgerEntry, target: str) -> LedgerOut:
     return LedgerOut(
         id=entry.id,
         content_id=entry.content_id,
@@ -387,6 +434,9 @@ def _ledger_out(entry: LedgerEntry) -> LedgerOut:
         model=entry.model,
         outputs=[item.path for item in entry.sidecars.outputs],
         renames=[item.model_dump() for item in entry.sidecars.renames],
+        # 옮기기 전 기록(history)의 파일은 그 자리에 없다
+        reviewable=entry.current and is_reviewable(entry, target),
+        shelved=entry.shelved,
         attempts=entry.attempts,
         current=entry.current,
         processed_at=entry.processed_at,

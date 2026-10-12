@@ -18,3 +18,8 @@ export function statusValue(job: Pick<Job, 'status' | 'progress'>): string {
   if (job.status !== 'translating' || !progress) return job.status
   return t('status.translatingProgress', { done: progress.done, total: progress.total })
 }
+
+/** 큐에서 지울 수 있는 작업: 처리 중(검사·추출·번역)이 아닌 것. 처리 중인 작업은 워커가 쓰고 있다 (WI-7.004e). */
+export function canDelete(job: Pick<Job, 'status'>): boolean {
+  return !['probing', 'extracting', 'translating'].includes(job.status)
+}

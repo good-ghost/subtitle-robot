@@ -1,5 +1,6 @@
 <script setup lang="ts">
-// Completed List: 처리 기록(ledger) — 판정·출력·상세·다시 처리(forget) (PROJECT-PLAN §25.5, Q-13)
+// Completed List: 처리 기록(ledger) — 판정·출력·상세·삭제(forget) (PROJECT-PLAN §25.5, Q-13)
+// shelved 면 보관 목록이다 (ArchiveView, WI-7.010): 보관한 기록만 보이고 보관 대신 되돌리기 동작이 붙는다
 import { computed, ref } from 'vue'
 
 import { api } from '../api/client'
@@ -8,8 +9,9 @@ import { usePolling } from '../composables/polling'
 import { errorText, isoFromEpoch, localTime } from '../format'
 import { t } from '../i18n'
 import { showError, showSuccess } from '../notify'
+import ReviewView from './ReviewView.vue'
 
-defineProps<{ status: DaemonStatus | null }>()
+const props = withDefaults(defineProps<{ status: DaemonStatus | null; shelved?: boolean }>(), { shelved: false })
 const emit = defineEmits<{ 'status-changed': [] }>()
 
 // 기록은 자주 바뀌지 않는다. 새 판정을 놓치지 않을 만큼만 갱신한다
@@ -31,7 +33,7 @@ const entries = ref<LedgerEntry[]>([])
 
 const { loading, refreshedAt, refresh } = usePolling(async () => {
   try {
-    entries.value = await api.ledger(verdict.value === 'all' ? undefined : verdict.value, history.value)
+    entries.value = await api.ledger(verdict.value === 'all' ? undefined : verdict.value, history.value, props.shelved)
   } catch (error) {
     showError(errorText(error))
   }
@@ -77,10 +79,18 @@ const headers = computed(() => [
     value: (entry: LedgerEntry) => isoFromEpoch(entry.processed_at),
   },
   {
-    title: t('completed.col.actions'), key: 'actions', type: 'actions', width: '110px',
+    title: t('completed.col.actions'), key: 'actions', type: 'actions', width: '190px',
     actions: [
+      {
+        name: 'review', icon: 'mdi-file-document-edit-outline', color: 'primary', tooltip: t('completed.review'),
+        visible: (entry: LedgerEntry) => entry.reviewable,
+      },
       { name: 'detail', icon: 'mdi-information-outline', color: 'primary', tooltip: t('completed.detail') },
-      { name: 'forget', icon: 'mdi-restore', color: 'warning', tooltip: t('completed.forget') },
+      // 보관: 이 목록에서만 뺀다 (처리한 것으로 보는 판정은 그대로). 보관 목록에서는 되돌리기
+      props.shelved
+        ? { name: 'unshelve', icon: 'mdi-archive-arrow-up-outline', color: 'primary', tooltip: t('completed.unshelve') }
+        : { name: 'shelve', icon: 'mdi-archive-arrow-down-outline', color: 'primary', tooltip: t('completed.shelve') },
+      { name: 'delete', icon: 'mdi-delete-outline', color: 'error', tooltip: t('completed.forget') },
     ],
   },
 ])
@@ -135,11 +145,38 @@ const detailPaths = computed(() => {
   ]
 })
 
-function onRowAction(event: Event): void {
+// 자막 검수 화면 (WI-7.009): 목록 자리에 검수 화면을 보이고, 돌아오면 목록을 다시 읽는다
+const reviewing = ref<LedgerEntry | null>(null)
+
+async function closeReview(): Promise<void> {
+  reviewing.value = null
+  await refresh()
+}
+
+// 보관·되돌리기 (WI-7.010): 되돌릴 수 있는 동작이라 확인 없이 바로 한다
+async function shelve(entry: LedgerEntry, shelved: boolean): Promise<void> {
+  try {
+    await api.shelve(entry.id, shelved)
+    showSuccess(t(shelved ? 'completed.shelved' : 'completed.unshelved', { name: entry.name }))
+    await refresh()
+  } catch (error) {
+    showError(errorText(error))
+  }
+}
+
+async function onRowAction(event: Event): Promise<void> {
   const [{ action, item }] = (event as CustomEvent<[{ action: string; item: LedgerEntry }]>).detail
+  if (action === 'review') {
+    reviewing.value = item
+    return
+  }
+  if (action === 'shelve' || action === 'unshelve') {
+    await shelve(item, action === 'shelve')
+    return
+  }
   selected.value = item
   if (action === 'detail') detailOpen.value = true
-  if (action === 'forget') forgetOpen.value = true
+  if (action === 'delete') forgetOpen.value = true
 }
 
 function openForgetFromDetail(): void {
@@ -165,39 +202,42 @@ async function forget(): Promise<void> {
 </script>
 
 <template>
-  <smartview-page-header :heading="t('nav.completed')" :subtitle="t('completed.subtitle')">
-    <smartview-refreshed-at slot="actions" :time="refreshedAt" />
-  </smartview-page-header>
+  <ReviewView v-if="reviewing" :entry="reviewing" @back="closeReview" />
+  <template v-else>
+    <smartview-page-header :heading="t(shelved ? 'nav.archive' : 'nav.completed')" :subtitle="t(shelved ? 'archive.subtitle' : 'completed.subtitle')">
+      <smartview-refreshed-at slot="actions" :time="refreshedAt" />
+    </smartview-page-header>
 
-  <smartview-filter-bar
-    class="bar" data-testid="completed-filter" :search-label="t('completed.search')" :filters="filters" :switches="switches"
-    :values="filterValues" :loading="loading" @filter-change="onFilterChange"
-    @search-change="search = ($event as CustomEvent<[string]>).detail[0]" @refresh="refresh"
-  />
-  <smartview-data-table
-    data-testid="completed-table" :headers="headers" :items="entries" :search="search" :loading="loading" :sort-by="INITIAL_SORT"
-    empty-icon="mdi-check-all" :empty-title="t('completed.empty')" @row-action="onRowAction"
-  />
+    <smartview-filter-bar
+      class="bar" data-testid="completed-filter" :search-label="t('completed.search')" :filters="filters" :switches="switches"
+      :values="filterValues" :loading="loading" @filter-change="onFilterChange"
+      @search-change="search = ($event as CustomEvent<[string]>).detail[0]" @refresh="refresh"
+    />
+    <smartview-data-table
+      data-testid="completed-table" :headers="headers" :items="entries" :search="search" :loading="loading" :sort-by="INITIAL_SORT"
+      :empty-icon="shelved ? 'mdi-archive-outline' : 'mdi-check-all'" :empty-title="t(shelved ? 'archive.empty' : 'completed.empty')" @row-action="onRowAction"
+    />
 
-  <smartview-modal
-    data-testid="detail-modal" :open="detailOpen" :heading="t('completed.detailHeading')" icon="mdi-information-outline" max-width="760"
-    :confirm-text="t('completed.forget')" :cancel-text="t('common.close')" dismissible
-    @confirm="openForgetFromDetail" @cancel="detailOpen = false"
-  >
-    <dl class="paths">
-      <template v-for="item in detailPaths" :key="item.label">
-        <dt>{{ item.label }}</dt>
-        <dd>{{ item.value }}</dd>
-      </template>
-    </dl>
-    <smartview-info-list :rows="detailRows" />
-  </smartview-modal>
+    <smartview-modal
+      data-testid="detail-modal" :open="detailOpen" :heading="t('completed.detailHeading')" icon="mdi-information-outline" max-width="760"
+      :confirm-text="t('completed.forget')" :cancel-text="t('common.close')" dismissible
+      @confirm="openForgetFromDetail" @cancel="detailOpen = false"
+    >
+      <dl class="paths">
+        <template v-for="item in detailPaths" :key="item.label">
+          <dt>{{ item.label }}</dt>
+          <dd>{{ item.value }}</dd>
+        </template>
+      </dl>
+      <smartview-info-list :rows="detailRows" />
+    </smartview-modal>
 
-  <smartview-prompt
-    data-testid="forget-prompt" :open="forgetOpen" color="warning" icon="mdi-restore" :heading="t('completed.forgetHeading')"
-    :message="t('completed.forgetMessage', { name: selected?.name ?? '' })" :warning="t('completed.forgetWarning')"
-    :confirm-text="t('completed.forgetConfirm')" :loading="forgetting" @confirm="forget" @cancel="forgetOpen = false"
-  />
+    <smartview-prompt
+      data-testid="forget-prompt" :open="forgetOpen" icon="mdi-delete-outline" :heading="t('completed.forgetHeading')"
+      :message="t('completed.forgetMessage', { name: selected?.name ?? '' })" :warning="t('completed.forgetWarning')"
+      :confirm-text="t('completed.forgetConfirm')" :loading="forgetting" @confirm="forget" @cancel="forgetOpen = false"
+    />
+  </template>
 </template>
 
 <style scoped>

@@ -131,6 +131,23 @@ def test_clear_failed(db: Path) -> None:
     assert queue.jobs() == []
 
 
+def test_delete_removes_one_job_unless_it_is_running(queue: JobQueue) -> None:
+    """삭제(WI-7.004e): 대기·끝난 작업은 지우고, 처리 중인 작업은 그대로 둔다."""
+    waiting = queue.enqueue(Path("/m/a.mkv"))
+    running = queue.enqueue(Path("/m/b.mkv"))
+    done = queue.enqueue(Path("/m/c.mkv"))
+    assert queue.claim(running.id) is not None
+    assert queue.claim(done.id) is not None
+    queue.complete(done.id, "done", {})
+
+    assert queue.delete(waiting.id) is True
+    assert queue.delete(done.id) is True
+    assert queue.delete(running.id) is False
+    assert [job.id for job in queue.jobs()] == [running.id]
+    with pytest.raises(JobError):
+        queue.delete(waiting.id)
+
+
 def test_defer_keeps_attempts(queue: JobQueue) -> None:
     queue.enqueue(Path("/m/a.mkv"))
     job = queue.claim()
@@ -244,5 +261,5 @@ def test_sql_status_literals_match_constants() -> None:
     active = "(" + ", ".join(f"'{status}'" for status in module.ACTIVE_STATUSES) + ")"
     pending = "(" + ", ".join(f"'{status}'" for status in module.PENDING_STATUSES) + ")"
 
-    assert source.count(active) == 2  # claim, recover_interrupted
+    assert source.count(active) == 3  # claim, recover_interrupted, delete
     assert pending in source  # enqueue

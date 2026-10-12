@@ -7,6 +7,7 @@ describe('router', () => {
     expect(parseRoute('#/queue')).toBe('queue')
     expect(parseRoute('#/settings?x=1')).toBe('settings')
     expect(parseRoute('#completed')).toBe('completed')
+    expect(parseRoute('#/archive')).toBe('archive')
     expect(parseRoute('')).toBe('dashboard')
     expect(parseRoute('#/nope')).toBe('dashboard')
     expect(routeHref('logs')).toBe('#/logs')

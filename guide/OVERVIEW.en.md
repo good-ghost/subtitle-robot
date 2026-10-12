@@ -10,17 +10,20 @@ It translates with an LLM. Before it translates, it reads the whole title and bu
 - **Leaves videos untouched.** Video files are only read. If an external subtitle with the same name already exists, it is renamed to `*.orig.srt`, not overwritten.
 - **Web console** on port 8949, in Korean or English with light or dark themes:
   - dashboard
-  - queue (retry, register a video)
-  - completed list
+  - queue (translation progress `Translating (done blocks/total blocks)`, retry, delete a job, register videos by browsing folders)
+  - completed list (subtitle review: source and translation side by side per block, fix the translation; archive; delete the record)
+  - archived list (records removed from the list only; the video still counts as processed)
   - logs
   - settings (provider, model, API keys, account)
 - **LLM providers:** Google Gemini (default), NVIDIA NIM, a local llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI and Anthropic Claude. Claude and ChatGPT **subscription accounts** can be used through their official CLIs.
 
-Current version: **0.8.6**
+Current version: **0.9.0**
 
 ## Image tags
 
-Only the `latest` image is distributed (258 MB). It contains the app, the web console, mkvtoolnix and ffmpeg, and translates with API keys (NIM, OpenAI, Claude, Gemini, OpenRouter), llama-server or Ollama.
+Two images are distributed: `latest` (258 MB) and `ocr` (343 MB). `latest` contains the app, the web console, mkvtoolnix and ffmpeg, and translates with API keys (NIM, OpenAI, Claude, Gemini, OpenRouter), llama-server or Ollama. Use `latest` on servers.
+
+`ocr` is `latest` plus the OCR code for image subtitles (PGS, VobSub) and Tesseract (English, Japanese and Korean data). It reads image subtitles of videos without text subtitles and translates them, and saves a target-language image subtitle as SRT. It is CPU heavy and meant for a capable PC; OCR has to be turned on in the Media tab of Settings. The source is on the `ocr` branch of the repository.
 
 To use a **Claude or ChatGPT subscription**, build an image with the subscription CLI from the source (https://github.com/good-ghost/subtitle-robot). Each CLI goes in its own tag because the CLI binaries are large.
 
@@ -34,13 +37,13 @@ The built image is `localhost/subtitle-robot:claude` (Podman) or `subtitle-robot
 
 ## 1. Load the image
 
-The image comes as a compressed archive. Load the `latest` archive:
+The image comes as a compressed archive. Load the `latest` archive (for OCR, load `…-ocr.tar.gz` and use the `ocr` tag in the commands below):
 
 ```bash
 sha256sum -c SHA256SUMS                                   # optional: check the downloads
 
-podman load -i subtitle-robot-0.8.6-latest.tar.gz         # Podman
-docker load -i subtitle-robot-0.8.6-latest.tar.gz         # Docker
+podman load -i subtitle-robot-0.9.0-latest.tar.gz         # Podman
+docker load -i subtitle-robot-0.9.0-latest.tar.gz         # Docker
 # Loaded image: localhost/subtitle-robot:latest
 ```
 
@@ -154,7 +157,7 @@ Notes:
 
 The log should then show `daemon started: 1 workers`. Without a key, the daemon shows only the web console and does not start translation workers.
 
-New videos are processed automatically. To process a video now, use **Queue → Register video**. From the command line:
+New videos are processed automatically. To process a video now, use **Queue → Register video** and browse from a watch folder down to the video or folder. When a video has been translated, the review action in the **Completed List** shows the source and the translation side by side so you can fix the translation. From the command line:
 
 ```bash
 podman exec subtitle-robot subtitle-robot queue list       # or docker exec …
@@ -192,7 +195,7 @@ Provider notes:
 
 ## Upgrading
 
-Load the new archive and recreate the container with the same volumes. The queue, records, glossaries, keys and account are in `/data` and `/config` and are kept.
+Load the new archive and recreate the container with the same volumes. The queue, records, glossaries, keys and account are in `/data` and `/config` and are kept. The state database (`/data/state.db`) is upgraded automatically the first time the new version starts, and an older version cannot open it afterwards (this applies to 0.8.x → 0.9.0). Copy `state.db` before upgrading if you may need to go back.
 
 ```bash
 podman load -i subtitle-robot-<version>-latest.tar.gz
@@ -209,7 +212,7 @@ podman run …                     # the same command as before
 | `<video>.<lang>.srt` (from SAMI) | A SAMI (.smi) file is next to the video (one per language class, Korean included) |
 | `<video>.en.orig.srt` | An existing external subtitle that had the same name, kept by renaming |
 
-Image-based subtitles (PGS, VobSub) are not extracted. Daemon messages, verdict reasons and errors are written in Korean, even in the English console.
+A translation fixed in the subtitle review is saved to that file and is treated as a user file from then on, so processing the video again does not overwrite it. The `latest` image does not extract image-based subtitles (PGS, VobSub); the `ocr` image reads them. Daemon messages, verdict reasons and errors are written in Korean, even in the English console.
 
 ## License
 

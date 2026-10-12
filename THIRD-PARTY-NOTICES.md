@@ -293,7 +293,7 @@ Everything in `latest`, the OCR code from the `ocr` branch and the Alpine packag
 | tesseract-ocr-data-eng | 5.5.2-r0 | Apache-2.0 | tesseract-ocr |
 | tesseract-ocr-data-jpn | 5.5.2-r0 | Apache-2.0 | tesseract-ocr |
 | tesseract-ocr-data-kor | 5.5.2-r0 | Apache-2.0 | tesseract-ocr |
-| tiff | 4.7.1-r0 | libtiff | tiff |
+| tiff | 4.7.2-r0 | libtiff | tiff |
 
 ### Images you build yourself (`codex`, `claude`)
 

@@ -10,17 +10,20 @@
 - **영상은 건드리지 않는다**: 영상 파일은 읽기만 한다. 이름이 같은 외부 자막이 이미 있으면 덮어쓰지 않고 `*.orig.srt`로 이름을 바꿔 둔다.
 - **웹 화면**(포트 8949, 한국어·영어, 라이트·다크 테마):
   - 대시보드
-  - 대기열 (재시도, 동영상 등록)
-  - 완료 목록
+  - 대기열 (번역 진행 `번역 중 (끝낸 블록/전체 블록)`, 재시도, 작업 삭제, 폴더를 따라가며 고르는 동영상 등록)
+  - 완료 목록 (자막 검수: 원본·번역을 블록마다 보고 번역 고치기, 보관, 기록 삭제)
+  - 보관 목록 (목록에서만 뺀 기록. 처리한 것으로 보고 다시 처리하지 않는다)
   - 로그
   - 설정 (공급자, 모델, API 키, 계정)
 - **LLM 공급자**: Google Gemini(기본), NVIDIA NIM, 로컬 llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI, Anthropic Claude. Claude·ChatGPT는 공식 CLI를 통해 **구독 계정**으로도 쓸 수 있다.
 
-현재 버전: **0.8.6**
+현재 버전: **0.9.0**
 
 ## 이미지 태그
 
-배포하는 이미지는 `latest` 하나다 (258MB). 앱, 웹 화면, mkvtoolnix, ffmpeg가 들어 있고 API 키(NIM·OpenAI·Claude·Gemini·OpenRouter), llama-server, Ollama 로 번역한다.
+배포하는 이미지는 `latest`(258MB)와 `ocr`(343MB) 둘이다. `latest`에는 앱, 웹 화면, mkvtoolnix, ffmpeg가 들어 있고 API 키(NIM·OpenAI·Claude·Gemini·OpenRouter), llama-server, Ollama 로 번역한다. 서버에는 `latest`를 쓴다.
+
+`ocr`는 `latest`에 이미지 자막(PGS·VobSub) OCR 코드와 Tesseract(영어·일본어·한국어 데이터)를 더한 것이다. 텍스트 자막이 없는 영상의 이미지 자막을 읽어 번역하고, 대상 언어 이미지 자막은 SRT 로 저장한다. CPU 를 많이 써서 성능 좋은 PC 용이고, 설정의 미디어 탭에서 OCR 을 켜야 동작한다. 소스는 저장소의 `ocr` 브랜치에 있다.
 
 **Claude·ChatGPT 구독**으로 쓰려면 구독용 CLI가 든 이미지를 소스(https://github.com/good-ghost/subtitle-robot)에서 직접 빌드한다. CLI 실행 파일이 커서 태그마다 하나씩만 넣는다.
 
@@ -34,13 +37,13 @@ scripts/build-images.sh claude     # Claude 구독 (Claude Code, 507MB). ChatGPT
 
 ## 1. 이미지 등록
 
-이미지는 압축 파일로 배포한다. `latest` 파일을 불러온다.
+이미지는 압축 파일로 배포한다. `latest` 파일을 불러온다 (OCR 을 쓰려면 `…-ocr.tar.gz`를 불러오고 아래 명령의 태그를 `ocr`로 바꾼다).
 
 ```bash
 sha256sum -c SHA256SUMS                                   # 선택: 받은 파일 확인
 
-podman load -i subtitle-robot-0.8.6-latest.tar.gz         # Podman
-docker load -i subtitle-robot-0.8.6-latest.tar.gz         # Docker
+podman load -i subtitle-robot-0.9.0-latest.tar.gz         # Podman
+docker load -i subtitle-robot-0.9.0-latest.tar.gz         # Docker
 # Loaded image: localhost/subtitle-robot:latest
 ```
 
@@ -154,7 +157,7 @@ services:
 
 로그에 `daemon started: 1 workers`가 나오면 준비가 끝난 것이다. 키가 없으면 데몬은 웹 화면만 띄우고 번역 워커는 시작하지 않는다.
 
-새 영상은 자동으로 처리된다. 바로 처리하려면 **대기열 → 동영상 등록**을 쓴다. 명령으로는 다음과 같다.
+새 영상은 자동으로 처리된다. 바로 처리하려면 **대기열 → 동영상 등록**에서 감시 폴더부터 폴더를 따라 내려가 영상이나 폴더를 고른다. 번역이 끝난 영상은 **완료 목록**의 검수 아이콘으로 원본과 번역을 나란히 보며 번역을 고칠 수 있다. 명령으로는 다음과 같다.
 
 ```bash
 podman exec subtitle-robot subtitle-robot queue list       # Docker 는 docker exec …
@@ -192,7 +195,7 @@ podman exec subtitle-robot subtitle-robot probe "/media/movies/Movie (2020)/Movi
 
 ## 업그레이드
 
-새 압축 파일을 불러오고 같은 볼륨으로 컨테이너를 다시 만든다. 대기열·처리 기록·용어집·키·계정은 `/data`와 `/config`에 있어 그대로 남는다.
+새 압축 파일을 불러오고 같은 볼륨으로 컨테이너를 다시 만든다. 대기열·처리 기록·용어집·키·계정은 `/data`와 `/config`에 있어 그대로 남는다. 상태 DB(`/data/state.db`)는 새 버전이 처음 뜰 때 자동으로 새 구조로 바뀌고, 그 뒤에는 이전 버전이 열지 못한다 (0.8.x → 0.9.0 이 그렇다). 이전 버전으로 돌아갈 수 있으려면 올리기 전에 `state.db`를 복사해 둔다.
 
 ```bash
 podman load -i subtitle-robot-<버전>-latest.tar.gz
@@ -209,7 +212,7 @@ podman run …                     # 처음과 같은 명령
 | `<영상>.<언어>.srt` (SAMI 변환) | 영상 옆에 SAMI(.smi)가 있을 때 (언어 클래스마다, 한국어 포함) |
 | `<영상>.en.orig.srt` | 이름이 겹치던 기존 외부 자막을 이름만 바꿔 보존한 것 |
 
-이미지 자막(PGS, VobSub)은 꺼내지 않는다. 데몬의 메시지·판정 사유·오류는 영어 화면에서도 한국어로 나온다.
+자막 검수에서 고친 번역 자막은 그 파일에 바로 저장되고, 그 뒤로 사용자가 고친 파일로 다뤄져 다시 처리해도 덮어쓰지 않는다. `latest` 이미지는 이미지 자막(PGS, VobSub)을 꺼내지 않는다 (`ocr` 이미지가 읽는다). 데몬의 메시지·판정 사유·오류는 영어 화면에서도 한국어로 나온다.
 
 ## 라이선스
 

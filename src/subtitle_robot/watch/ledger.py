@@ -40,8 +40,10 @@ LEGACY_VERDICTS: dict[str, tuple[str, ...]] = {"has_target": ("has_korean",)}
 _COLUMNS = (
     "content_id", "path", "size", "mtime_ns", "segment_uid", "verdict", "reason", "source",
     "provider", "model", "sidecars", "archive", "attempts", "current", "processed_at",
-    "updated_at",
+    "updated_at", "shelved",
 )  # fmt: skip
+# 내보낸 파일에 없어도 되는 열과 기본값 (스키마 3 전에 내보낸 파일)
+_OPTIONAL_COLUMNS: dict[str, Any] = {"shelved": 0}
 
 
 class LedgerError(ValueError):
@@ -69,6 +71,8 @@ class LedgerEntry:
     current: bool
     processed_at: float
     updated_at: float
+    # 화면의 완료 목록에서 빼고 보관 목록에 보인다 (처리한 것으로 보는 판정은 그대로, WI-7.010)
+    shelved: bool = False
 
     @property
     def settled(self) -> bool:
@@ -150,11 +154,21 @@ class Ledger:
         return _entry(row) if row else None
 
     def entries(
-        self, verdict: Verdict | None = None, *, include_history: bool = False
+        self,
+        verdict: Verdict | None = None,
+        *,
+        include_history: bool = False,
+        shelved: bool | None = None,
     ) -> list[LedgerEntry]:
-        """기록 목록 (처리 시각 순). has_target 은 0.6.0 전 값 has_korean 도 함께 낸다."""
+        """기록 목록 (처리 시각 순). has_target 은 0.6.0 전 값 has_korean 도 함께 낸다.
+
+        shelved 를 주면 보관한 기록만(True) 또는 보관하지 않은 기록만(False), None 이면 모두.
+        """
         query = "SELECT * FROM media_ledger WHERE (current = 1 OR ?)"
         params: list[Any] = [int(include_history)]
+        if shelved is not None:
+            query += " AND shelved = ?"
+            params.append(int(shelved))
         if verdict is not None:
             same = LEGACY_VERDICTS.get(verdict, ())
             query += f" AND verdict IN ({', '.join('?' * (1 + len(same)))})"
@@ -292,6 +306,7 @@ class Ledger:
         imported = 0
         with self._transaction() as conn:
             for number, row in enumerate(rows, start=1):
+                row = {**_OPTIONAL_COLUMNS, **row}
                 missing = [column for column in _COLUMNS if column not in row]
                 if missing:
                     raise LedgerError(f"{number}번째 기록에 열이 없다: {', '.join(missing)}")
@@ -306,8 +321,8 @@ class Ledger:
                 conn.execute(
                     "INSERT INTO media_ledger (content_id, path, size, mtime_ns, segment_uid, "
                     "verdict, reason, source, provider, model, sidecars, archive, attempts, "
-                    "current, processed_at, updated_at) "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "current, processed_at, updated_at, shelved) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     tuple(row[column] for column in _COLUMNS),
                 )
                 imported += 1
@@ -359,6 +374,24 @@ class Ledger:
                 (identity,),
             ).fetchone()
         return _entry(row) if row else None
+
+    def shelve(self, entry_id: int, shelved: bool = True) -> LedgerEntry:
+        """기록을 보관하거나(완료 목록에서 빼기) 되돌린다. 처리한 것으로 보는 판정은 바뀌지 않는다.
+
+        Raises:
+            LedgerError: 없는 기록.
+        """
+        self._get(entry_id)
+        self._update(entry_id, shelved=int(shelved))
+        return self._get(entry_id)
+
+    def get(self, entry_id: int) -> LedgerEntry:
+        """기록 번호로 기록 하나 (웹 검수 화면이 대상을 번호로 가리킨다, WI-7.009).
+
+        Raises:
+            LedgerError: 없는 기록.
+        """
+        return self._get(entry_id)
 
     def _get(self, entry_id: int) -> LedgerEntry:
         with self._lock:
@@ -415,5 +448,6 @@ def _entry(row: sqlite3.Row) -> LedgerEntry:
         attempts=int(row["attempts"]),
         current=bool(row["current"]),
         processed_at=float(row["processed_at"]),
+        shelved=bool(row["shelved"]),
         updated_at=float(row["updated_at"]),
     )

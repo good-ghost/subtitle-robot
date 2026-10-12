@@ -57,8 +57,10 @@ def _failed_job(env: WebEnv, path: Path) -> Job:
         ("GET", "/api/jobs"),
         ("POST", "/api/jobs/retry"),
         ("POST", "/api/jobs/clear-failed"),
+        ("POST", "/api/jobs/delete"),
         ("GET", "/api/ledger"),
         ("POST", "/api/ledger/forget"),
+        ("POST", "/api/ledger/shelve"),
         ("POST", "/api/media"),
         ("GET", "/api/browse"),
     ],
@@ -165,6 +167,24 @@ def test_retry_and_clear_failed(api: WebEnv, media: Path) -> None:
     assert api.client.post("/api/jobs/clear-failed", json={}).json() == {"count": 2}
     assert api.queue.jobs("failed") == []
     assert api.client.post("/api/jobs/retry", json={}).json() == {"count": 0}
+
+
+def test_delete_job(api: WebEnv, media: Path) -> None:
+    """대기·실패·끝난 작업은 지우고, 처리 중인 작업은 지우지 않는다 (WI-7.004e)."""
+    queued = api.queue.enqueue(media / "movies" / "a.mkv")
+    failed = _failed_job(api, media / "movies" / "b.mkv")
+    active = api.queue.enqueue(media / "movies" / "c.mkv")
+    api.queue.claim(active.id)
+    api.queue.advance(active.id, "translating")
+
+    for job in (queued, failed):
+        response = api.client.post("/api/jobs/delete", json={"job_id": job.id})
+        assert (response.status_code, response.json()) == (200, {"count": 1})
+    busy = api.client.post("/api/jobs/delete", json={"job_id": active.id})
+    assert (busy.status_code, busy.json()) == (409, {"detail": "job_active"})
+    gone = api.client.post("/api/jobs/delete", json={"job_id": queued.id})
+    assert (gone.status_code, gone.json()) == (404, {"detail": "job_not_found"})
+    assert [job.id for job in api.queue.jobs()] == [active.id]
 
 
 def test_ledger_list_forget_matches_cli(
@@ -337,3 +357,30 @@ def test_browse_truncates_large_folders(
 
     assert [e["name"] for e in body["entries"]] == ["a.mkv", "b.mkv"]
     assert body["truncated"] is True
+
+
+# ---------------------------------------------------------------- 보관 (WI-7.010)
+
+
+def test_shelved_records_move_to_the_archive_list(api: WebEnv, media: Path) -> None:
+    first = _video(media / "movies" / "A.mkv")
+    second = _video(media / "movies" / "B.mkv")
+    kept = api.ledger.record(first, verdict="translated", reason="en #0")
+    shelved = api.ledger.record(second, verdict="has_target", reason="ko 트랙")
+
+    assert api.client.post("/api/ledger/shelve", json={"id": shelved.id}).json() == {"count": 1}
+
+    completed = api.client.get("/api/ledger").json()
+    assert [(row["id"], row["shelved"]) for row in completed] == [(kept.id, False)]
+    archived = api.client.get("/api/ledger", params={"shelved": "true"}).json()
+    assert [(row["id"], row["shelved"]) for row in archived] == [(shelved.id, True)]
+    # 판정 필터는 보관 목록에서도 같다
+    only = api.client.get("/api/ledger", params={"shelved": "true", "verdict": "translated"})
+    assert only.json() == []
+    assert api.client.get("/api/status").json()["completed"] == 2  # 처리한 것으로 센다
+
+    back = api.client.post("/api/ledger/shelve", json={"id": shelved.id, "shelved": False})
+    assert back.json() == {"count": 1}
+    assert len(api.client.get("/api/ledger").json()) == 2
+    missing = api.client.post("/api/ledger/shelve", json={"id": 999})
+    assert (missing.status_code, missing.json()["detail"]) == (404, "ledger_not_found")

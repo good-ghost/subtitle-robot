@@ -67,6 +67,11 @@ _MIGRATIONS: tuple[str, ...] = (
     CREATE INDEX ledger_content ON media_ledger (content_id, current);
     CREATE INDEX ledger_path ON media_ledger (path, current);
     """,
+    # 3: 보관 표시 (WI-7.010). 화면의 완료 목록에서만 빼고 보관 목록에 보인다.
+    #    처리 여부 판정과 무관하다. `archive` 열(사이드카 보관본 폴더)과 다른 것이라 shelved 다
+    """
+    ALTER TABLE media_ledger ADD COLUMN shelved INTEGER NOT NULL DEFAULT 0;
+    """,
 )
 SCHEMA_VERSION = len(_MIGRATIONS)
 

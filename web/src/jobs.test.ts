@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { setAppLocale } from './i18n'
-import { canRetry, statusValue } from './jobs'
+import { canDelete, canRetry, statusValue } from './jobs'
 
 describe('canRetry', () => {
   it('실패와 재시도 대기만 다시 시도한다', () => {
@@ -26,5 +26,12 @@ describe('statusValue', () => {
   it('진행을 모르거나 다른 상태면 상태 값 그대로', () => {
     expect(statusValue({ status: 'translating', progress: null })).toBe('translating')
     expect(statusValue({ status: 'queued', progress: null })).toBe('queued')
+  })
+})
+
+describe('canDelete', () => {
+  it('처리 중이 아닌 작업만 지운다', () => {
+    expect(['queued', 'failed', 'done', 'skipped'].map((status) => canDelete({ status: status as 'queued' }))).toEqual([true, true, true, true])
+    expect(['probing', 'extracting', 'translating'].map((status) => canDelete({ status: status as 'queued' }))).toEqual([false, false, false])
   })
 })

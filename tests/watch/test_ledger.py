@@ -176,6 +176,82 @@ def test_export_import_round_trip(ledger: Ledger, tmp_path: Path) -> None:
         other.import_rows([{**rows[0], "verdict": "maybe", "path": "/other"}])
 
 
+def test_shelved_record_still_counts_as_processed(ledger: Ledger, tmp_path: Path) -> None:
+    """보관(WI-7.010): 목록에서만 빠지고 처리한 것으로 보는 판정은 그대로다."""
+    kept = ledger.record(_video(tmp_path / "media", "A.mkv", b"a" * 500), verdict="translated")
+    video = _video(tmp_path / "media", "B.mkv", b"b" * 500)
+    entry = ledger.record(video, verdict="translated", sidecars=_translate(video))
+
+    shelved = ledger.shelve(entry.id)
+
+    assert shelved.shelved is True
+    assert [e.id for e in ledger.entries(shelved=False)] == [kept.id]
+    assert [e.id for e in ledger.entries(shelved=True)] == [entry.id]
+    assert len(ledger.entries()) == 2
+    assert ledger.lookup(video).kind == "same"  # 다시 처리하지 않는다
+    # 옮긴 영상은 같은 기록이라 보관 표시가 따라간다
+    moved = video.rename(tmp_path / "media" / "B moved.mkv")
+    assert ledger.relocate(ledger.lookup(moved), moved).shelved is True
+    # 되돌리기
+    assert ledger.shelve(entry.id, False).shelved is False
+    with pytest.raises(LedgerError):
+        ledger.shelve(9999)
+
+
+def test_reprocessing_a_shelved_video_shows_it_again(ledger: Ledger, tmp_path: Path) -> None:
+    """재작업(기록을 지우고 다시 처리, 또는 다시 기록)한 영상은 새 기록이라 보관 상태가 아니다."""
+    video = _video(tmp_path / "media")
+    ledger.shelve(ledger.record(video, verdict="translated").id)
+
+    again = ledger.record(video, verdict="translated")
+
+    assert again.shelved is False
+    assert [e.id for e in ledger.entries(shelved=False)] == [again.id]
+    ledger.shelve(again.id)
+    assert ledger.forget(video) == 2
+    assert ledger.lookup(video).kind == "new"
+
+
+def test_schema_2_database_gets_the_shelved_column(tmp_path: Path) -> None:
+    """0.8.6 까지의 상태 DB(스키마 2)를 열면 보관 열이 생기고 기록은 보관되지 않은 상태다."""
+    import sqlite3
+
+    from subtitle_robot.watch import state
+
+    path = state_path(tmp_path / "data")
+    path.parent.mkdir(parents=True)
+    old = sqlite3.connect(path, isolation_level=None)
+    for number, script in enumerate(state._MIGRATIONS[:2], start=1):
+        old.executescript(f"BEGIN; {script} PRAGMA user_version = {number}; COMMIT;")
+    old.execute(
+        "INSERT INTO media_ledger (content_id, path, size, mtime_ns, verdict, processed_at, "
+        "updated_at) VALUES ('c1', '/m/a.mkv', 1, 1, 'translated', 1, 1)"
+    )
+    old.close()
+
+    ledger = Ledger(path, tmp_path / "data", hash_bytes=HASH_BYTES)
+
+    entries = ledger.entries()
+    assert [(e.path.name, e.shelved) for e in entries] == [("a.mkv", False)]
+    assert ledger.shelve(entries[0].id).shelved is True
+
+
+def test_import_rows_exported_before_shelving(ledger: Ledger, tmp_path: Path) -> None:
+    video = _video(tmp_path / "media")
+    ledger.shelve(ledger.record(video, verdict="translated").id)
+    rows = ledger.export_rows()
+    assert rows[0]["shelved"] == 1
+    legacy = [{key: value for key, value in rows[0].items() if key != "shelved"}]
+    other_data = tmp_path / "other"
+    other = Ledger(state_path(other_data), other_data, hash_bytes=HASH_BYTES)
+
+    assert other.import_rows(legacy) == 1  # 보관 열이 없는 예전 파일
+
+    found = other.find(video)
+    assert found is not None
+    assert found.shelved is False
+
+
 def test_relocate_requires_moved_or_copied(ledger: Ledger, tmp_path: Path) -> None:
     video = _video(tmp_path)
     with pytest.raises(LedgerError, match="이동"):

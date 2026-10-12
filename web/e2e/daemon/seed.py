@@ -3,10 +3,12 @@
 번역은 하지 않는다 (공급자 키 없음). 처리 기록은 화면에 보일 판정 종류를 고르게 둔다.
 """
 
+import json
 import sys
 from pathlib import Path
 
-from subtitle_robot.media.sidecar import OutputFile, Rename, SidecarRecord
+from subtitle_robot.media.select import slugify
+from subtitle_robot.media.sidecar import OutputFile, Rename, SidecarRecord, file_sha256
 from subtitle_robot.secret_store import SecretStore
 from subtitle_robot.watch.ledger import Ledger
 from subtitle_robot.watch.queue import JobQueue
@@ -14,6 +16,16 @@ from subtitle_robot.watch.state import state_path
 from subtitle_robot.web.auth import AccountStore
 
 E2E_USERNAME = "admin"
+# 자막 검수 화면용 원본·번역 (직접 만든 대사, WI-7.009). 블록 3은 번역 리포트가 검토 필요로 표시한다
+REVIEW_LINES = [
+    ("The harbor closes at midnight, captain.", "선장님, 항구는 자정에 닫힙니다."),
+    ("Then we leave before the storm\nreaches the northern lighthouse.", "그럼 폭풍이 북쪽 등대에\n닿기 전에 떠나죠."),
+    ("Mira says the old ferry still runs on Sundays.", "미라 말로는 낡은 페리가 일요일에도 다닌대요."),
+    ("I don't trust anyone who sells maps without a name.", "이름 없는 지도를 파는 사람은 믿지 않아요."),
+    ("Keep the lantern lit until we are back.", "우리가 돌아올 때까지 등불을 켜 두세요."),
+    ("The tide turns in an hour.", "한 시간 뒤면 물때가 바뀝니다."),
+]
+REVIEW_FLAGGED_BLOCK = 3
 
 
 def add_failed_jobs(root: Path, count: int) -> None:
@@ -30,6 +42,23 @@ def create_account(root: Path) -> None:
     """관리 계정 admin 을 만든다. 비밀번호는 run.sh 가 실행마다 만든 `<root>/token` (§28.3)."""
     password = (root / "token").read_text("utf-8")
     AccountStore(SecretStore.for_data_dir(root / "data")).create(E2E_USERNAME, password)
+
+
+def _srt(column: int) -> str:
+    """REVIEW_LINES 의 원본(0) 또는 번역(1)으로 만든 SRT (블록마다 4초 간격)."""
+    blocks = []
+    for number, line in enumerate(REVIEW_LINES, start=1):
+        start = number * 4 - 2
+        blocks.append(f"{number}\n00:00:{start:02d},000 --> 00:00:{start + 3:02d},000\n{line[column]}\n")
+    return "\n".join(blocks)
+
+
+def _write_report(workspace: Path) -> None:
+    """번역 리포트의 검토 필요 블록 (검수 화면의 "검토 필요" 표시)."""
+    workspace.mkdir(parents=True, exist_ok=True)
+    issue = {"code": "glossary_miss", "severity": "warning", "unit_id": "u3", "idx": REVIEW_FLAGGED_BLOCK, "detail": "Mira → 미라 (용어집 표기 확인)"}
+    report = {"needs_review": [REVIEW_FLAGGED_BLOCK], "issues": [issue]}
+    (workspace / "report.json").write_text(json.dumps(report, ensure_ascii=False), encoding="utf-8")
 
 
 def main(root: Path) -> None:
@@ -50,18 +79,25 @@ def main(root: Path) -> None:
         video.write_bytes(name.encode() * 64)
         sidecars = SidecarRecord()
         if translated:
+            source = video.with_name(f"{video.stem}.en.srt")
             output = video.with_name(f"{video.stem}.ko.srt")
+            source.write_text(_srt(0), encoding="utf-8")
+            output.write_text(_srt(1), encoding="utf-8")
             sidecars = SidecarRecord(
-                outputs=[OutputFile(path=str(output), sha256="0" * 64)],
+                outputs=[
+                    OutputFile(path=str(source), sha256=file_sha256(source)),
+                    OutputFile(path=str(output), sha256=file_sha256(output)),
+                ],
                 renames=[Rename(original=str(output), renamed=str(video.with_name(f"{video.stem}.ko.orig.srt")))],
             )
+            _write_report(data / "movies" / slugify(video.stem))
         ledger.record(
             video,
             verdict=verdict,
             reason=reason,
             provider="nim" if translated else None,
             model="deepseek-ai/deepseek-v4.1-flash" if translated else None,
-            source={"track": 0, "language": "en", "codec": "S_TEXT/UTF8"} if translated else None,
+            source={"order": 0, "track_id": 2, "language": "en", "codec": "S_TEXT/UTF8", "name": ""} if translated else None,
             sidecars=sidecars,
         )
     ledger.close()

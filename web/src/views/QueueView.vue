@@ -7,7 +7,7 @@ import type { BrowseResult, DaemonStatus, Job, JobStatus } from '../api/types'
 import { folderToOpen, pickerOptions, watchBase } from '../browse'
 import { usePolling } from '../composables/polling'
 import { compactTime, errorText } from '../format'
-import { canRetry, statusValue } from '../jobs'
+import { canDelete, canRetry, statusValue } from '../jobs'
 import { t, type MessageKey } from '../i18n'
 import { showError, showSuccess } from '../notify'
 
@@ -77,9 +77,11 @@ const headers = computed(() => [
   { title: t('queue.col.next'), key: 'next_attempt_at', width: '120px', value: (job: Job) => compactTime(job.next_attempt_at) },
   { title: t('queue.col.error'), key: 'error', maxWidth: '240px', value: (job: Job) => job.error ?? '' },
   {
-    title: t('queue.col.actions'), key: 'actions', type: 'actions', width: '72px',
+    title: t('queue.col.actions'), key: 'actions', type: 'actions', width: '110px',
     actions: [
       { name: 'retry', icon: 'mdi-refresh', color: 'primary', tooltip: t('queue.retry'), visible: canRetry },
+      // 처리 중인 작업은 워커가 쓰고 있어 지우지 않는다 (WI-7.004e)
+      { name: 'delete', icon: 'mdi-delete-outline', color: 'error', tooltip: t('queue.delete'), visible: canDelete },
     ],
   },
 ])
@@ -92,6 +94,10 @@ async function onFilterChange(event: Event): Promise<void> {
 
 async function onRowAction(event: Event): Promise<void> {
   const [{ action, item }] = (event as CustomEvent<[{ action: string; item: Job }]>).detail
+  if (action === 'delete') {
+    deleting.value = item
+    return
+  }
   if (action !== 'retry') return
   busy.value = [{ id: item.id, target: 'retry' }]
   try {
@@ -117,6 +123,29 @@ async function retryAll(): Promise<void> {
     showError(errorText(error))
   } finally {
     retrying.value = false
+  }
+}
+
+// 작업 하나 삭제 확인 (WI-7.004e)
+const deleting = ref<Job | null>(null)
+const deleteBusy = ref(false)
+async function deleteJob(): Promise<void> {
+  const job = deleting.value
+  if (!job) return
+  deleteBusy.value = true
+  try {
+    await api.deleteJob(job.id)
+    showSuccess(t('queue.deleted', { name: job.name }))
+    deleting.value = null
+    await refresh()
+    emit('status-changed')
+  } catch (error) {
+    showError(errorText(error))
+    // 그 사이 처리가 시작됐거나 이미 지워졌다: 목록을 다시 읽어 지금 상태를 보인다
+    deleting.value = null
+    await refresh()
+  } finally {
+    deleteBusy.value = false
   }
 }
 
@@ -236,6 +265,12 @@ async function register(): Promise<void> {
     data-testid="clear-prompt" :open="clearOpen" :heading="t('queue.clearHeading')" :message="t('queue.clearMessage', { count: failedCount })"
     :warning="t('queue.clearWarning')" :confirm-text="t('queue.clearConfirm')" :loading="clearing"
     @confirm="clearFailed" @cancel="clearOpen = false"
+  />
+
+  <smartview-prompt
+    data-testid="delete-prompt" :open="deleting !== null" icon="mdi-delete-outline" :heading="t('queue.deleteHeading')"
+    :message="t('queue.deleteMessage', { name: deleting?.name ?? '' })" :warning="t('queue.deleteWarning')"
+    :confirm-text="t('queue.deleteConfirm')" :loading="deleteBusy" @confirm="deleteJob" @cancel="deleting = null"
   />
 
   <smartview-modal
