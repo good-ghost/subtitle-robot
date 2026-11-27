@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 import { api, ApiError } from '../api/client'
 import type { BrowseResult, DaemonStatus, Job, JobStatus } from '../api/types'
 import { folderToOpen, pickerOptions, watchBase } from '../browse'
+import { narrowHeaders, useNarrow } from '../composables/narrow'
 import { usePolling } from '../composables/polling'
 import { compactTime, errorText } from '../format'
 import { canDelete, canRetry, statusValue } from '../jobs'
@@ -62,7 +63,8 @@ const filters = computed(() => [
     })),
   },
 ])
-const headers = computed(() => [
+const narrow = useNarrow()
+const allHeaders = computed(() => [
   { title: t('queue.col.name'), key: 'name', type: 'name', subKey: 'path', maxWidth: '260px' },
   {
     // 번역 중이면 `번역 중 (2222/3333)` 문구가 값이 되고 statusFallback 이 번역 중 모양을 준다 (WI-7.004c)
@@ -85,6 +87,8 @@ const headers = computed(() => [
     ],
   },
 ])
+// 폰에서는 이 열만 보인다 (나머지는 행 상세·편집 창에서 본다, WI-7.011)
+const headers = computed(() => narrowHeaders(allHeaders.value, ['name', 'status', 'actions'], narrow.value))
 
 async function onFilterChange(event: Event): Promise<void> {
   const [{ value }] = (event as CustomEvent<[{ key: string; value: string }]>).detail

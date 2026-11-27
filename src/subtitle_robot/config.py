@@ -129,6 +129,21 @@ class LlmSection(_Strict):
     provider: ProviderName = DEFAULT_PROVIDER
 
 
+class ModelOverride(_Strict):
+    """`[providers.<name>] models` 의 항목 하나: 그 모델을 쓸 때 공급자 값 대신 쓸 값 (WI-10.009o).
+
+    None 인 칸은 공급자 값을 그대로 쓴다. 모델마다 thinking 끄는 스위치가 다르고 끌 수 없는
+    모델도 있어(NIM glm-5.3-flash) 공급자 하나에 값 하나로는 모자라다.
+    """
+
+    temperature: float | None = None
+    max_output_tokens: int | None = Field(default=None, gt=0)
+    reasoning_tokens: int | None = Field(default=None, ge=0)
+    context_tokens: int | None = Field(default=None, gt=0)
+    # {} 이면 공급자의 extra_body 를 보내지 않는다 (합치지 않고 바꾼다)
+    extra_body: dict[str, Any] | None = None
+
+
 class ProviderConfig(_Strict):
     """`[providers.<name>]`. 키 이름은 §6.1 예시를 따른다."""
 
@@ -148,6 +163,10 @@ class ProviderConfig(_Strict):
     context_tokens: int | None = Field(default=None, gt=0)
     response_format: ResponseFormatMode = "json_schema"
     extra_body: dict[str, Any] = Field(default_factory=dict)
+    # 요청 출력 상한에만 더하는 reasoning 몫. 배치 크기 계산에는 쓰지 않는다 (WI-10.009o)
+    reasoning_tokens: int = Field(default=0, ge=0)
+    # 모델 이름 → 그 모델을 쓸 때 덮어쓸 값
+    models: dict[str, ModelOverride] = Field(default_factory=dict)
     # subscription 이면 API 대신 공식 CLI 를 구독 로그인으로 실행한다 (claude·openai, §28.1)
     auth: AuthMode = "api_key"
 
@@ -167,7 +186,15 @@ class ProviderConfig(_Strict):
             context_tokens=self.context_tokens,
             response_format=self.response_format,
             extra_body=self.extra_body,
+            reasoning_tokens=self.reasoning_tokens,
         )
+
+    def for_model(self) -> ProviderConfig:
+        """`model` 에 맞는 모델별 값을 덮어쓴 설정. 모델별 값이 없으면 그대로."""
+        override = self.models.get(self.model)
+        if override is None:
+            return self
+        return self.model_copy(update=override.model_dump(exclude_none=True))
 
 
 class RetryConfig(_Strict):
@@ -373,7 +400,7 @@ class AppConfig(_Strict):
                 f"providers.{name}.model 이 비어 있다 "
                 "(Settings 또는 config.toml 에서 모델을 정한다)",
             )
-        return name, provider
+        return name, provider.for_model()
 
 
 def load_config(path: Path | None = None) -> AppConfig:

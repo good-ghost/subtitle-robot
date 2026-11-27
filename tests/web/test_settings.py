@@ -72,7 +72,10 @@ def test_get_settings(tmp_path: Path, config_file: Path) -> None:
     local = values["providers"]["local"]  # 파일에 없는 공급자: 기본값 + 빈 주소
     assert (local["base_url"], local["concurrency"]) == ("", "auto")
     assert "static_dir" not in values["web"]
-    assert "extra_body" not in values["providers"]["nim"]
+    # 모델마다 다른 요청 본문을 화면에서 고친다 (WI-10.009o)
+    nim = values["providers"]["nim"]
+    assert nim["extra_body"] == {"chat_template_kwargs": {"enable_thinking": False}}
+    assert (nim["reasoning_tokens"], nim["models"]) == (0, {})
 
 
 def test_save_keeps_comments_and_other_keys(tmp_path: Path, config_file: Path) -> None:
@@ -384,3 +387,49 @@ def test_secrets_api_masks_values(tmp_path: Path, config_file: Path) -> None:
     assert "Asia/Seoul" in env.client.get("/api/settings").json()["timezones"]
     env.client.cookies.clear()
     assert env.client.get("/api/secrets").status_code == 401
+
+
+def test_save_extra_body_and_model_overrides_as_inline_tables(
+    tmp_path: Path, config_file: Path
+) -> None:
+    env = _env(tmp_path, config_file)
+    values = env.client.get("/api/settings").json()["values"]
+    nim = values["providers"]["nim"]
+    nim["model"] = "z-ai/glm-5.3-flash"
+    nim["extra_body"] = {"chat_template_kwargs": {"enable_thinking": False, "thinking": False}}
+    nim["models"] = {"z-ai/glm-5.3-flash": {"reasoning_tokens": "16384", "extra_body": {}}}
+
+    response = _put(env, values)
+
+    assert response.status_code == 200
+    saved_values = response.json()["values"]["providers"]["nim"]
+    assert saved_values["models"] == {"z-ai/glm-5.3-flash": {"reasoning_tokens": 16384, "extra_body": {}}}
+    text = config_file.read_text(encoding="utf-8")
+    assert "timeout = 300                      # 혼잡할 때 큰 요청이 120초를 넘는다" in text
+    assert 'models = {"z-ai/glm-5.3-flash" = {reasoning_tokens = 16384, extra_body = {}}}' in text
+    assert "[providers.nim.models" not in text  # 하위 표 머리글을 만들지 않는다
+    _, provider = load_config(config_file).active_provider()
+    assert (provider.reasoning_tokens, provider.extra_body) == (16384, {})
+
+
+@pytest.mark.parametrize(
+    ("models", "loc"),
+    [
+        ({"m": {"extra_body": "{not json"}}, "providers.nim.models.m.extra_body"),
+        ({"m": {"reasoning_tokens": -1}}, "providers.nim.models.m.reasoning_tokens"),
+        ({"m": {"rpm": 3}}, "providers.nim.models.m.rpm"),
+    ],
+)
+def test_invalid_model_overrides_are_400(
+    tmp_path: Path, config_file: Path, models: dict[str, Any], loc: str
+) -> None:
+    env = _env(tmp_path, config_file)
+    values = env.client.get("/api/settings").json()["values"]
+    values["providers"]["nim"]["models"] = models
+    before = config_file.read_text(encoding="utf-8")
+
+    response = _put(env, values)
+
+    assert response.status_code == 400
+    assert loc in [error["loc"] for error in response.json()["detail"]["errors"]]
+    assert config_file.read_text(encoding="utf-8") == before

@@ -4,6 +4,8 @@
 // - 모든 버튼을 누르고 모든 입력칸에 값을 넣는다. 장면이 끝나면 누르지 않은 요소를 커버리지 파일로 남긴다
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
+import http from 'node:http'
+import type { AddressInfo } from 'node:net'
 import path from 'node:path'
 
 import { expect, test, type BrowserContext, type Locator, type Page } from '@playwright/test'
@@ -41,6 +43,14 @@ const COMBOS: Combo[] = [
   { locale: 'ko', theme: 'light', base: 1000, stableSeconds: '30', sessionHours: '72', target: 'fr', targetSearch: '프랑스' },
   { locale: 'en', theme: 'dark', base: 2000, stableSeconds: '45', sessionHours: '96', target: 'ko', targetSearch: 'Kor' },
 ]
+// 모델별 설정 장면에서 쓰는 NIM 모델 (thinking 을 끌 수 없는 모델, WI-10.009o)
+const NIM_MODEL = 'z-ai/glm-5.3-flash'
+// 모델 목록 버튼을 끝까지 보이려고 띄우는 가짜 OpenAI 호환 /v1/models (local 공급자 주소로 쓴다)
+const FAKE_LOCAL_MODELS = ['Qwen3.8-27B-UD-Q4_K_XL', 'gemma-4-31b-it-Q4_K_M']
+const LOCAL_BASE_URL = 'http://127.0.0.1:8080/v1'
+// 설정 장면에서 고르는 시간대와 검색어
+const TIMEZONE = 'Asia/Seoul'
+const TIMEZONE_SEARCH = 'Seoul'
 // 알림 건수를 숫자 아무거나로 본다 (Scene.toastText)
 const ANY_COUNT = -1
 const COVERAGE_DIR = path.join(REPO_DIR, 'docs', 'e2e', 'coverage')
@@ -167,7 +177,13 @@ class Scene {
 
   async closeToast(): Promise<void> {
     const close = this.page.locator('[data-part="snackbar"] [data-part="close"]')
-    if (await close.isVisible()) await this.d.click(close, null, { pace: 'input' })
+    if (!(await close.isVisible())) return
+    try {
+      await this.d.click(close, null, { pace: 'input' })
+    } catch (error) {
+      // 알림은 3초 뒤 스스로 닫힌다: 보인 뒤 누르기 전에 사라졌으면 닫힌 것이다. 아직 보이면 진짜 실패다
+      if (await close.isVisible()) throw error
+    }
   }
 
   /** 필터 바·콤보박스 메뉴에서 글자가 같은 항목을 고른다 */
@@ -195,6 +211,13 @@ class Scene {
     await this.d.click(headers.first(), null, { pace: 'input' })
   }
 
+  /** 머리글을 모두 한 번씩 누른다 (정렬하지 않는 머리글 포함, 검수 표) */
+  async clickHeaders(table: Locator): Promise<void> {
+    const headers = table.locator('thead th')
+    const count = await headers.count()
+    for (let index = 0; index < count; index += 1) await this.d.click(headers.nth(index), null, { pace: 'input' })
+  }
+
   /** 표 아래 페이지 단추(다음·이전·마지막·처음)를 누를 수 있으면 누른다 (행이 한 페이지보다 많을 때) */
   async pageAll(table: Locator): Promise<void> {
     const buttons = table.locator('.v-data-table-footer__pagination button')
@@ -209,8 +232,15 @@ class Scene {
   }
 }
 
-async function openScene(combo: Combo, name: string, sceneNo: number, route: string, loggedIn = true): Promise<Scene> {
-  const context = await launchRecorded(VIDEO_TMP)
+async function openScene(
+  combo: Combo,
+  name: string,
+  sceneNo: number,
+  route: string,
+  loggedIn = true,
+  phone = false,
+): Promise<Scene> {
+  const context = await launchRecorded(VIDEO_TMP, phone)
   await Director.install(context)
   // 처음 한 번만 언어·테마를 정한다 (장면 안에서 메뉴로 바꾼 값은 새로고침해도 유지)
   await context.addInitScript(
@@ -274,8 +304,9 @@ async function record(
   route: string,
   body: (scene: Scene) => Promise<void>,
   loggedIn = true,
+  phone = false,
 ): Promise<void> {
-  const scene = await openScene(combo, name, sceneNo, route, loggedIn)
+  const scene = await openScene(combo, name, sceneNo, route, loggedIn, phone)
   try {
     await body(scene)
   } catch (error) {
@@ -293,10 +324,75 @@ function reseed(...extra: string[]): void {
   })
 }
 
+// 시드 기록의 번역 출력은 한국어(.ko.srt)다. 첫 조합의 설정 장면이 대상 언어를 바꾸고 적용하므로
+// 다음 조합의 완료 목록 장면(자막 검수)이 돌기 전에 한국어로 되돌리고 재기동을 기다린다
+const SEED_TARGET = 'ko'
+const RESTART_WAIT_MS = 120_000
+
+async function restoreTargetLanguage(): Promise<void> {
+  const { name, value } = await sessionCookie()
+  const headers = { 'Content-Type': 'application/json', Cookie: `${name}=${value}` }
+  const settings = (await (await fetch(`${BASE_URL}api/settings`, { headers })).json()) as {
+    values: { translation: { target_language: string } }
+  }
+  if (settings.values.translation.target_language === SEED_TARGET) return
+  settings.values.translation.target_language = SEED_TARGET
+  const saved = await fetch(`${BASE_URL}api/settings`, { method: 'PUT', headers, body: JSON.stringify({ values: settings.values }) })
+  if (!saved.ok) throw new Error(`대상 언어를 되돌리지 못했습니다: ${saved.status}`)
+  const status = async (): Promise<number | null> => {
+    try {
+      return ((await (await fetch(`${BASE_URL}api/status`, { headers })).json()) as { started_at: number }).started_at
+    } catch {
+      return null
+    }
+  }
+  const before = await status()
+  await fetch(`${BASE_URL}api/daemon/restart`, { method: 'POST', headers })
+  await expect.poll(status, { timeout: RESTART_WAIT_MS }).not.toBe(before)
+  await expect.poll(status, { timeout: RESTART_WAIT_MS }).not.toBeNull()
+}
+
+/** `GET /v1/models`만 답하는 가짜 서버. 데몬이 이 주소로 모델 목록을 묻는다 */
+async function startFakeModelServer(): Promise<{ baseUrl: string; close: () => Promise<void> }> {
+  const server = http.createServer((request, response) => {
+    if (request.method === 'GET' && request.url?.startsWith('/v1/models')) {
+      response.writeHead(200, { 'Content-Type': 'application/json' })
+      response.end(JSON.stringify({ object: 'list', data: FAKE_LOCAL_MODELS.map((id) => ({ id, object: 'model' })) }))
+      return
+    }
+    response.writeHead(404).end()
+  })
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
+  const { port } = server.address() as AddressInfo
+  return {
+    baseUrl: `http://127.0.0.1:${port}/v1`,
+    close: () => new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve()))),
+  }
+}
+
+/** 계정 장면에서 바꾼 비밀번호를 API 로 원래 토큰으로 되돌린다 (다음 장면이 토큰으로 로그인한다) */
+async function restoreAccountPassword(changed: string): Promise<void> {
+  const login = await fetch(`${BASE_URL}api/session`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: 'admin', password: changed }),
+  })
+  if (!login.ok) throw new Error(`바꾼 비밀번호로 로그인하지 못했습니다: ${login.status}`)
+  const cookie = (login.headers.getSetCookie()[0] ?? '').split(';')[0]
+  const saved = await fetch(`${BASE_URL}api/account`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Cookie: cookie },
+    body: JSON.stringify({ current_password: changed, username: 'admin', new_password: webToken() }),
+  })
+  if (!saved.ok) throw new Error(`비밀번호를 되돌리지 못했습니다: ${saved.status}`)
+}
+
 for (const combo of COMBOS) {
   test.describe(`${combo.locale}-${combo.theme}`, () => {
-    test.beforeAll(() => {
-      if (combo.base !== COMBOS[0].base) reseed()
+    test.beforeAll(async () => {
+      if (combo.base === COMBOS[0].base) return
+      reseed()
+      await restoreTargetLanguage()
     })
 
     test('01 로그인·셸', async () => {
@@ -481,7 +577,7 @@ for (const combo of COMBOS) {
 
     test('04 완료 목록', async () => {
       await record(combo, 'completed', 4, 'completed', async (s) => {
-        const { d } = s
+        const { d, page } = s
         const bar = s.byTest('completed-filter')
         const table = s.byTest('completed-table')
         d.setScene('완료 목록')
@@ -510,6 +606,10 @@ for (const combo of COMBOS) {
         await d.say('번역한 기록의 자막 검수 아이콘을 누르면 원본과 번역 자막을 블록마다 나란히 봅니다')
         await d.click(row('Arrival').locator('[data-part="icon-action"][data-action="review"]'), 'review')
         await expect(review.locator('tbody tr')).toHaveCount(6)
+        await d.say('머리글을 눌러 보고 페이지당 행 수를 바꿉니다')
+        await s.clickHeaders(review)
+        await s.choose(review.locator('.v-data-table-footer__items-per-page .v-select'), '25')
+        await d.shot('review-headers')
         await d.say('원본이나 번역 글자로 찾습니다')
         await d.type(reviewBar.locator('[data-part="search"] input'), 'ferry', { shot: 'review-search' })
         await d.type(reviewBar.locator('[data-part="search"] input'), '')
@@ -520,6 +620,12 @@ for (const combo of COMBOS) {
         await d.click(review.locator('tbody tr').first(), 'review-editor')
         await d.click(s.dialog().locator('[data-part="cancel"]'), null)
         await d.click(review.locator('tbody tr').first().locator('[data-part="icon-action"][data-action="edit"]'), null)
+        await d.say('원본 칸은 읽기만 합니다. 눌러도 글자가 바뀌지 않습니다')
+        const source = s.byTest('review-source').locator('textarea').first()
+        const original = await source.inputValue()
+        await d.click(source, null, { pace: 'input' })
+        await page.keyboard.type('x')
+        await expect(source).toHaveValue(original)
         await d.type(s.byTest('review-text').locator('textarea').first(), `미라 말로는 낡은 나룻배가 일요일에도 다닌대요 (${combo.locale}).`, { delay: 15 })
         await s.clickToast(s.dialog().locator('[data-part="confirm"]'), 'review.saved', { index: 3 }, 'review-saved')
         await s.closeToast()
@@ -606,18 +712,47 @@ for (const combo of COMBOS) {
         d.setScene('설정 · 공급자')
         await d.say('설정은 데몬이 읽은 config.toml 을 고칩니다. 저장한 값은 재기동 뒤에 적용됩니다')
         await d.shot('settings')
-        await d.say('사용할 공급자를 고릅니다 (하나만 쓰고 폴백하지 않습니다)')
+        const providerCard = page.locator('.provider').first()
+        const cardField = (key: string) => providerCard.locator(`[data-testid^="field-providers."][data-testid$=".${key}"]`)
+        /** 지금 보이는 공급자 카드의 새 칸(reasoning 몫·추가 요청 본문·모델별 카드)을 입력해 본다 (WI-10.009o) */
+        const touchNewFields = async (extraBody: string, model: string): Promise<void> => {
+          await d.type(cardField('reasoning_tokens').locator('input'), '0')
+          await d.type(cardField('extra_body').locator('textarea').first(), extraBody, { delay: 15 })
+          const cards = cardField('models')
+          await d.click(cards.locator('[data-part="add"]'), null, { pace: 'input' })
+          const card = cards.locator('[data-part="row"]').last()
+          await d.type(card.locator('[data-part="cell"][data-key="model"] input'), model)
+          for (const [key, value] of [['reasoning_tokens', '8192'], ['max_output_tokens', '4096'], ['temperature', '0.1']]) {
+            await d.type(card.locator(`[data-part="cell"][data-key="${key}"] input`), value)
+          }
+          await d.type(card.locator('[data-part="cell"][data-key="extra_body"] input'), '{}')
+          await d.click(card.locator('[data-part="remove"]'), null, { pace: 'input' })
+        }
+        /** 키가 없는 공급자의 모델 목록: 모달에 안내가 보이고 닫는다 */
+        const modelListWithoutKey = async (name: string): Promise<void> => {
+          await d.click(s.byTest(`models-${name}`), null)
+          await expect(s.byTest('models-error')).toBeVisible()
+          await d.shot(`models-${name}-no-key`)
+          await d.click(s.dialog().locator('[data-part="cancel"]'), null)
+        }
+        await d.say('사용할 공급자를 고릅니다. 하나만 쓰고 폴백하지 않으며, 고른 공급자의 카드만 보입니다')
+        await select('field-llm.provider', 'settings.provider.gemini')
+        await d.say('Gemini 는 Google AI Studio 의 OpenAI 호환 주소를 씁니다')
+        await type('field-providers.gemini.base_url', 'https://generativelanguage.googleapis.com/v1beta/openai')
+        await type('field-providers.gemini.model', 'gemini-3.5-flash')
+        await type('field-providers.gemini.pass1_model', '')
+        await type('field-providers.gemini.rpm', '5')
+        await type('field-providers.gemini.concurrency', '1')
+        await type('field-providers.gemini.timeout', '300')
+        await type('field-providers.gemini.temperature', '0.2')
+        await type('field-providers.gemini.max_output_tokens', '8192')
+        await type('field-providers.gemini.context_tokens', '')
+        await d.say('공급자 카드마다 reasoning 몫·추가 요청 본문·모델별 설정 칸이 있습니다')
+        await touchNewFields('{}', 'gemini-3.5-pro')
+        await d.say('키를 넣지 않았으면 모델 목록 버튼은 키 탭을 안내합니다')
+        await modelListWithoutKey('gemini')
+        await d.shot('provider-gemini')
         await select('field-llm.provider', 'settings.provider.local')
-        await select('field-llm.provider', 'settings.provider.nim')
-        await d.say('NIM 의 모델·요청 수·제한 시간 등을 고칩니다. API 키는 환경 변수라 화면에 없습니다')
-        await type('field-providers.nim.base_url', 'https://integrate.api.nvidia.com/v1')
-        await type('field-providers.nim.model', 'deepseek-ai/deepseek-v4.1-flash')
-        await type('field-providers.nim.pass1_model', '')
-        await type('field-providers.nim.rpm', '25')
-        await type('field-providers.nim.concurrency', '1')
-        await type('field-providers.nim.timeout', '300')
-        await type('field-providers.nim.temperature', '0.2')
-        await type('field-providers.nim.max_output_tokens', '8192')
         await d.say('로컬 llama-server 주소를 넣으면 local 공급자 설정이 생깁니다')
         await type('field-providers.local.base_url', 'http://127.0.0.1:8080/v1')
         await type('field-providers.local.model', 'Qwen3.8-27B-UD-Q4_K_XL')
@@ -627,6 +762,82 @@ for (const combo of COMBOS) {
         await type('field-providers.local.timeout', '600')
         await type('field-providers.local.temperature', '0.2')
         await type('field-providers.local.max_output_tokens', '8192')
+        await type('field-providers.local.context_tokens', '')
+        await touchNewFields('{"chat_template_kwargs": {"enable_thinking": false}}', 'Qwen3.8-27B-UD-Q4_K_XL')
+        await d.say('모델 목록 버튼은 서버가 가진 모델을 보이고, 고르면 모델 칸에 넣습니다')
+        const fake = await startFakeModelServer()
+        try {
+          await type('field-providers.local.base_url', fake.baseUrl)
+          await d.click(s.byTest('models-local'), null)
+          const picker = s.byTest('models-combobox')
+          await expect(picker).toBeVisible()
+          await d.say('취소하면 모델 칸을 바꾸지 않습니다')
+          await d.click(s.dialog().locator('[data-part="cancel"]'), null)
+          await expect(s.dialog()).toBeHidden()
+          await d.click(s.byTest('models-local'), null)
+          await s.choose(picker.locator('.v-field'), FAKE_LOCAL_MODELS[1], 'models-local')
+          await d.click(s.dialog().locator('[data-part="confirm"]'), null)
+          await expect(s.byTest('field-providers.local.model').locator('input')).toHaveValue(FAKE_LOCAL_MODELS[1])
+          await d.shot('models-local-chosen')
+        } finally {
+          await fake.close()
+        }
+        await type('field-providers.local.base_url', LOCAL_BASE_URL)
+        await type('field-providers.local.model', 'Qwen3.8-27B-UD-Q4_K_XL')
+        await d.shot('provider-local')
+        await select('field-llm.provider', 'settings.provider.nim')
+        await d.say('NIM 의 모델·요청 수·제한 시간 등을 고칩니다. API 키는 키 탭에서 넣습니다')
+        await type('field-providers.nim.base_url', 'https://integrate.api.nvidia.com/v1')
+        await type('field-providers.nim.model', NIM_MODEL)
+        await type('field-providers.nim.pass1_model', '')
+        await type('field-providers.nim.rpm', '25')
+        await type('field-providers.nim.concurrency', '1')
+        await type('field-providers.nim.timeout', '300')
+        await type('field-providers.nim.temperature', '0.2')
+        await type('field-providers.nim.max_output_tokens', '8192')
+        await type('field-providers.nim.context_tokens', '')
+        await type('field-providers.nim.reasoning_tokens', '0')
+        await modelListWithoutKey('nim')
+
+        d.setScene('설정 · 모델별 설정')
+        await d.say('추가 요청 본문(JSON)은 모든 요청에 덧붙입니다. JSON 이 아니면 저장할 때 이 칸에 오류가 보입니다')
+        const extraBody = s.byTest('field-providers.nim.extra_body').locator('textarea').first()
+        await d.type(extraBody, '{"chat_template_kwargs": ', { delay: 25 })
+        await d.click(s.byTest('settings-save'), null)
+        await expect(s.byTest('field-providers.nim.extra_body')).not.toHaveJSProperty('errorMessage', '')
+        await expect(s.byTest('field-providers.nim.extra_body')).toHaveJSProperty('errorMessage', s.t('validation.dict_type'))
+        await d.shot('extra-body-invalid')
+        await s.closeToast()
+        // 기본값(enable_thinking 끄기)과 다른 값이라야 파일에 쓴다
+        await d.type(extraBody, '{"chat_template_kwargs": {"enable_thinking": false, "thinking": false}}', { delay: 15 })
+        await d.say('모델별 설정: thinking 을 끌 수 없는 모델은 reasoning 몫을 더해 답이 잘리지 않게 합니다')
+        const models = s.byTest('field-providers.nim.models')
+        // 앞 조합이 저장한 카드가 남아 있으면 지우고 시작한다
+        while ((await models.locator('[data-part="row"]').count()) > 0) {
+          await d.click(models.locator('[data-part="row"]').first().locator('[data-part="remove"]'), null, { pace: 'input' })
+        }
+        await d.click(models.locator('[data-part="add"]'), null, { pace: 'input' })
+        const glm = models.locator('[data-part="row"]').last()
+        await d.type(glm.locator('[data-part="cell"][data-key="model"] input'), NIM_MODEL)
+        await d.type(glm.locator('[data-part="cell"][data-key="reasoning_tokens"] input'), '16384')
+        await d.type(glm.locator('[data-part="cell"][data-key="max_output_tokens"] input'), '4096')
+        await d.type(glm.locator('[data-part="cell"][data-key="temperature"] input'), '0.3')
+        const glmBody = glm.locator('[data-part="cell"][data-key="extra_body"] input')
+        await d.type(glmBody, '{}')
+        await expect(glmBody).toHaveValue('{}')
+        await d.shot('model-override')
+        await d.say('같은 모델 카드를 하나 더 만들면 저장하지 않고 이 칸에 오류가 보입니다')
+        await d.click(models.locator('[data-part="add"]'), null, { pace: 'input' })
+        await d.type(models.locator('[data-part="row"]').last().locator('[data-part="cell"][data-key="model"] input'), NIM_MODEL)
+        await d.click(s.byTest('settings-save'), null)
+        await expect(models).toHaveJSProperty('errorMessage', s.t('validation.duplicate_model', { model: NIM_MODEL }))
+        // 오류 문구는 카드 목록 아래에 보인다
+        await models.locator('[data-part="add"]').scrollIntoViewIfNeeded()
+        await expect(models.getByText(s.t('validation.duplicate_model', { model: NIM_MODEL }))).toBeVisible()
+        await d.shot('model-duplicate')
+        await s.closeToast()
+        await d.say('겹친 카드를 지웁니다')
+        await d.click(models.locator('[data-part="row"]').last().locator('[data-part="remove"]'), null, { pace: 'input' })
         await d.shot('provider-filled')
 
         d.setScene('설정 · 번역')
@@ -728,8 +939,17 @@ for (const combo of COMBOS) {
         await s.toggle('field-web.enabled')
         await type('field-web.host', '127.0.0.1')
         await type('field-web.port', String(new URL(BASE_URL).port))
-        await type('field-web.username', 'admin')
         await type('field-web.session_hours', combo.sessionHours)
+        await d.say('시간대: 로그·화면 시각을 이 시간대로 보입니다. 이름으로 검색해 고릅니다')
+        const zone = s.byTest('field-system.timezone')
+        await d.click(zone.locator('input:not([type="hidden"])').first(), null, { pace: 'input' })
+        await page.keyboard.press('Control+A')
+        await page.keyboard.press('Backspace')
+        await page.keyboard.type(TIMEZONE_SEARCH, { delay: 80 })
+        const zoneOption = page.locator('.v-overlay--active .v-list-item').filter({ hasText: TIMEZONE }).first()
+        await zoneOption.waitFor({ state: 'visible' })
+        await d.shot('timezone-search')
+        await d.click(zoneOption, null, { pace: 'input' })
         await d.shot('web-filled')
         await d.click(tab('provider'), null, { pace: 'input' })
 
@@ -753,7 +973,135 @@ for (const combo of COMBOS) {
         expect(saved).toContain(`stable_seconds = ${combo.stableSeconds}`)
         expect(saved).toMatch(new RegExp(`session_hours = ${escapeRe(combo.sessionHours)}`))
         expect(saved).toContain(`target_language = "${combo.target}"`)
+        expect(saved).toContain(`timezone = "${TIMEZONE}"`)
+        expect(saved).toContain(`base_url = "${LOCAL_BASE_URL}"`)
+        expect(saved).toContain('extra_body = {chat_template_kwargs = {enable_thinking = false, thinking = false}}')
+        expect(saved).toContain(
+          `models = {"${NIM_MODEL}" = {temperature = 0.3, max_output_tokens = 4096, reasoning_tokens = 16384, extra_body = {}}}`,
+        )
+
+        d.setScene('설정 · 계정')
+        const changed = `${webToken()}-${combo.locale}`
+        const account = (id: string) => s.byTest(id).locator('input').first()
+        await d.click(tab('account'), 'tab-account')
+        await d.say('계정 탭: 관리 계정의 사용자 이름과 비밀번호를 바꿉니다')
+        await d.type(account('account-username'), 'admin')
+        await d.type(account('account-current'), 'wrong-password-demo')
+        await d.say('새 비밀번호가 8자보다 짧거나 확인이 다르면 그 칸에 오류가 보이고 저장할 수 없습니다')
+        await d.type(account('account-new'), 'short')
+        await expect(s.byTest('account-new')).toHaveJSProperty('errorMessage', s.t('setup.passwordTooShort', { min: 8 }))
+        await d.type(account('account-new'), changed, { delay: 10 })
+        await d.type(account('account-confirm'), 'mismatch', { delay: 10 })
+        await expect(s.byTest('account-confirm')).toHaveJSProperty('errorMessage', s.t('setup.mismatch'))
+        await expect(s.byTest('account-save')).toHaveJSProperty('disabled', true)
+        await d.shot('account-invalid')
+        await d.type(account('account-confirm'), changed, { delay: 10 })
+        await d.say('눈 아이콘으로 입력한 비밀번호를 확인합니다')
+        for (const id of ['account-current', 'account-new', 'account-confirm']) {
+          await d.click(s.byTest(id).locator('[data-part="toggle"]'), null, { pace: 'input' })
+        }
+        await d.shot('account-visible')
+        for (const id of ['account-current', 'account-new', 'account-confirm']) {
+          await d.click(s.byTest(id).locator('[data-part="toggle"]'), null, { pace: 'input' })
+        }
+        await d.say('지금 비밀번호가 틀리면 그 칸에 오류가 보이고 바뀌지 않습니다')
+        await d.click(s.byTest('account-save'), null)
+        await expect(s.byTest('account-current')).toHaveJSProperty('errorMessage', s.t('account.error.wrong_password'))
+        await d.shot('account-wrong-password')
+        await d.type(account('account-current'), webToken(), { delay: 5 })
+        await d.say('맞는 비밀번호로 저장하면 모든 세션이 끝나 다시 로그인합니다')
+        await d.click(s.byTest('account-save'), null)
+        const login = page.locator('smartview-login')
+        await login.locator('[data-part="form"]').waitFor()
+        await expect(login).toContainText(s.t('account.changed'))
+        await d.shot('account-relogin')
+        await d.say('새 비밀번호로 로그인합니다')
+        await d.type(login.locator('[data-part="username"] input'), 'admin')
+        await d.type(login.locator('[data-part="password"] input'), changed, { delay: 10 })
+        await d.click(login.locator('[data-part="submit"]'), null)
+        await page.locator('smartview-app-shell [data-part="main"]').waitFor()
+        await d.shot('account-signed-in')
+        // 다음 장면은 토큰으로 로그인한다
+        await restoreAccountPassword(changed)
       })
+    })
+
+    test('07 폰 화면', async () => {
+      await record(
+        combo,
+        'phone',
+        7,
+        'dashboard',
+        async (s) => {
+          const { d, page } = s
+          const shell = page.locator('smartview-app-shell')
+          const drawer = shell.locator('[data-part="drawer"]')
+          /** 문서가 화면 폭을 넘지 않는다 (가로 스크롤 없음) */
+          const fitsWidth = async (): Promise<void> => {
+            const { scroll, client } = await page.evaluate(() => ({
+              scroll: document.documentElement.scrollWidth,
+              client: document.documentElement.clientWidth,
+            }))
+            expect(scroll).toBeLessThanOrEqual(client)
+          }
+          const drawerWidth = async (): Promise<number> => (await drawer.boundingBox())?.width ?? 0
+          d.setScene('폰 · 메뉴')
+          await d.say('폰 폭(390px)에서는 메뉴를 접은 채로 시작해 본문이 화면을 씁니다')
+          await fitsWidth()
+          const railWidth = await drawerWidth()
+          expect(railWidth).toBeLessThan(100)
+          await d.shot('dashboard')
+          await d.say('메뉴 버튼으로 펼쳐 이름을 보고, 화면을 고르면 다시 접힙니다')
+          await d.click(shell.locator('[data-part="menu"]'), 'menu-open', { pace: 'input' })
+          await expect.poll(drawerWidth).toBeGreaterThan(railWidth)
+          await s.navigate('queue')
+          await expect.poll(drawerWidth).toBe(railWidth)
+
+          d.setScene('폰 · 목록')
+          await d.say('목록은 핵심 열(이름·상태·동작)만 보이고, 넘치면 표 안에서 옆으로 밉니다')
+          await fitsWidth()
+          const queue = s.byTest('queue-table')
+          await expect(queue.locator('th')).toHaveCount(3)
+          await d.shot('queue')
+          const wrapper = queue.locator('.v-table__wrapper')
+          await wrapper.evaluate((el) => el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' }))
+          await page.waitForTimeout(PACE.transition)
+          await d.shot('queue-scrolled')
+          await wrapper.evaluate((el) => el.scrollTo({ left: 0, behavior: 'smooth' }))
+          await s.navigate('completed')
+          await fitsWidth()
+          await expect(s.byTest('completed-table').locator('th')).toHaveCount(3)
+          await d.shot('completed')
+          await s.navigate('archive')
+          await fitsWidth()
+          await s.navigate('logs')
+          await fitsWidth()
+          await expect(s.byTest('logs-table').locator('th')).toHaveCount(3)
+          await d.shot('logs')
+
+          d.setScene('폰 · 설정')
+          await s.navigate('settings')
+          await d.say('설정은 한 줄에 칸 하나로 접히고, 탭 줄은 옆으로 밉니다')
+          await fitsWidth()
+          const card = page.locator('.provider').first()
+          const cardBox = await card.boundingBox()
+          // 앞 장면이 고른 공급자를 그대로 쓴다: 보이는 공급자 카드 안에서 칸을 찾는다
+          const modelBox = await card.locator('[data-testid^="field-providers."][data-testid$=".model"]').boundingBox()
+          expect(cardBox && modelBox && modelBox.x + modelBox.width <= cardBox.x + cardBox.width).toBe(true)
+          await d.shot('settings')
+          await d.say('모델별 설정 카드도 폰 폭에 맞춰 칸이 한 줄씩 놓입니다')
+          const models = card.locator('[data-testid^="field-providers."][data-testid$=".models"]')
+          await d.click(models.locator('[data-part="add"]'), null, { pace: 'input' })
+          await d.type(models.locator('[data-part="row"]').last().locator('[data-part="cell"][data-key="model"] input'), 'gemini-3.5-pro')
+          await d.shot('settings-model-card')
+          await d.click(models.locator('[data-part="row"]').last().locator('[data-part="remove"]'), null, { pace: 'input' })
+          await d.click(s.byTest('settings-tabs').locator('[data-tab="account"]'), 'settings-last-tab', { pace: 'input' })
+          await fitsWidth()
+          await s.navigate('dashboard')
+        },
+        true,
+        true,
+      )
     })
   })
 }

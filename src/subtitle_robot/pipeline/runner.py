@@ -91,6 +91,7 @@ class RunOptions:
         context: 직전·다음 문맥 블록 수.
         context_tokens: 요청 컨텍스트. None 이면 공급자 정보, 없으면 기본값.
         max_output_tokens: 응답 토큰 상한.
+        reasoning_tokens: 공급자가 출력 상한에 더하는 reasoning 몫 (배치 입력 예산에서 뺀다).
         max_batch_blocks: 배치당 블록 상한.
         params: fingerprint 에 넣을 생성 파라미터 (temperature 등).
         scope_label: 용어집 first_seen 앞 표시.
@@ -117,6 +118,7 @@ class RunOptions:
     context: ContextSettings = field(default_factory=ContextSettings)
     context_tokens: int | None = None
     max_output_tokens: int = 8192
+    reasoning_tokens: int = 0
     max_batch_blocks: int = 60
     params: Mapping[str, Any] = field(default_factory=dict)
     scope_label: str = ""
@@ -284,6 +286,7 @@ def translate_file(
         fixed_tokens=builder.estimate_fixed_tokens(translator.system_prompt, adapter.count_tokens),
         output_tokens_per_char=output_ratio_for(info.model, lang),
         max_output_tokens=options.max_output_tokens,
+        reasoning_tokens=options.reasoning_tokens,
         max_blocks=options.max_batch_blocks,
     )
     total = len(doc.blocks)
@@ -465,7 +468,9 @@ def _run_pass1(
         adapter,
         lang,
         AnalysisBudget(
-            context_tokens=options.context_tokens, max_output_tokens=options.max_output_tokens
+            context_tokens=options.context_tokens,
+            max_output_tokens=options.max_output_tokens,
+            reasoning_tokens=options.reasoning_tokens,
         ),
         target=options.target,
     )

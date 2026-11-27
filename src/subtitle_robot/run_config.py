@@ -35,5 +35,6 @@ def base_run_options(
             unit_retries=config.retry.max_retries_unit, batch_retries=config.retry.max_retries_batch
         ),
         max_output_tokens=provider.max_output_tokens,
+        reasoning_tokens=provider.reasoning_tokens,
         params=params,
     )

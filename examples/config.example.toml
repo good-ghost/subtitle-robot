@@ -13,7 +13,7 @@ timeout = 300
 
 [providers.nim]
 base_url = "https://integrate.api.nvidia.com/v1"
-model = "deepseek-ai/deepseek-v4.1-flash"   # M0 실측으로 고른 기본 모델
+model = "minimaxai/minimax-m3.1-flash"      # 기본 모델 (M0 의 deepseek-v4.1-flash 는 2026-11-16 서비스 종료)
 pass1_model = ""                   # 비우면 model 사용
 rpm = 30
 concurrency = 1
@@ -21,6 +21,10 @@ timeout = 300                      # 초. 무료 엔드포인트가 혼잡하면
 temperature = 0.2
 response_format = "json_schema"    # M0: NIM 은 guided_json(nvext)을 거부한다
 extra_body = { chat_template_kwargs = { enable_thinking = false } }   # M0: 기본 thinking 켜짐
+reasoning_tokens = 0               # thinking 을 끌 수 없는 모델의 reasoning 몫. 요청 출력 상한에만 더한다
+# 모델별 설정: 그 모델을 쓸 때 위 값 대신 쓴다 (적지 않은 칸은 위 값). extra_body 는 합치지 않고 바꾼다.
+# Settings 공급자 카드의 "모델별 설정"에서도 고친다
+# models = { "z-ai/glm-5.3-flash" = { reasoning_tokens = 16384, extra_body = {} } }
 
 [providers.local]
 base_url = "http://llm-host:8080/v1"          # 별도 기동한 llama-server 주소

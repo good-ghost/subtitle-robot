@@ -112,39 +112,39 @@ The project distributes only the `latest` and `ocr` images.
 
 | Package | Version | License | Origin |
 |---|---|---|---|
-| .python-rundeps-20261001.214140 |  |  | .python-rundeps |
+| .python-rundeps-20261105.193026 |  |  | .python-rundeps |
 | alpine-baselayout | 3.7.2-r1 | GPL-2.0-only | alpine-baselayout |
 | alpine-baselayout-data | 3.7.2-r1 | GPL-2.0-only | alpine-baselayout |
 | alpine-keys | 2.6-r0 | MIT | alpine-keys |
-| alpine-release | 3.24.2-r0 | MIT | alpine-base |
+| alpine-release | 3.24.4-r0 | MIT | alpine-base |
 | alsa-lib | 1.2.15.3-r0 | LGPL-2.1-or-later | alsa-lib |
 | aom-libs | 3.14.1-r0 | BSD-2-Clause AND custom | aom |
-| apk-tools | 3.0.8-r0 | GPL-2.0-only | apk-tools |
+| apk-tools | 3.0.9-r0 | GPL-2.0-only | apk-tools |
 | boost1.84-filesystem | 1.84.0-r6 | BSL-1.0 | boost1.84 |
-| brotli-libs | 1.2.0-r1 | MIT | brotli |
+| brotli-libs | 1.2.1-r0 | MIT | brotli |
 | busybox | 1.37.0-r31 | GPL-2.0-only | busybox |
 | busybox-binsh | 1.37.0-r31 | GPL-2.0-only | busybox |
-| c-ares | 1.34.8-r0 | MIT | c-ares |
-| ca-certificates | 20260909-r0 | MPL-2.0 AND MIT | ca-certificates |
-| ca-certificates-bundle | 20260909-r0 | MPL-2.0 AND MIT | ca-certificates |
+| c-ares | 1.34.9-r0 | MIT | c-ares |
+| ca-certificates | 20261020-r0 | MPL-2.0 AND MIT | ca-certificates |
+| ca-certificates-bundle | 20261020-r0 | MPL-2.0 AND MIT | ca-certificates |
 | cjson | 1.7.19-r1 | MIT | cjson |
 | dbus-libs | 1.16.2-r2 | AFL-2.1 OR GPL-2.0-or-later | dbus |
 | double-conversion | 3.4.0-r0 | BSD-3-Clause | double-conversion |
 | duktape-libs | 2.7.0-r3 | MIT | duktape |
-| ffmpeg | 8.1.2-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
-| ffmpeg-libavcodec | 8.1.2-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
-| ffmpeg-libavdevice | 8.1.2-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
-| ffmpeg-libavfilter | 8.1.2-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
-| ffmpeg-libavformat | 8.1.2-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
-| ffmpeg-libavutil | 8.1.2-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
-| ffmpeg-libswresample | 8.1.2-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
-| ffmpeg-libswscale | 8.1.2-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
+| ffmpeg | 8.1.3-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
+| ffmpeg-libavcodec | 8.1.3-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
+| ffmpeg-libavdevice | 8.1.3-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
+| ffmpeg-libavfilter | 8.1.3-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
+| ffmpeg-libavformat | 8.1.3-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
+| ffmpeg-libavutil | 8.1.3-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
+| ffmpeg-libswresample | 8.1.3-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
+| ffmpeg-libswscale | 8.1.3-r0 | GPL-2.0-or-later AND LGPL-2.1-or-later | ffmpeg |
 | fmt | 11.2.0-r1 | MIT | fmt |
 | fontconfig | 2.17.1-r1 | MIT | fontconfig |
 | freetype | 2.14.3-r0 | FTL OR GPL-2.0-or-later | freetype |
 | fribidi | 1.0.16-r3 | LGPL-2.1-or-later | fribidi |
 | gdbm | 1.26-r0 | GPL-3.0-or-later | gdbm |
-| glib | 2.88.1-r1 | LGPL-2.1-or-later | glib |
+| glib | 2.88.4-r0 | LGPL-2.1-or-later | glib |
 | glslang-libs | 1.4.341.0-r0 | BSD-3-Clause AND BSD-2-Clause AND MIT AND Apache-2.0 AND GPL-3.0-or-later | glslang |
 | gmp | 6.3.0-r4 | LGPL-3.0-or-later OR GPL-2.0-or-later | gmp |
 | graphite2 | 1.3.14-r6 | LGPL-2.1-or-later OR MPL-1.1 | graphite2 |
@@ -156,7 +156,7 @@ The project distributes only the `latest` and `ocr` images.
 | lame-libs | 3.100-r5 | LGPL-2.0-or-later | lame |
 | lcms2 | 2.19-r0 | MIT | lcms2 |
 | libSvtAv1Enc | 4.1.0-r0 | BSD-3-Clause-Clear | svt-av1 |
-| libapk | 3.0.8-r0 | GPL-2.0-only | apk-tools |
+| libapk | 3.0.9-r0 | GPL-2.0-only | apk-tools |
 | libass | 0.17.4-r1 | ISC | libass |
 | libasyncns | 0.8-r5 | LGPL-2.0-or-later | libasyncns |
 | libb2 | 0.98.1-r3 | CC0-1.0 | libb2 |
@@ -166,7 +166,7 @@ The project distributes only the `latest` and `ocr` images.
 | libbz2 | 1.0.8-r6 | bzip2-1.0.6 | bzip2 |
 | libcap-ng | 0.8.5-r2 | GPL-2.0-or-later AND LGPL-2.1-or-later | libcap-ng |
 | libcrypto3 | 3.5.9-r0 | Apache-2.0 | openssl |
-| libcurl | 8.22.0-r0 | curl | curl |
+| libcurl | 8.23.0-r0 | curl | curl |
 | libdav1d | 1.5.3-r0 | BSD-2-Clause | dav1d |
 | libdovi | 3.3.2-r0 | MIT | libdovi |
 | libdrm | 2.4.134-r0 | MIT | libdrm |
@@ -175,7 +175,7 @@ The project distributes only the `latest` and `ocr` images.
 | libdvdread | 6.1.3-r2 | GPL-2.0-or-later | libdvdread |
 | libebml | 1.4.5-r0 | LGPL-2.1-or-later | libebml |
 | libeconf | 0.8.3-r0 | MIT | libeconf |
-| libexpat | 2.8.5-r0 | MIT | expat |
+| libexpat | 2.11.0-r0 | MIT | expat |
 | libfdisk | 2.42.3-r1 | LGPL-2.1-or-later | util-linux |
 | libffi | 3.5.2-r1 | MIT | libffi |
 | libflac | 1.4.3-r2 | BSD-3-Clause AND GPL-2.0-or-later | flac |
@@ -192,7 +192,7 @@ The project distributes only the `latest` and `ocr` images.
 | libmount | 2.42.3-r1 | LGPL-2.1-or-later | util-linux |
 | libncursesw | 6.6_p20260516-r0 | X11 | ncurses |
 | libogg | 1.3.6-r0 | BSD-3-Clause | libogg |
-| libopenmpt | 0.8.9-r0 | BSD-3-Clause | libopenmpt |
+| libopenmpt | 0.8.10-r0 | BSD-3-Clause | libopenmpt |
 | libpanelw | 6.6_p20260516-r0 | X11 | ncurses |
 | libpciaccess | 0.19-r0 | X11 | libpciaccess |
 | libpcre2-16 | 10.49-r0 | BSD-3-Clause | pcre2 |
@@ -222,20 +222,20 @@ The project distributes only the `latest` and `ocr` images.
 | libvpx | 1.15.2-r1 | BSD-3-Clause | libvpx |
 | libwebp | 1.6.0-r0 | BSD-3-Clause | libwebp |
 | libwebpmux | 1.6.0-r0 | BSD-3-Clause | libwebp |
-| libx11 | 1.8.13-r0 | X11 | libx11 |
+| libx11 | 1.8.14-r0 | X11 | libx11 |
 | libxau | 1.0.12-r0 | MIT | libxau |
 | libxcb | 1.17.0-r2 | MIT | libxcb |
 | libxdmcp | 1.1.5-r1 | MIT | libxdmcp |
 | libxext | 1.3.7-r0 | MIT | libxext |
 | libxfixes | 6.0.2-r0 | MIT | libxfixes |
-| libxml2 | 2.13.9-r2 | MIT | libxml2 |
+| libxml2 | 2.13.9-r5 | MIT | libxml2 |
 | libzmq | 4.3.5-r2 | MPL-2.0 | zeromq |
 | lilv-libs | 0.24.26-r1 | ISC | lilv |
-| mbedtls3 | 3.6.7-r0 | Apache-2.0 OR GPL-2.0-or-later | mbedtls3 |
+| mbedtls3 | 3.6.8-r0 | Apache-2.0 OR GPL-2.0-or-later | mbedtls3 |
 | mkvtoolnix | 99.0-r1 | GPL-2.0-only | mkvtoolnix |
 | mpg123-libs | 1.33.5-r0 | LGPL-2.1-only | mpg123 |
-| musl | 1.2.6-r2 | MIT | musl |
-| musl-utils | 1.2.6-r2 | MIT AND BSD-2-Clause AND GPL-2.0-or-later | musl |
+| musl | 1.2.6-r3 | MIT | musl |
+| musl-utils | 1.2.6-r3 | MIT AND BSD-2-Clause AND GPL-2.0-or-later | musl |
 | ncurses-terminfo-base | 6.6_p20260516-r0 | X11 | ncurses |
 | nghttp2-libs | 1.70.0-r0 | MIT | nghttp2 |
 | numactl | 2.0.19-r0 | LGPL-2.1-only | numactl |
@@ -260,7 +260,7 @@ The project distributes only the `latest` and `ocr` images.
 | sratom | 0.6.20-r0 | ISC | sratom |
 | ssl_client | 1.37.0-r31 | GPL-2.0-only | busybox |
 | tdb-libs | 1.4.15-r1 | LGPL-3.0-or-later | tdb |
-| tzdata | 2026d-r0 | Public-Domain | tzdata |
+| tzdata | 2026f-r0 | Public-Domain | tzdata |
 | util-linux-misc | 2.42.3-r1 | GPL-3.0-or-later AND GPL-2.0-or-later AND GPL-2.0-only AND GPL-1.0-only AND LGPL-2.1-or-later AND BSD-1-Clause AND BSD-3-Clause AND BSD-4-Clause-UC AND MIT AND Public-Domain | util-linux |
 | utmps-libs | 0.1.3.3-r0 | ISC | utmps |
 | v4l-utils-libs | 1.32.0-r1 | LGPL-2.0-or-later | v4l-utils |
@@ -273,8 +273,8 @@ The project distributes only the `latest` and `ocr` images.
 | xz-libs | 5.8.4-r0 | GPL-2.0-or-later AND 0BSD AND Public-Domain AND LGPL-2.1-or-later | xz |
 | zimg | 3.0.6-r0 | WTFPL | zimg |
 | zix-libs | 0.8.0-r0 | ISC | zix |
-| zlib | 1.3.2-r0 | Zlib | zlib |
-| zstd-libs | 1.5.7-r2 | BSD-3-Clause OR GPL-2.0-or-later | zstd |
+| zlib | 1.3.2-r1 | Zlib | zlib |
+| zstd-libs | 1.6.0-r1 | BSD-3-Clause OR GPL-2.0-or-later | zstd |
 
 ### `ocr`
 
@@ -286,7 +286,7 @@ Everything in `latest`, the OCR code from the `ocr` branch and the Alpine packag
 | giflib | 5.2.2-r2 | MIT | giflib |
 | leptonica | 1.87.0-r0 | custom | leptonica |
 | libxft | 2.3.9-r0 | MIT | libxft |
-| libxrender | 0.9.12-r0 | MIT | libxrender |
+| libxrender | 0.9.13-r0 | MIT | libxrender |
 | pango | 1.57.1-r0 | LGPL-2.1-or-later | pango |
 | pixman | 0.46.4-r0 | MIT | pixman |
 | tesseract-ocr | 5.5.2-r0 | Apache-2.0 | tesseract-ocr |

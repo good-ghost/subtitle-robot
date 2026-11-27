@@ -5,6 +5,7 @@ import { computed, onMounted, ref } from 'vue'
 
 import { api } from '../api/client'
 import type { LedgerEntry, Review, ReviewRow } from '../api/types'
+import { narrowHeaders, useNarrow } from '../composables/narrow'
 import { errorText, timecode } from '../format'
 import { t } from '../i18n'
 import { showError, showSuccess } from '../notify'
@@ -85,7 +86,8 @@ const rows = computed<TableRow[]>(() =>
     status: rowStatus(row),
   })),
 )
-const headers = computed(() => [
+const narrow = useNarrow()
+const allHeaders = computed(() => [
   { title: t('review.col.start'), key: 'start', width: '124px' },
   { title: t('review.col.end'), key: 'end', width: '124px' },
   { title: t('review.col.source'), key: 'source', maxWidth: '520px' },
@@ -103,6 +105,8 @@ const headers = computed(() => [
     actions: [{ name: 'edit', icon: 'mdi-pencil-outline', color: 'primary', tooltip: t('review.edit') }],
   },
 ])
+// 폰에서는 이 열만 보인다 (나머지는 행 상세·편집 창에서 본다, WI-7.011)
+const headers = computed(() => narrowHeaders(allHeaders.value, ['text', 'status', 'actions'], narrow.value))
 
 const editing = ref<ReviewRow | null>(null)
 const draft = ref('')

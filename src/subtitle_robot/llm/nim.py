@@ -1,6 +1,8 @@
 """NVIDIA NIM 어댑터 (PROJECT-PLAN §6.1~§6.3, WI-1.010).
 
-기본값은 M0 실측으로 정했다: deepseek-v4.1-flash, json_schema 출력, thinking 끔.
+기본값은 M0 실측으로 정했다: json_schema 출력, thinking 끔. 기본 모델은 M0 의 deepseek-v4.1-flash 가
+2026-11-16 서비스 종료(HTTP 410)돼 운영 서버에서 영화 한 편을 번역해 본 minimax-m3.1-flash 로 바꿨다
+(WI-10.009p, 사용자 결정 2026-11-27).
 NIM 은 토큰 수를 셀 엔드포인트가 없어 문자/토큰 비율로 근사하고, 응답 usage 로 비율을 보정한다.
 """
 
@@ -17,7 +19,7 @@ from subtitle_robot.llm.limiter import RetryPolicy, Runtime
 from subtitle_robot.llm.openai_compat import OpenAICompatClient
 
 NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
-NIM_DEFAULT_MODEL = "deepseek-ai/deepseek-v4.1-flash"
+NIM_DEFAULT_MODEL = "minimaxai/minimax-m3.1-flash"
 NIM_DEFAULT_RPM = 30
 # 요청 하나의 제한 시간. 무료 엔드포인트가 혼잡하면 작은 요청도 54초, 큰 배치는 120초를 넘었다
 # (2026-10-03 실사용 테스트, 사용자 결정으로 120 → 300초)

@@ -4,7 +4,7 @@
 
 **Subtitle Robot**(`subtitle-robot`)은 자막을 번역하는 Python CLI 도구이자 감시 데몬이다. 원본은 어떤 언어든 되고(영어·일본어는 전용 규칙), 대상 언어는 기본 한국어이며 설정으로 바꾼다. 번역 전에 작품 전체를 분석해 인명·고유명사 용어집을 만들고, **TV 시리즈 전체에서 같은 인물·용어를 같은 표기로** 쓰게 한다. LLM은 Google Gemini(기본), NVIDIA NIM, 로컬 llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI(ChatGPT), Anthropic Claude 중 하나를 쓴다.
 
-현재 버전은 0.9.0이다. 주요 기능:
+현재 버전은 0.9.1이다. 주요 기능:
 
 - 단일 작품과 TV 시리즈 번역: 시리즈 전체 용어집, 직전 화 요약(`story_so_far`), 반복 대사 메모리(`phrases`)
 - SRT·ASS·VTT 입력, 스타일을 보존하는 ASS 출력
@@ -43,7 +43,7 @@ uv tool install .            # 또는 명령으로 설치: subtitle-robot ...
 | 공급자 (`llm.provider`) | 준비 | 비고 |
 |---|---|---|
 | Google Gemini (`gemini`, 기본) | AI Studio API 키. 기본 모델 `gemini-3.5-flash`, 분당 5회 | OpenAI 호환 엔드포인트. 개인 Google 계정의 Gemini CLI 로그인은 2026-06-18 종료돼 구독으로는 쓰지 않는다 |
-| NVIDIA NIM (`nim`) | API 키. 기본 모델 `deepseek-ai/deepseek-v4.1-flash`, 30 RPM | |
+| NVIDIA NIM (`nim`) | API 키. 기본 모델 `minimaxai/minimax-m3.1-flash`, 30 RPM | 0.9.0 까지의 기본 모델 `deepseek-ai/deepseek-v4.1-flash`는 2026-11-16 서비스가 끝났다(HTTP 410). 설정 파일에 그 모델을 적었으면 바꾼다 |
 | llama-server (`local`) | 별도로 띄운 서버의 `base_url`. `--api-key`로 띄웠으면 그 키 | `/props`·`/tokenize`로 컨텍스트·토큰 수 |
 | Ollama (`ollama`) | 서버 주소(기본 `http://127.0.0.1:11434`), 모델 | 고유 API `/api/chat`. `context_tokens`(기본 8192)를 `num_ctx`로 보낸다. 생각 모델은 `extra_body = { think = false }` |
 | OpenRouter (`openrouter`) | API 키, 모델 | 모델이 json_schema 를 받지 않으면 `response_format = "json_object"` |
@@ -63,6 +63,7 @@ uv tool install .            # 또는 명령으로 설치: subtitle-robot ...
   ```
 
 - Gemini·NIM·llama-server 밖의 공급자는 모델 기본값이 없다. `[providers.<이름>] model`을 적거나 웹 Settings 에서 "모델 목록"으로 고른다. 주소·제한 시간은 기본값이 있다
+- **모델별 설정**: Settings 공급자 카드의 "추가 요청 본문(JSON)"(`extra_body`)은 모든 요청에 덧붙이고, "모델별 설정"(`models`)은 그 모델을 쓸 때 temperature·최대 출력 토큰·reasoning 몫·추가 요청 본문을 바꾼다. thinking 을 끌 수 없는 모델(예: NIM `z-ai/glm-5.3-flash`)은 reasoning 이 답의 자리를 먹어 `ReasoningOnlyResponseError`가 난다. 그 모델의 "reasoning 몫"(`reasoning_tokens`, 예 16384)을 정하면 요청의 출력 상한에만 더해 답이 잘리지 않는다 (배치 크기는 그대로다)
 - 시간대: `[system] timezone`(IANA 이름, 예 `Asia/Seoul`)이 있으면 로그·큐 시각에 쓴다. 비우면 `TZ` 환경 변수 (Settings 웹 탭에서 검색해 고른다)
 - 공급자를 바꾸면 이어 번역(체크포인트)은 설정이 바뀐 것으로 판정된다 (`--redo-stale` / `--accept-stale`)
 - 확인: `uv run python scripts/llm_smoke.py --data ./data --provider claude --model <모델>` (짧은 구조화 출력 요청 1회)

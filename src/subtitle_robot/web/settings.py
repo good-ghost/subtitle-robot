@@ -1,8 +1,9 @@
 """설정 조회·저장·재기동 API (PROJECT-PLAN §25.9, REQ-039, WI-7.008).
 
 데몬이 읽은 `config.toml`을 고친다. 설정은 시작할 때 한 번 읽으므로(§6.1) 저장한 값은
-재기동 뒤에 적용된다. 파일의 주석·키 순서와 화면이 다루지 않는 키(`extra_body` 등)는
-`tomlkit`으로 그대로 두고 바뀐 값만 쓴다. 비밀(API 키·웹 토큰)은 환경 변수라 여기에 없다.
+재기동 뒤에 적용된다. 파일의 주석·키 순서와 화면이 다루지 않는 키는 `tomlkit`으로 그대로 두고
+바뀐 값만 쓴다. 표 값(`extra_body`, 모델별 설정 `models`)은 한 줄 inline 표로 쓴다 (WI-10.009o).
+비밀(API 키)은 비밀 저장소(§28.2)라 여기에 없다.
 """
 
 from __future__ import annotations
@@ -65,7 +66,7 @@ EDITABLE: dict[str, tuple[str, ...]] = {
 RENAMED_KEYS: dict[tuple[str, str], str] = {("media", "target_image_counts"): "korean_image_counts"}
 PROVIDER_FIELDS = (
     "base_url", "model", "pass1_model", "rpm", "concurrency", "timeout", "temperature",
-    "max_output_tokens", "context_tokens", "auth",
+    "max_output_tokens", "context_tokens", "auth", "extra_body", "reasoning_tokens", "models",
 )  # fmt: skip
 # 보이기만 하는 항목 (키는 비밀 저장소, §28.2)
 PROVIDER_READONLY: tuple[str, ...] = ()
@@ -231,7 +232,13 @@ def editable_values(config: AppConfig) -> dict[str, Any]:
     providers: dict[str, Any] = {}
     for name in PROVIDER_NAMES:
         source = dumped["providers"].get(name) or _unconfigured_provider(name)
-        providers[name] = {key: source.get(key) for key in PROVIDER_FIELDS + PROVIDER_READONLY}
+        provider = {key: source.get(key) for key in PROVIDER_FIELDS + PROVIDER_READONLY}
+        # 모델별 설정은 정한 칸만 (빈 칸은 공급자 값을 쓴다는 뜻이라 화면·파일에 두지 않는다)
+        provider["models"] = {
+            model: {key: value for key, value in override.items() if value is not None}
+            for model, override in (provider.get("models") or {}).items()
+        }
+        providers[name] = provider
     values["providers"] = providers
     return values
 
@@ -393,7 +400,17 @@ def _set_document(document: tomlkit.TOMLDocument, keys: tuple[str, ...], value: 
             row.update(item)
             paths.append(row)
         value = paths
+    elif isinstance(value, dict):
+        value = _inline_table(value)
     table[name] = value
+
+
+def _inline_table(value: dict[str, Any]) -> Any:
+    """dict 를 한 줄 inline 표로 (안의 dict 도). 하위 표 머리글을 만들지 않아 키 순서가 그대로다."""
+    table = tomlkit.inline_table()
+    for key, item in value.items():
+        table[key] = _inline_table(item) if isinstance(item, dict) else item
+    return table
 
 
 def _atomic_write(path: Path, text: str) -> None:

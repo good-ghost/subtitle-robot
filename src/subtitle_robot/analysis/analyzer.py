@@ -42,6 +42,7 @@ class AnalysisBudget:
         context_tokens: 요청 하나가 쓸 수 있는 컨텍스트.
             None 이면 공급자 정보, 그것도 없으면 기본값.
         max_output_tokens: 응답 토큰 상한.
+        reasoning_tokens: 공급자가 출력 상한에 더하는 reasoning 몫 (입력 예산에서 뺀다, WI-10.009o).
         safety_margin: 추정 오차 여유.
         max_attempts: 응답 형식 오류 시 같은 구간을 다시 요청하는 횟수 상한 (첫 시도 포함).
         max_segment_blocks: 구간 하나의 블록 수 상한 (요청 시간을 줄인다).
@@ -49,6 +50,7 @@ class AnalysisBudget:
 
     context_tokens: int | None = None
     max_output_tokens: int = 8192
+    reasoning_tokens: int = 0
     safety_margin: int = 1024
     max_attempts: int = 3
     # 구간 하나의 블록 수 상한. 컨텍스트에 다 들어가도 응답(엔티티 JSON)이 길면 요청 시간이
@@ -129,7 +131,8 @@ class Pass1Analyzer:
         info = self._adapter.describe()
         context = self._budget.context_tokens or info.context_tokens or DEFAULT_CONTEXT_TOKENS
         fixed = self._adapter.count_tokens(self._system) + self._adapter.count_tokens(known_text)
-        return context - fixed - self._budget.max_output_tokens - self._budget.safety_margin
+        output = self._budget.max_output_tokens + self._budget.reasoning_tokens
+        return context - fixed - output - self._budget.safety_margin
 
     def _plan_segments(
         self, blocks: list[NormalizedBlock], known_text: str

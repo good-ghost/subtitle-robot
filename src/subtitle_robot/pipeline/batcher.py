@@ -62,6 +62,7 @@ class BatchBudget:
         fixed_tokens: 배치마다 붙는 고정 요소 토큰 추정 (WI-3.006 이 계산).
         output_tokens_per_char: 원문 1자당 출력 토큰 (`output_ratio_for`).
         max_output_tokens: 응답 토큰 상한.
+        reasoning_tokens: 요청 출력 상한에 더해지는 reasoning 몫 (입력에서 뺀다, WI-10.009o).
         safety_margin: 입력 추정 오차 여유.
         max_blocks: 배치당 블록 수 상한 (§6.4 기본 60).
     """
@@ -70,13 +71,15 @@ class BatchBudget:
     fixed_tokens: int
     output_tokens_per_char: float
     max_output_tokens: int = 8192
+    reasoning_tokens: int = 0
     safety_margin: int = 1024
     max_blocks: int = 60
 
     @property
     def input_tokens(self) -> int:
         """대상 unit 에 쓸 수 있는 입력 토큰."""
-        return self.context_tokens - self.fixed_tokens - self.max_output_tokens - self.safety_margin
+        output = self.max_output_tokens + self.reasoning_tokens
+        return self.context_tokens - self.fixed_tokens - output - self.safety_margin
 
 
 class Batch(BaseModel):
@@ -116,7 +119,8 @@ def plan_batches(
     if budget.input_tokens <= 0:
         raise BatchPlanError(
             f"배치 입력 예산이 없다: 컨텍스트 {budget.context_tokens}, 고정 {budget.fixed_tokens}, "
-            f"출력 {budget.max_output_tokens}, 여유 {budget.safety_margin}"
+            f"출력 {budget.max_output_tokens}, reasoning {budget.reasoning_tokens}, "
+            f"여유 {budget.safety_margin}"
         )
     texts = {block.idx: plain_text(block.text) for block in doc.blocks}
     unit_texts = {

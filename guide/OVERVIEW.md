@@ -17,7 +17,7 @@
   - 설정 (공급자, 모델, API 키, 계정)
 - **LLM 공급자**: Google Gemini(기본), NVIDIA NIM, 로컬 llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI, Anthropic Claude. Claude·ChatGPT는 공식 CLI를 통해 **구독 계정**으로도 쓸 수 있다.
 
-현재 버전: **0.9.0**
+현재 버전: **0.9.1**
 
 ## 이미지 태그
 
@@ -42,8 +42,8 @@ scripts/build-images.sh claude     # Claude 구독 (Claude Code, 507MB). ChatGPT
 ```bash
 sha256sum -c SHA256SUMS                                   # 선택: 받은 파일 확인
 
-podman load -i subtitle-robot-0.9.0-latest.tar.gz         # Podman
-docker load -i subtitle-robot-0.9.0-latest.tar.gz         # Docker
+podman load -i subtitle-robot-0.9.1-latest.tar.gz         # Podman
+docker load -i subtitle-robot-0.9.1-latest.tar.gz         # Docker
 # Loaded image: localhost/subtitle-robot:latest
 ```
 
@@ -171,7 +171,7 @@ podman exec subtitle-robot subtitle-robot probe "/media/movies/Movie (2020)/Movi
 | 공급자 | 이미지 | 인증 방법 |
 |---|---|---|
 | **Google Gemini** (기본) | `latest` | Google AI Studio 에서 만든 API 키(`AIza…`). 기본 모델 `gemini-3.5-flash`, 분당 5회 |
-| **NVIDIA NIM** | `latest` | build.nvidia.com 에서 받은 API 키(`nvapi-…`). 기본 모델 `deepseek-ai/deepseek-v4.1-flash`, 분당 30회 제한 |
+| **NVIDIA NIM** | `latest` | build.nvidia.com 에서 받은 API 키(`nvapi-…`). 기본 모델 `minimaxai/minimax-m3.1-flash`, 분당 30회 제한 |
 | **llama-server** (로컬 llama.cpp) | `latest` | 키는 필요 없다. 설정에서 주소를 넣는다. 예: `http://host.docker.internal:8080/v1`(Docker), `http://host.containers.internal:8080/v1`(Podman). 서버를 `--api-key`로 띄웠으면 그 키를 넣는다 |
 | **Ollama** | `latest` | 키 없음. 주소(예: `http://host.docker.internal:11434`)와 모델을 넣는다 |
 | **OpenRouter** | `latest` | API 키와 모델 |

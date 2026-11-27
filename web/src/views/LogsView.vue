@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 
 import { api } from '../api/client'
 import type { DaemonStatus, LogEntry } from '../api/types'
+import { narrowHeaders, useNarrow } from '../composables/narrow'
 import { usePolling } from '../composables/polling'
 import { compactTime, errorText } from '../format'
 import { t } from '../i18n'
@@ -63,7 +64,8 @@ const filters = computed(() => [
   },
 ])
 const switches = computed(() => [{ key: 'auto', label: t('logs.auto') }])
-const headers = computed(() => [
+const narrow = useNarrow()
+const allHeaders = computed(() => [
   { title: t('logs.col.time'), key: 'time', width: '110px', value: (row: LogRow) => compactTime(row.time) },
   {
     title: t('logs.col.level'), key: 'level', type: 'status', width: '120px',
@@ -73,6 +75,8 @@ const headers = computed(() => [
   { title: t('logs.col.logger'), key: 'logger', width: '220px', value: (row: LogRow) => row.logger.replace(/^subtitle_robot\./, '') },
   { title: t('logs.col.message'), key: 'message', maxWidth: '560px', value: (row: LogRow) => row.message.split('\n')[0] },
 ])
+// 폰에서는 이 열만 보인다 (나머지는 행 상세·편집 창에서 본다, WI-7.011)
+const headers = computed(() => narrowHeaders(allHeaders.value, ['time', 'level', 'message'], narrow.value))
 
 async function reload(): Promise<void> {
   // 레벨을 바꾸면 이어 받기 위치를 버리고 처음부터 다시 읽는다

@@ -120,3 +120,11 @@ def test_empty_plan() -> None:
     doc = _doc(0)
 
     assert plan_batches(unitize(doc, "en"), doc, _budget(), chars) == []
+
+
+def test_reasoning_tokens_come_out_of_the_input_budget() -> None:
+    # 요청 출력 상한 = 답 + reasoning 몫이라 그만큼 입력을 줄여 컨텍스트를 넘지 않는다 (WI-10.009o)
+    plain = _budget()
+    reasoning = _budget(reasoning_tokens=500)
+
+    assert plain.input_tokens - reasoning.input_tokens == 500
