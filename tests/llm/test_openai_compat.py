@@ -111,6 +111,16 @@ def test_request_overrides_temperature_and_max_tokens() -> None:
     assert (body["temperature"], body["max_tokens"]) == (0.0, 100)
 
 
+def test_reasoning_tokens_are_added_to_output_limit() -> None:
+    # thinking 을 끌 수 없는 모델: 답의 상한 + reasoning 몫을 요청한다 (WI-10.009o)
+    client, seen = _client(lambda _r: _ok("{}"), reasoning_tokens=4096)
+
+    client.chat(REQUEST)
+    client.chat(REQUEST.model_copy(update={"max_tokens": 100}))
+
+    assert [json.loads(r.content)["max_tokens"] for r in seen] == [8192 + 4096, 100 + 4096]
+
+
 @pytest.mark.parametrize(
     ("mode", "expected"), [("json_object", {"type": "json_object"}), ("none", None)]
 )
@@ -146,7 +156,8 @@ def test_reasoning_only_response_is_classified() -> None:
     # M0 실측: thinking 켜짐 + 구조화 출력 → content=null, JSON 은 reasoning_content
     client, _ = _client(lambda _r: _ok(None, reasoning_content='{"blocks": []}'))
 
-    with pytest.raises(ReasoningOnlyResponseError, match="enable_thinking"):
+    # 끄는 스위치가 모델마다 달라 모델별 설정을 안내한다 (WI-10.009o)
+    with pytest.raises(ReasoningOnlyResponseError, match=r"finish_reason=stop.*모델별 설정"):
         client.chat(REQUEST)
 
 

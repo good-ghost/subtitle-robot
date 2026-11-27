@@ -140,7 +140,7 @@ class OpenAICompatClient:
         # 키 순서는 0.7.0 전 본문과 같게 둔다 (temperature 가 없는 공급자만 빠진다)
         if temperature is not None:
             body["temperature"] = temperature
-        body[self.max_tokens_field] = request.max_tokens or self.settings.max_output_tokens
+        body[self.max_tokens_field] = self.settings.output_limit(request.max_tokens)
         body["stream"] = False
         mode = self.settings.response_format
         if request.output_schema is not None and mode == "json_schema":
@@ -246,9 +246,12 @@ def parse_chat_response(
     reasoning = message.get("reasoning_content") or message.get("reasoning") or ""
     if not content.strip():
         if reasoning.strip():
+            # 끄는 스위치가 모델마다 다르고 끌 수 없는 모델도 있다
+            # (NIM glm-5.3-flash, 2026-11-27 실측)
             raise ReasoningOnlyResponseError(
-                f"{name}: content 가 비고 reasoning 필드에만 답이 왔다. 공급자 설정 extra_body 에 "
-                "chat_template_kwargs.enable_thinking = false 가 있는지 확인해야 한다"
+                f"{name}: content 가 비고 reasoning 필드에만 답이 왔다 "
+                f"(finish_reason={choice.get('finish_reason')}). Settings 공급자의 모델별 설정에서 "
+                "그 모델의 thinking 끄기(extra_body)나 reasoning 몫(reasoning_tokens)을 정한다"
             )
         raise LlmResponseError(
             f"{name}: 응답 본문이 비어 있다 (finish_reason={choice.get('finish_reason')})"

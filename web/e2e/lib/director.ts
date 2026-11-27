@@ -27,6 +27,11 @@ const OVERLAY_SCRIPT = `(() => {
     #e2e-caption .e2e-step{display:block;font-size:17px;font-weight:700;color:#ffca28;font-family:inherit !important;line-height:1.4 !important;text-transform:none !important;
       letter-spacing:.4px;margin-bottom:2px}
     #e2e-caption.hidden{opacity:0}
+    /* 폰 장면(WI-7.011): 가운데 정렬·최대 78% 로는 상자가 너무 좁아 한두 글자씩 줄이 바뀌었다 */
+    @media (max-width:600px){
+      #e2e-caption{left:8px;right:8px;bottom:12px;transform:none;max-width:none;padding:8px 12px 10px;font-size:16px !important}
+      #e2e-caption .e2e-step{font-size:12px}
+    }
     #e2e-title{position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;
       align-items:center;justify-content:center;gap:18px;pointer-events:none;color:#fff;text-align:center;
       background:linear-gradient(135deg,#0d1b2a 0%,#1b2838 45%,#1a237e 100%);

@@ -13,8 +13,11 @@ import SettingField from '../settings/SettingField.vue'
 import SubscriptionPanel from '../settings/SubscriptionPanel.vue'
 import {
   allFields,
+  duplicateModel,
   getPath,
   isSubscriptionProvider,
+  jsonValue,
+  modelsValue,
   PROVIDER_CHOICE,
   providerFields,
   PROVIDERS,
@@ -115,10 +118,15 @@ async function load(): Promise<void> {
   }
 }
 
-/** 숫자 칸은 입력하는 동안 글자로 두었다가 보낼 때 숫자로 바꾼다. 비울 수 있는 칸은 비우면 null. */
+/**
+ * 숫자 칸은 입력하는 동안 글자로 두었다가 보낼 때 숫자로 바꾼다. 비울 수 있는 칸은 비우면 null.
+ * JSON 칸·모델별 설정도 입력하는 동안의 글자·카드 목록을 보낼 모양으로 바꾼다.
+ */
 function payload(): SettingsValues {
   const values = copyValues(form.value as SettingsValues)
   for (const field of allFields()) {
+    if (field.kind === 'json') setPath(values, field.path, jsonValue(getPath(values, field.path)))
+    if (field.kind === 'models') setPath(values, field.path, modelsValue(getPath(values, field.path)))
     if (field.kind === 'number' || field.kind === 'numberOrText') {
       const raw = getPath(values, field.path)
       if (field.nullable && (raw === null || (typeof raw === 'string' && raw.trim() === ''))) {
@@ -167,8 +175,24 @@ function chooseModel(): void {
   modelsFor.value = null
 }
 
+/** 모델별 설정에 같은 모델 이름이 두 번 있으면 그 칸의 오류 (서버에는 객체로 가서 알 수 없다). */
+function duplicateModelErrors(): FieldError[] {
+  return allFields()
+    .filter((field) => field.kind === 'models')
+    .flatMap((field) => {
+      const model = duplicateModel(getPath(form.value, field.path))
+      return model ? [{ loc: field.path, message: model, type: 'duplicate_model', ctx: { model } }] : []
+    })
+}
+
 async function save(): Promise<void> {
   if (!form.value) return
+  const duplicates = duplicateModelErrors()
+  if (duplicates.length) {
+    errors.value = duplicates
+    showError(t('error.invalid_settings'))
+    return
+  }
   saving.value = true
   try {
     const saved = await api.saveSettings(payload())
@@ -280,8 +304,8 @@ onMounted(load)
                   />
                 </div>
                 <SettingField
-                  v-else :data-testid="`field-${field.path}`" :field="field" :value="valueOf(field.path)"
-                  :error="errorFor(field.path)" @update="update(field.path, $event)"
+                  v-else :data-testid="`field-${field.path}`" :class="{ wide: ['json', 'models'].includes(field.kind) }"
+                  :field="field" :value="valueOf(field.path)" :error="errorFor(field.path)" @update="update(field.path, $event)"
                 />
               </template>
             </div>
@@ -340,11 +364,14 @@ onMounted(load)
 }
 .model-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: flex-start;
 }
+/* 좁으면 모델 목록 버튼이 아래 줄로 내려간다 */
 .model-row > :first-child {
-  flex: 1;
+  flex: 1 1 200px;
+  min-width: 0;
 }
 .fields {
   border: 0;
@@ -357,7 +384,7 @@ onMounted(load)
 }
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: 12px 24px;
   align-items: start;
 }

@@ -106,6 +106,8 @@ class ProviderSettings(BaseModel):
         context_tokens: 요청 하나의 컨텍스트 (설정값). 없으면 공급자가 알려준 값이나 기본값.
         response_format: 구조화 출력 방식 (M0 확정: json_schema).
         extra_body: 요청 본문에 덧붙일 필드 (예: thinking 끄기).
+        reasoning_tokens: thinking 을 끌 수 없는 모델의 reasoning 몫. 요청의 출력 상한에만 더하고
+            배치 크기(답의 크기)에는 쓰지 않는다 (WI-10.009o).
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -121,6 +123,11 @@ class ProviderSettings(BaseModel):
     context_tokens: int | None = Field(default=None, gt=0)
     response_format: ResponseFormatMode = "json_schema"
     extra_body: dict[str, Any] = Field(default_factory=dict)
+    reasoning_tokens: int = Field(default=0, ge=0)
+
+    def output_limit(self, requested: int | None) -> int:
+        """요청에 보낼 출력 상한: 답의 상한(요청값, 없으면 설정값) + reasoning 몫."""
+        return (requested or self.max_output_tokens) + self.reasoning_tokens
 
 
 class LlmAdapter(Protocol):

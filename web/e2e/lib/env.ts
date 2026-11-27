@@ -22,6 +22,8 @@ export const SCREENSHOT_DIR = path.join(REPO_DIR, 'docs', 'e2e', 'screenshots')
 export const MOVIE_DIR = path.join(REPO_DIR, 'docs', 'e2e', 'movie')
 // 녹화 해상도 (공통 규칙: 기본 1920×1080)
 export const VIDEO_VIEWPORT = { width: 1920, height: 1080 }
+// 폰 장면 (WI-7.011): 흔한 폰 화면 폭
+export const PHONE_VIEWPORT = { width: 390, height: 844 }
 
 export function webToken(): string {
   return fs.readFileSync(path.join(DAEMON_ROOT, 'token'), 'utf8').trim()
@@ -35,16 +37,18 @@ export function requireExtensionPath(): string {
   return EXTENSION_PATH
 }
 
-/** 확장을 로드한 persistent context (확장은 persistent context 에서만 로드된다), 녹화 포함. */
-export async function launchRecorded(videoDir: string): Promise<BrowserContext> {
+/** 확장을 로드한 persistent context (확장은 persistent context 에서만 로드된다), 녹화 포함. phone 이면 폰 화면. */
+export async function launchRecorded(videoDir: string, phone = false): Promise<BrowserContext> {
+  const viewport = phone ? PHONE_VIEWPORT : VIDEO_VIEWPORT
   const extensionPath = requireExtensionPath()
   const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'subtitle-robot-e2e-'))
   return chromium.launchPersistentContext(userDataDir, {
     channel: 'chromium',
-    viewport: VIDEO_VIEWPORT,
+    viewport,
+    ...(phone ? { isMobile: true, hasTouch: true } : {}),
     colorScheme: 'light',
     args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`],
-    recordVideo: { dir: videoDir, size: VIDEO_VIEWPORT },
+    recordVideo: { dir: videoDir, size: viewport },
     permissions: ['clipboard-read', 'clipboard-write'],
   })
 }

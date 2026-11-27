@@ -1,8 +1,13 @@
 // Settings 화면의 필드 정의 (PROJECT-PLAN §25.9). path 는 values 안의 점 경로이고 서버 검증 오류 loc 과 같다.
-import type { AuthMode, SubscriptionProvider } from '../api/types'
+import type { AuthMode, ModelOverride, SubscriptionProvider } from '../api/types'
 import type { MessageKey } from '../i18n'
 
-export type FieldKind = 'text' | 'readonly' | 'number' | 'numberOrText' | 'toggle' | 'select' | 'tags' | 'chips' | 'paths'
+export type FieldKind =
+  | 'text' | 'readonly' | 'number' | 'numberOrText' | 'toggle' | 'select' | 'tags' | 'chips' | 'paths'
+  // JSON 객체 (여러 줄 입력)
+  | 'json'
+  // 모델별 설정 (모델마다 한 카드, WI-10.009o)
+  | 'models'
 
 export interface FieldOption {
   value: string
@@ -42,7 +47,9 @@ export const PROVIDERS = ['nim', 'local', 'ollama', 'openrouter', 'openai', 'cla
 // 구독 계정(공식 CLI)으로도 쓸 수 있는 공급자 (§28.1)
 export const SUBSCRIPTION_PROVIDERS: readonly SubscriptionProvider[] = ['openai', 'claude']
 // 구독 CLI 에 넘길 방법이 없는 칸 (구독이면 숨긴다)
-const API_ONLY_FIELDS = new Set(['base_url', 'temperature', 'max_output_tokens'])
+const API_ONLY_FIELDS = new Set([
+  'base_url', 'temperature', 'max_output_tokens', 'extra_body', 'reasoning_tokens', 'models',
+])
 
 export function isSubscriptionProvider(name: string): name is SubscriptionProvider {
   return (SUBSCRIPTION_PROVIDERS as readonly string[]).includes(name)
@@ -81,7 +88,98 @@ export function providerFields(name: (typeof PROVIDERS)[number]): SettingField[]
       path: `${base}.context_tokens`, kind: 'number', label: 'settings.provider.context_tokens',
       hint: 'settings.provider.context_tokensHint', nullable: true,
     },
+    {
+      path: `${base}.reasoning_tokens`, kind: 'number', label: 'settings.provider.reasoning_tokens',
+      hint: 'settings.provider.reasoning_tokensHint',
+    },
+    {
+      path: `${base}.extra_body`, kind: 'json', label: 'settings.provider.extra_body',
+      hint: 'settings.provider.extra_bodyHint',
+    },
+    {
+      path: `${base}.models`, kind: 'models', label: 'settings.provider.models',
+      hint: 'settings.provider.modelsHint',
+    },
   ]
+}
+
+/** 모델별 설정 카드 한 장. 숫자·JSON 칸은 입력하는 동안 글자로 둔다 (빈 칸 = 공급자 값). */
+export interface ModelRow {
+  model: string
+  reasoning_tokens: number | string | null
+  max_output_tokens: number | string | null
+  temperature: number | string | null
+  extra_body: string
+}
+
+const OVERRIDE_NUMBERS = ['reasoning_tokens', 'max_output_tokens', 'temperature'] as const
+
+/** 화면에 보일 JSON 글자. 아직 보내지 않은 글자(입력 중)는 그대로. */
+export function jsonText(value: unknown): string {
+  if (typeof value === 'string') return value
+  return value === undefined || value === null ? '' : JSON.stringify(value)
+}
+
+/**
+ * 입력한 JSON 글자 → 보낼 값. 객체가 아니면 글자 그대로 보내 서버가 그 칸에 오류를 붙이게 한다.
+ * 빈 글자는 빈 객체 (보낼 필드 없음).
+ */
+export function jsonValue(raw: unknown): unknown {
+  if (typeof raw !== 'string') return raw
+  if (!raw.trim()) return {}
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : raw
+  } catch {
+    // 서버 검증이 이 칸의 오류(dict_type)로 돌려준다
+    return raw
+  }
+}
+
+/** 저장된 모델별 설정(객체) → 카드 목록. 이미 카드 목록(입력 중)이면 그대로. */
+export function modelRows(value: unknown): ModelRow[] {
+  if (Array.isArray(value)) return value as ModelRow[]
+  const models = (value ?? {}) as Record<string, ModelOverride>
+  return Object.entries(models).map(([model, override]) => ({
+    model,
+    reasoning_tokens: override.reasoning_tokens ?? null,
+    max_output_tokens: override.max_output_tokens ?? null,
+    temperature: override.temperature ?? null,
+    extra_body: override.extra_body === undefined ? '' : JSON.stringify(override.extra_body),
+  }))
+}
+
+/** 카드 목록에서 두 번 나온 첫 모델 이름 (객체로 보내면 뒤 카드가 앞 카드를 조용히 덮어쓴다). 없으면 null. */
+export function duplicateModel(value: unknown): string | null {
+  if (!Array.isArray(value)) return null
+  const seen = new Set<string>()
+  for (const row of value as ModelRow[]) {
+    const name = String(row.model ?? '').trim()
+    if (!name) continue
+    if (seen.has(name)) return name
+    seen.add(name)
+  }
+  return null
+}
+
+/** 카드 목록 → 보낼 객체. 모델 이름이 빈 카드는 버리고, 빈 칸은 보내지 않는다 (공급자 값). */
+export function modelsValue(value: unknown): unknown {
+  if (!Array.isArray(value)) return value
+  const models: Record<string, Record<string, unknown>> = {}
+  for (const row of value as ModelRow[]) {
+    const name = String(row.model ?? '').trim()
+    if (!name) continue
+    const override: Record<string, unknown> = {}
+    for (const key of OVERRIDE_NUMBERS) {
+      const raw = row[key]
+      if (raw === null || raw === undefined || String(raw).trim() === '') continue
+      // 숫자가 아니면 글자 그대로 보내 서버가 그 칸에 오류를 붙이게 한다
+      override[key] = Number.isFinite(Number(raw)) ? Number(raw) : raw
+    }
+    if (String(row.extra_body ?? '').trim()) override.extra_body = jsonValue(row.extra_body)
+    models[name] = override
+  }
+  return models
 }
 
 /**

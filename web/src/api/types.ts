@@ -191,6 +191,20 @@ export interface ProviderValues {
   // null 이면 공급자 정보·기본값
   context_tokens: number | null
   auth: AuthMode
+  // 요청 본문에 덧붙일 필드 (thinking 끄기 등)
+  extra_body: Record<string, unknown>
+  // thinking 을 끌 수 없는 모델의 reasoning 몫 (요청 출력 상한에만 더한다)
+  reasoning_tokens: number
+  // 모델 이름 → 그 모델을 쓸 때 덮어쓸 값. 정한 칸만 온다 (WI-10.009o)
+  models: Record<string, ModelOverride>
+}
+
+export interface ModelOverride {
+  temperature?: number
+  max_output_tokens?: number
+  reasoning_tokens?: number
+  context_tokens?: number
+  extra_body?: Record<string, unknown>
 }
 
 export interface SettingsValues {

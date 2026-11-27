@@ -26,7 +26,7 @@ def test_example_file_loads_with_plan_values() -> None:
     assert name == "gemini"  # 기본 공급자 (WI-10.009l)
     assert (gemini.model, gemini.rpm, gemini.timeout) == ("gemini-3.5-flash", 5, 300)
     nim = config.providers["nim"]
-    assert nim.model == "deepseek-ai/deepseek-v4.1-flash"
+    assert nim.model == "minimaxai/minimax-m3.1-flash"
     assert (nim.rpm, nim.timeout, nim.response_format) == (30, 300, "json_schema")
     assert nim.extra_body == THINKING_OFF
     local = config.providers["local"]
@@ -125,7 +125,7 @@ def test_factory_creates_nim_with_key_from_store(monkeypatch: pytest.MonkeyPatch
     )
 
     assert isinstance(adapter, NimAdapter)
-    assert adapter.describe().model == "deepseek-ai/deepseek-v4.1-flash"
+    assert adapter.describe().model == "minimaxai/minimax-m3.1-flash"
     key = adapter._client.settings.api_key
     assert key is not None
     assert key.get_secret_value() == "nvapi-from-store"  # 환경 변수는 읽지 않는다 (Q-24)
@@ -205,7 +205,7 @@ def test_existing_providers_unchanged() -> None:
     """NIM 을 고르면 지금까지의 NIM 기본값을 그대로 쓴다."""
     nim = parse_config({"llm": {"provider": "nim"}}, source="t").providers["nim"]
     assert (nim.model, nim.rpm, nim.temperature, nim.context_tokens) == (
-        "deepseek-ai/deepseek-v4.1-flash",
+        "minimaxai/minimax-m3.1-flash",
         30,
         0.2,
         None,
@@ -243,3 +243,42 @@ def test_system_timezone(monkeypatch: pytest.MonkeyPatch) -> None:
     finally:
         monkeypatch.setenv("TZ", "UTC")
         time_module.tzset()
+
+
+MODEL_OVERRIDES = """[llm]
+provider = "nim"
+[providers.nim]
+model = "z-ai/glm-5.3-flash"
+max_output_tokens = 4096
+[providers.nim.models."z-ai/glm-5.3-flash"]
+reasoning_tokens = 16384
+extra_body = {}
+temperature = 0.5
+[providers.nim.models."minimaxai/minimax-m3.1-flash"]
+max_output_tokens = 2048
+"""
+
+
+def test_model_override_applies_to_the_active_model(tmp_path: Path) -> None:
+    # 모델마다 thinking 끄는 스위치가 다르다: 모델별 값이 공급자 값을 덮는다 (WI-10.009o)
+    _, nim = load_config(_write(tmp_path, MODEL_OVERRIDES)).active_provider()
+
+    assert (nim.reasoning_tokens, nim.temperature, nim.max_output_tokens) == (16384, 0.5, 4096)
+    assert nim.extra_body == {}  # 합치지 않고 바꾼다: 공급자 기본값(THINKING_OFF)을 보내지 않는다
+    settings = nim.to_settings(None)
+    assert (settings.reasoning_tokens, settings.output_limit(None)) == (16384, 4096 + 16384)
+
+
+def test_model_override_of_another_model_is_ignored(tmp_path: Path) -> None:
+    text = MODEL_OVERRIDES.replace('model = "z-ai/glm-5.3-flash"', 'model = "other/model"', 1)
+    _, nim = load_config(_write(tmp_path, text)).active_provider()
+
+    assert (nim.reasoning_tokens, nim.temperature, nim.max_output_tokens) == (0, 0.2, 4096)
+    assert nim.extra_body == THINKING_OFF
+
+
+def test_model_override_rejects_unknown_key(tmp_path: Path) -> None:
+    text = MODEL_OVERRIDES + "rpm = 3\n"  # 모델별로 바꿀 수 있는 칸이 아니다
+
+    with pytest.raises(ConfigError, match="rpm"):
+        load_config(_write(tmp_path, text))

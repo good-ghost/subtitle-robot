@@ -27,7 +27,7 @@ def test_defaults_match_plan_v5_4() -> None:
     settings = nim_default_settings()
 
     assert settings.base_url == NIM_BASE_URL == "https://integrate.api.nvidia.com/v1"
-    assert settings.model == NIM_DEFAULT_MODEL == "deepseek-ai/deepseek-v4.1-flash"
+    assert settings.model == NIM_DEFAULT_MODEL == "minimaxai/minimax-m3.1-flash"
     assert settings.rpm == 30
     assert settings.timeout_s == 300.0
     assert settings.temperature == 0.2

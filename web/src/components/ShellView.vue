@@ -1,8 +1,9 @@
 <script setup lang="ts">
 // 앱 셸: 사이드 메뉴(Dashboard·Queue List·Completed List·Archived List·Logs·Settings, Q-12·WI-7.010), 상단 바 데몬 상태
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { api } from '../api/client'
+import { useNarrow } from '../composables/narrow'
 import type { DaemonStatus } from '../api/types'
 import { t, type MessageKey } from '../i18n'
 import { route, routeHref, ROUTES, type RouteName } from '../router'
@@ -35,6 +36,10 @@ const VIEWS = {
   settings: SettingsView,
 } as const
 
+// 좁은 화면(폰): 셸에 덮는 드로어가 없어 펼친 메뉴가 본문을 밀어낸다. 접은 메뉴(rail)로 시작하고
+// 메뉴로 이동하면 다시 접는다 (WI-7.011)
+const narrow = useNarrow()
+const rail = ref(narrow.value)
 const status = ref<DaemonStatus | null>(null)
 const statusFailed = ref(false)
 let timer: number | undefined
@@ -68,6 +73,11 @@ function onNavigate(event: Event): void {
   const [{ href }] = (event as CustomEvent<[{ href?: string }]>).detail
   event.preventDefault()
   if (href) window.location.hash = href
+  if (narrow.value) rail.value = true
+}
+
+function onRailChange(event: Event): void {
+  rail.value = (event as CustomEvent<[boolean]>).detail[0]
 }
 
 function onFooterAction(event: Event): void {
@@ -80,6 +90,9 @@ onMounted(() => {
   timer = window.setInterval(() => void refreshStatus(), STATUS_INTERVAL_MS)
 })
 onBeforeUnmount(() => window.clearInterval(timer))
+watch(narrow, (value) => {
+  rail.value = value
+})
 </script>
 
 <template>
@@ -94,7 +107,9 @@ onBeforeUnmount(() => window.clearInterval(timer))
     :items="items"
     :footer-items="footerItems"
     :breadcrumbs="breadcrumbs"
+    :rail="rail"
     @navigate="onNavigate"
+    @rail-change="onRailChange"
     @footer-action="onFooterAction"
   >
     <main class="page">
@@ -110,5 +125,11 @@ onBeforeUnmount(() => window.clearInterval(timer))
 .page {
   padding: 16px 24px 24px;
   box-sizing: border-box;
+}
+/* 폰: 접은 메뉴 옆 본문 폭을 넓힌다 */
+@media (max-width: 839.98px) {
+  .page {
+    padding: 12px 12px 16px;
+  }
 }
 </style>

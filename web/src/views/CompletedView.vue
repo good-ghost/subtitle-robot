@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 
 import { api } from '../api/client'
 import type { DaemonStatus, LedgerEntry, Verdict } from '../api/types'
+import { narrowHeaders, useNarrow } from '../composables/narrow'
 import { usePolling } from '../composables/polling'
 import { errorText, isoFromEpoch, localTime } from '../format'
 import { t } from '../i18n'
@@ -58,7 +59,8 @@ const filters = computed(() => [
   },
 ])
 const switches = computed(() => [{ key: 'history', label: t('completed.history') }])
-const headers = computed(() => [
+const narrow = useNarrow()
+const allHeaders = computed(() => [
   {
     title: t('completed.col.name'), key: 'name', type: 'name', subKey: 'path', maxWidth: '320px',
     value: (entry: LedgerEntry) => (entry.current ? entry.name : `${entry.name} (${t('completed.historyMark')})`),
@@ -94,6 +96,8 @@ const headers = computed(() => [
     ],
   },
 ])
+// 폰에서는 이 열만 보인다 (나머지는 행 상세·편집 창에서 본다, WI-7.011)
+const headers = computed(() => narrowHeaders(allHeaders.value, ['name', 'verdict', 'actions'], narrow.value))
 
 async function onFilterChange(event: Event): Promise<void> {
   const [{ key, value }] = (event as CustomEvent<[{ key: string; value: string | boolean }]>).detail

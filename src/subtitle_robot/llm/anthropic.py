@@ -76,7 +76,7 @@ class ClaudeAdapter:
         system = "\n\n".join(m.content for m in request.messages if m.role == "system")
         body: dict[str, Any] = {
             "model": self._settings.model,
-            "max_tokens": request.max_tokens or self._settings.max_output_tokens,
+            "max_tokens": self._settings.output_limit(request.max_tokens),
             "messages": [
                 {"role": m.role, "content": m.content}
                 for m in request.messages

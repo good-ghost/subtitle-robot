@@ -4,7 +4,7 @@ English | [한국어](README.md)
 
 **Subtitle Robot** (`subtitle-robot`) is a Python CLI and watch daemon that translates subtitles. The source can be any language (English and Japanese have dedicated rules); the target language is Korean by default and can be changed in the settings. Before translating, it analyses the whole title to build a glossary of names and proper nouns, so that **the same character or term is written the same way across a whole TV series**. The LLM is one of Google Gemini (default), NVIDIA NIM, a local llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI (ChatGPT) or Anthropic Claude.
 
-The current version is 0.9.0. Main features:
+The current version is 0.9.1. Main features:
 
 - Single titles and TV series: a series-wide glossary, previous-episode summaries (`story_so_far`) and repeated-line memory (`phrases`)
 - SRT, ASS and VTT input, style-preserving ASS output
@@ -43,7 +43,7 @@ Without a configuration file, the Gemini defaults are used (`gemini-3.5-flash`, 
 | Provider (`llm.provider`) | Needs | Notes |
 |---|---|---|
 | Google Gemini (`gemini`, default) | AI Studio API key. Default model `gemini-3.5-flash`, 5 requests per minute | OpenAI-compatible endpoint. Gemini CLI sign-in for personal Google accounts ended on 2026-06-18, so it is not used as a subscription |
-| NVIDIA NIM (`nim`) | API key. Default model `deepseek-ai/deepseek-v4.1-flash`, 30 RPM | |
+| NVIDIA NIM (`nim`) | API key. Default model `minimaxai/minimax-m3.1-flash`, 30 RPM | The default model up to 0.9.0, `deepseek-ai/deepseek-v4.1-flash`, reached end of life on 2026-11-16 (HTTP 410). If your config file names it, change it |
 | llama-server (`local`) | `base_url` of a server you start yourself; its key if started with `--api-key` | Uses `/props` and `/tokenize` for context and token counts |
 | Ollama (`ollama`) | Server address (default `http://127.0.0.1:11434`), model | Native `/api/chat`. Sends `context_tokens` (default 8192) as `num_ctx`. For thinking models use `extra_body = { think = false }` |
 | OpenRouter (`openrouter`) | API key, model | If the model does not accept json_schema, use `response_format = "json_object"` |
@@ -63,6 +63,7 @@ Without a configuration file, the Gemini defaults are used (`gemini-3.5-flash`, 
   ```
 
 - Providers other than Gemini, NIM and llama-server have no default model. Set `[providers.<name>] model`, or pick one with "Model list" in the web Settings. Address and timeout have defaults.
+- **Per-model settings**: in the provider card of Settings, "Extra request body (JSON)" (`extra_body`) is added to every request, and "Per-model settings" (`models`) replace temperature, max output tokens, reasoning allowance and the extra request body while that model is selected. Models whose thinking cannot be turned off (for example NIM `z-ai/glm-5.3-flash`) spend the answer's room on reasoning and fail with `ReasoningOnlyResponseError`. Set that model's "Reasoning allowance" (`reasoning_tokens`, e.g. 16384): it is added to the request output limit only, so the answer is not cut off (batch size stays the same)
 - Time zone: `[system] timezone` (an IANA name such as `Asia/Seoul`) is used for log and queue times. If empty, the `TZ` environment variable is used (search and pick it in the Web tab of Settings).
 - Changing the provider makes resumed translations count as "settings changed" (`--redo-stale` / `--accept-stale`).
 - Check a provider: `uv run python scripts/llm_smoke.py --data ./data --provider claude --model <model>` (one short structured-output request).

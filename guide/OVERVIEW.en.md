@@ -17,7 +17,7 @@ It translates with an LLM. Before it translates, it reads the whole title and bu
   - settings (provider, model, API keys, account)
 - **LLM providers:** Google Gemini (default), NVIDIA NIM, a local llama.cpp `llama-server`, Ollama, OpenRouter, OpenAI and Anthropic Claude. Claude and ChatGPT **subscription accounts** can be used through their official CLIs.
 
-Current version: **0.9.0**
+Current version: **0.9.1**
 
 ## Image tags
 
@@ -42,8 +42,8 @@ The image comes as a compressed archive. Load the `latest` archive (for OCR, loa
 ```bash
 sha256sum -c SHA256SUMS                                   # optional: check the downloads
 
-podman load -i subtitle-robot-0.9.0-latest.tar.gz         # Podman
-docker load -i subtitle-robot-0.9.0-latest.tar.gz         # Docker
+podman load -i subtitle-robot-0.9.1-latest.tar.gz         # Podman
+docker load -i subtitle-robot-0.9.1-latest.tar.gz         # Docker
 # Loaded image: localhost/subtitle-robot:latest
 ```
 
@@ -171,7 +171,7 @@ Only one provider is used at a time, and there is no fallback. Keys are stored i
 | Provider | Image | How to authenticate |
 |---|---|---|
 | **Google Gemini** (default) | `latest` | API key from Google AI Studio (`AIza…`). Default model `gemini-3.5-flash`, 5 requests per minute |
-| **NVIDIA NIM** | `latest` | API key (`nvapi-…`) from build.nvidia.com. Default model `deepseek-ai/deepseek-v4.1-flash`, limited to 30 requests per minute |
+| **NVIDIA NIM** | `latest` | API key (`nvapi-…`) from build.nvidia.com. Default model `minimaxai/minimax-m3.1-flash`, limited to 30 requests per minute |
 | **llama-server** (local llama.cpp) | `latest` | No key needed. Set the address in Settings, for example `http://host.docker.internal:8080/v1` (Docker) or `http://host.containers.internal:8080/v1` (Podman). If the server was started with `--api-key`, enter that key |
 | **Ollama** | `latest` | No key. Set the address (for example `http://host.docker.internal:11434`) and the model |
 | **OpenRouter** | `latest` | API key and model |

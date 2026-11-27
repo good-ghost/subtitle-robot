@@ -113,7 +113,7 @@ class OllamaAdapter:
         """`/api/chat` 요청 본문."""
         options: dict[str, Any] = {
             "num_ctx": self.num_ctx(),
-            "num_predict": request.max_tokens or self._settings.max_output_tokens,
+            "num_predict": self._settings.output_limit(request.max_tokens),
         }
         temperature = (
             request.temperature if request.temperature is not None else self._settings.temperature
@@ -222,8 +222,9 @@ def parse_ollama_response(
     if not content.strip():
         if str(message.get("thinking") or "").strip():
             raise ReasoningOnlyResponseError(
-                "ollama: content 가 비고 thinking 에만 답이 왔다. 공급자 설정 extra_body 에 "
-                "think = false 를 넣어야 한다"
+                "ollama: content 가 비고 thinking 에만 답이 왔다. Settings 공급자의 extra_body "
+                "(또는 모델별 설정)에 think = false 를 넣거나 "
+                "reasoning 몫(reasoning_tokens)을 정한다"
             )
         raise LlmResponseError(
             f"ollama: 응답 본문이 비어 있다 (done_reason={data.get('done_reason')})"
